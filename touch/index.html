@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script>window.exports = window;</script>
+	<script src="../js/observable.js"></script>
+</head>
+<body>
+
+<script>
+
+
+let mousedown$ = Observable.fromEvent(window, "mousedown", true).share();
+let mousemove$ = Observable.fromEvent(window, "mousemove", true).share();
+let mouseup$ = Observable.fromEvent(window, "mouseup", true).share();
+
+let test$ = Observable.interval(500);
+
+
+/// dragstart
+// mousedown$.switchMapTo(mousemove$.take(1)).subscribe(event => {
+// 	console.log("dragstart", event);
+// });
+
+/// drag
+// mousedown$.do(event => console.log("press", event)).switchMapTo(mousemove$.takeUntil(mouseup$)).subscribe(event => {
+// 	console.log("drag", event);
+// });
+
+
+mousedown$.mergeMap(() => mousemove$.takeUntil(mouseup$)).subscribe(event => {
+
+	console.log(event);
+});
+
+
+// mousedown$.take(1).concat(mousemove$).takeUntil(mouseup$).subscribe(event => {
+//
+// 	console.log(event);
+// });
+
+
+// mousedown$.do(event => console.log("press", event))
+// 	.switchMapTo(mousemove$.take(1).do(event => console.log("dragstart", event)))
+// 	.concat(mousemove$.takeUntil(mouseup$)).do(event => console.log("drag", event))
+// 	.do(event => {
+//
+// 		console.log("do?", event);
+// 	})
+// 	.subscribe(event => {
+//
+//
+// 		console.log(event);
+//
+//
+// 	})
+// function drag$() {
+//
+// 	return new Observable(observer => {
+//
+// 		mousedown$.subscribe(event => {
+//
+// 		})
+// 	})
+// }
+
+
+</script>
+
+
+</body>
+</html>

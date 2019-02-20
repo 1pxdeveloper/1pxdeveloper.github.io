@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+<script>
+
+tokenize.lex = [
+	["(name)", /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)/],
+	["(number)", /((?:\d*\.\d+)|\d+)/],
+	["(string)", /('[^']*'|"[^"]*")/],
+	["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|%%|\|\||[-|+*/%!?:;.,<>=\[\]\(\){}])/],
+	["(ws)", /(\s)/],
+	["(unknown)", /./]
+];
+
+tokenize.re = new RegExp(tokenize.lex.map(r => r[1].source).join("|"), "g");
+
+function tokenize(script, callbackfn) {
+	let ret = [];
+
+	script.replace(tokenize.re, function(a) {
+		let len = arguments.length;
+		for (let i = 1; i < len; i++) {
+			let value = arguments[i];
+			if (value !== undefined) {
+				value = callbackfn(value, tokenize.lex[i - 1][0]);
+				if (value !== undefined) {
+					ret.push(value);
+				}
+				return a;
+			}
+		}
+
+		return a;
+	});
+
+	return ret;
+}
+
+let r = tokenize("1+2/3*abc if hello.world not new Error()", function(value, type) {
+	console.log(type, value);
+
+	switch (type) {
+		case "(name)":
+		case "(number)":
+		case "(string)":
+		case "(operator)":
+			return {type, value};
+	}
+});
+
+console.log(r);
+
+
+function expression() {
+
+}
+
+function parse() {
+
+}
+
+let a;
+
+parse.rules = [
+	["!", 90, ["!", expression]],
+	["-", 90, ["-", expression]],
+	["+", 90, ["+", expression]],
+
+	["[", 100, ["[", expression, "]"]],
+
+	["{", 100, ["{", expression, "}"]],
+
+	["(", 100, ["(", expression, ")"]],
+
+	["if", 70, [expression, "if", expression]],
+
+	["?", 70, [expression, "?", expression, ":", expression]],
+];
+
+
+let modulo = (a, b) => (+a % (b = +b) + b) % b;
+
+function evaluate() {
+
+}
+
+evaluate.rules = [
+	["(end)", () => undefined],
+	["(literal)", function() { return this.value; }],
+	["this", function() { return this.scope; }],
+
+	[";", (a, b) => void evaluate(a) || evaluate(b)],
+
+	// ["typeof", (a) => typeof evaluate(a)],
+	["+", (a) => +evaluate(a)],
+	["-", (a) => -evaluate(a)],
+	["!", (a) => !evaluate(a)],
+	["[", (a) => !evaluate(a)],
+	["{", (a) => !evaluate(a)], /// @TODO: {name, mask, weapon}
+
+	// ["instanceof", (a, b) => evaluate(a) instanceof evaluate(b)], /// @FIXME:? is?
+	["+", (a, b) => evaluate(a) + evaluate(b)],
+	["-", (a, b) => evaluate(a) - evaluate(b)],
+	["*", (a, b) => evaluate(a) * evaluate(b)],
+	["/", (a, b) => evaluate(a) / evaluate(b)],
+	["%", (a, b) => evaluate(a) % evaluate(b)],
+	["%%", (a, b) => modulo(evaluate(a), evaluate(b))],
+	["in", (a, b) => Array.prototype.indexOf.call(evaluate(b), evaluate(a) >= 0)],
+
+	["==", (a, b) => evaluate(a) == evaluate(b)],
+	["===", (a, b) => evaluate(a) === evaluate(b)],
+	["!=", (a, b) => evaluate(a) != evaluate(b)],
+	["!==", (a, b) => evaluate(a) !== evaluate(b)],
+	["<", (a, b) => evaluate(a) < evaluate(b)],
+	["<=", (a, b) => evaluate(a) <= evaluate(b)],
+	[">", (a, b) => evaluate(a) > evaluate(b)],
+	[">=", (a, b) => evaluate(a) >= evaluate(b)],
+	["||", (a, b) => evaluate(a) || evaluate(b)],
+	["&&", (a, b) => evaluate(a) && evaluate(b)],
+
+	["?", (a, b, c) => evaluate(a) ? evaluate(b) : evaluate(c)],
+
+	[".", function(a, b) { return this.setObjectProp(evaluate(a), b.value); }],
+	["[", function(a, b) { return this.setObjectProp(evaluate(a), evaluate(b)); }],
+
+	["(", function(a, b) { /* TODO */ }],
+	["(", function(a, b, c) { /* TODO */ }],
+
+	["if", function(a, b) { /* TODO */ }],
+	["as", function(a, b) { /* TODO */ }],
+	["=>", function(a, b) { /* TODO */ }],
+
+	["=>", function(a, b) { /* TODO */ }], // PIPE
+
+	["=", function(a, b) { /* TODO */ }], // ASSIGN
+];
+
+
+</script>
+</body>
+</html>

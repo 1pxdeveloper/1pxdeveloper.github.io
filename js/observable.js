@@ -223,10 +223,8 @@ Observable.prototype.do = function(fn) {
 Observable.prototype.mergeMap = function(fn) {
 	return this.pipe(observer => {
 		return {
-			next() {
-				Observable.of(fn.apply(observer, arguments)).subscribe(value => {
-					observer.next(value);
-				});
+			next(value) {
+				fn(value).subscribe(value => observer.next(value));
 			}
 		}
 	});
@@ -342,6 +340,86 @@ Observable.prototype.skip = function(count) {
 };
 
 
+Observable.prototype.skipUntil = function(observable$) {
+	return new Observable(observer => {
+		observable$.subscribe(() => {
+			this.subscribe(observer);
+		})
+	});
+};
+
+
+Observable.prototype.switchMap = function(fn) {
+	return new Observable(observer => {
+
+		let subscription;
+
+		return this.subscribe(function(value) {
+			if (subscription) subscription.unsubscribe();
+			subscription = fn(value).subscribe(observer);
+		}, observer.error.bind(observer), observer.complete.bind(observer));
+	});
+};
+
+
+Observable.prototype.switchMapTo = function(observable$) {
+	return new Observable(observer => {
+
+		let subscription;
+
+		return this.subscribe(function() {
+			if (subscription) subscription.unsubscribe();
+			subscription = observable$.subscribe(observer);
+		}, observer.error.bind(observer), observer.complete.bind(observer));
+	});
+};
+
+
+
+Observable.prototype.concat = function(observable$) {
+	return new Observable(observer => {
+		return this.subscribe({
+			next(value) {
+				observer.next(value);
+			},
+
+			error(err) {
+				observer.error(err)
+			},
+
+			complete() {
+				observable$.subscribe(observer);
+			}
+		});
+	});
+};
+
+
+
+Observable.prototype.repeat = function(count) {
+
+
+	return new Observable(observer => {
+		return this.subscribe({
+			next(value) {
+				observer.next(value);
+			},
+
+			error(err) {
+				observer.error(err)
+			},
+
+			complete() {
+				observable$.subscribe(observer);
+			}
+		});
+	});
+};
+
+
+
+
+
 /// Static
 function noop() {
 }
@@ -350,8 +428,8 @@ Observable.NEVER = new Observable(noop);
 Observable.empty = () => new Observable(observer => observer.complete());
 
 Observable.interval = function(delay) {
-	let i = 0;
 	return new Observable(observer => {
+		let i = 0;
 		let id = setInterval(() => observer.next(i++), delay);
 		return () => clearInterval(id);
 	});
