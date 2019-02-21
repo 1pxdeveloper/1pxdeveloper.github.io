@@ -15,11 +15,19 @@ class WebComponent extends HTMLElement {
 	constructor() {
 		super();
 
+
 		/// @FIXME: init async 하게 만들기.. require 옵션 추가하기
 		module.component.require(this.tagName, component => {
+
+
+			console.log("@@@@@@@@@", this.tagName);
+
+
 			Object.setPrototypeOf(component, WebComponent.prototype);
 			Object.setPrototypeOf(this, component);
 			this.created(...arguments);
+			this.init();
+
 		});
 	}
 
@@ -60,7 +68,7 @@ class WebComponent extends HTMLElement {
 		this.destroy = () => {
 			delete this.destroy;
 			context.disconnect();
-			while (this.lastChild) this.lastChild.remove();
+			while(this.lastChild) this.lastChild.remove();
 			this.appendChild(DocumentFragment.from(originalContent));
 		};
 
@@ -102,6 +110,7 @@ class WebComponentDefine extends HTMLElement {
 	constructor() {
 		super();
 		let name = this.getAttribute("name");
+
 		if (!name) {
 			throw new SyntaxError("name attribute is required.")
 		}

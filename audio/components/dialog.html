@@ -1,0 +1,111 @@
+<web-component name="ai-app">
+	<template>
+		<main>
+			<section *if="!start">
+				<h1 style="margin: auto">start to click</h1>
+			</section>
+
+			<section [hidden]="!start">
+				<flex>
+					<h2 class="msg" [class.isfinal]="isFinal">{{ text1 }}{{'?' if isFinal }}</h2>
+					<!--<h3 class="msg">{{ isFinal }}</h3>-->
+				</flex>
+				<mic-wave $wave></mic-wave>
+			</section>
+		</main>
+	</template>
+</web-component>
+
+
+<script type="module">
+module.component("ai-app", function() {
+
+	return class AIApp {
+		init($) {
+			let $this = this;
+
+			$this.start = false;
+			$this.text1 = "";
+			$this.isFinal = false;
+
+			$.on$(document, "click").take(1).subscribe(event => {
+
+
+				// speakSound("Can I help you?");
+
+
+				stt(function(event) {
+
+
+					console.log(event.resultIndex, event.results);
+
+
+					let results = Array.from(event.results[event.resultIndex]);
+
+
+					// results.sort((a, b) => b.confidence - a.confidence);
+
+					let ret = results[0];
+
+					console.log(ret);
+
+					// console.log(results);
+
+					// console.log(event);
+
+					$this.text1 = ret.transcript;
+					$this.isFinal = event.results[event.resultIndex].isFinal;
+				});
+
+				this.$wave.start();
+
+				$this.start = true;
+			})
+		}
+	}.prototype;
+
+});
+</script>
+
+
+<script type="module">
+module.factory("stt", function() {
+
+	return function mic(fn) {
+		window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+		let recognition = new SpeechRecognition();
+		recognition.continuous = true;
+		recognition.interimResults = true;
+		recognition.maxAlternatives = 10;
+		recognition.lang = 'en-US';
+
+		console.log(recognition);
+
+		recognition.onresult = function(event) {
+			console.log(event.resultIndex, event.results);
+			fn(event);
+		};
+
+		recognition.onsoundstart = function(event) {
+			console.log("onsoundstart");
+		};
+
+		recognition.onsoundend = function(event) {
+			console.log("onsoundend");
+		};
+
+		recognition.onspeechstart = function(event) {
+			console.log("onspeechstart");
+		};
+
+		recognition.onspeechsend = function(event) {
+			console.log("onspeechend");
+		};
+
+		let x = recognition.start();
+
+		return recognition;
+	}
+});
+</script>

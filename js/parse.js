@@ -127,8 +127,7 @@ const watch$ = (function() {
 let $tokens;
 let $token;
 
-function noop() {
-}
+function noop() {}
 
 function next(id) {
 	if (id && $token && $token.id !== id) {

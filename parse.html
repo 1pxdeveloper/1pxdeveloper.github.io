@@ -7,17 +7,7 @@
 <body>
 <script>
 
-tokenize.lex = [
-	["(name)", /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)/],
-	["(number)", /((?:\d*\.\d+)|\d+)/],
-	["(string)", /('[^']*'|"[^"]*")/],
-	["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|%%|\|\||[-|+*/%!?:;.,<>=\[\]\(\){}])/],
-	["(ws)", /(\s)/],
-	["(unknown)", /./]
-];
-
-tokenize.re = new RegExp(tokenize.lex.map(r => r[1].source).join("|"), "g");
-
+/// Tokenize
 function tokenize(script, callbackfn) {
 	let ret = [];
 
@@ -37,61 +27,247 @@ function tokenize(script, callbackfn) {
 		return a;
 	});
 
+	ret.index = 0;
 	return ret;
 }
 
-let r = tokenize("1+2/3*abc if hello.world not new Error()", function(value, type) {
-	console.log(type, value);
 
-	switch (type) {
-		case "(name)":
-		case "(number)":
-		case "(string)":
-		case "(operator)":
-			return {type, value};
-	}
-});
-
-console.log(r);
-
-
-function expression() {
-
-}
-
+/// Parse
 function parse() {
 
 }
 
-let a;
-
-parse.rules = [
-	["!", 90, ["!", expression]],
-	["-", 90, ["-", expression]],
-	["+", 90, ["+", expression]],
-
-	["[", 100, ["[", expression, "]"]],
-
-	["{", 100, ["{", expression, "}"]],
-
-	["(", 100, ["(", expression, ")"]],
-
-	["if", 70, [expression, "if", expression]],
-
-	["?", 70, [expression, "?", expression, ":", expression]],
-];
+function noop() {}
 
 
-let modulo = (a, b) => (+a % (b = +b) + b) % b;
+let $token;
+let $tokens;
 
+function next(id) {
+	if (id && $token && $token.id !== id) {
+		$token.error("unexpected token: " + $token.id);
+		return;
+	}
+
+	let t = $token;
+	$token = $tokens[$tokens.index++] || $symbol_table["(end)"];
+	return t;
+}
+
+function expression(rbp) {
+	rbp = rbp || 0;
+
+	let t = next();
+
+	let left = t.nud() || t;
+	while($token.lbp > rbp) {
+		t = next();
+		left = t.led(left) || t;
+	}
+
+	return left;
+}
+
+
+/// evaluate
 function evaluate() {
 
 }
 
+const modulo = (a, b) => (+a % (b = +b) + b) % b;
+
+
+///
+let $symbol_table = {};
+
+let $symbol_prototype = {
+	lbp: 0,
+	nbp: 0,
+	length: 0,
+
+	callback: noop,
+
+	nud() { this.error(this.id + " is undefined token."); },
+
+	led() { this.error(this.id + " is missing pperator."); },
+
+	push() {
+		for (let token of arguments) {
+			this[this.length++] = token;
+			token.parent = this;
+		}
+
+		return arguments[arguments.length - 1];
+	},
+
+	setObjectProp(object, prop) {
+		this.object = object;
+		this.prop = prop;
+		this.watch(object, prop);
+		return object && object[prop];
+	},
+
+	watch(object, prop) {},
+
+	error(e) {
+		throw SyntaxError(e);
+	}
+};
+
+function default_constant_nud() {
+	this.id = "(literal)";
+}
+
+function symbol(id) {
+	let s = $symbol_table[id] = $symbol_table[id] || Object.create($symbol_prototype);
+	s.id = id;
+	return s;
+}
+
+function constant(id, value) {
+	let s = symbol(id);
+	s.value = value;
+	s.nud = default_constant_nud;
+	return s;
+}
+
+symbol("(end)");
+symbol("(name)");
+symbol("(literal)").nud = noop;
+
+constant("true", true);
+constant("false", false);
+constant("undefined", undefined);
+constant("null", null);
+constant("NaN", NaN);
+constant("Math", Math);
+constant("Date", Date);
+constant("Boolean", Boolean);
+constant("Number", Number);
+constant("Array", Array);
+constant("Object", Object);
+constant("Function", Function);
+
+
+/////////// Combination
+tokenize.lex = [
+	["(name)", /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)/],
+	["(number)", /((?:\d*\.\d+)|\d+)/],
+	["(string)", /('[^']*'|"[^"]*")/],
+	["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|%%|\|\||[-|+*/%!?:;.,<>=\[\]\(\){}])/],
+	["(ws)", /(\s)/],
+	["(unknown)", /./]
+];
+tokenize.re = new RegExp(tokenize.lex.map(r => r[1].source).join("|"), "g");
+
+
+parse.operator_precedence = [
+	[1, "(", "[", "{"],
+	[2, ".", "["],
+	[2, "("],
+
+	// [1, "!", "~", "+", "-", "typeof", "void", "delete"],
+	[1, "!", "+", "-"],
+
+	[2, "**", "*", "/", "%"],
+	[2, "+", "-"],
+
+	// [2, "<", "<=", ">", ">=", "in", "instanceof"],
+	[2, "<", "<=", ">", ">=", "in"],
+	[2, "===", "!==", "==", "!="],
+
+	[2, "&&", "||"],
+	[2, "?"],
+
+	[2, "if"],
+
+	[2, "="],
+
+	[2, ";"],
+];
+
+
+function left() {}
+
+function name() {}
+
+function op() {}
+
+// let prefix = [left, op, expression];
+// let infix = [left, op, expression];
+// let infixr = [left, op, expression];
+
+
+function default_prefix_nud() {
+	this.push(expression(this.nbp));
+}
+
+function default_infix_led(left) {
+	this.push(left, expression(this.lbp));
+}
+
+function default_infixr_led(left) {
+	this.push(left, expression(this.lbp - 1));
+}
+
+
+function prefix() {
+	for (let operator of arguments) {
+		let s = symbol(operator);
+		s.nud = default_prefix_nud;
+	}
+}
+
+function infix() {
+	for (let operator of arguments) {
+		let s = symbol(operator);
+		s.led = default_infix_led;
+	}
+}
+
+function infixr() {
+	for (let operator of arguments) {
+		let s = symbol(operator);
+		s.led = default_infixr_led;
+	}
+}
+
+parse.rules = [
+	["(", ["(", expression, ")"]],
+	["[", ["[", expression, "]"]],
+	["{", ["{", expression, "}"]],
+
+	[".", [left, ".", name]],
+	["[", [left, "[", expression, "]"]],
+
+	["if", [left, "if", expression]],
+
+	["?", [left, "?", expression, ":", expression]],
+];
+
+prefix("!", "+", "-");
+infix("**", "*", "/", "%", "+", "-", "<", "<=", ">", ">=", "in", "instanceof", "===", "!==", "==", "!=", "&&", "||", ";");
+infixr("=");
+
+
+parse.operator_precedence.forEach((precedence, index, A) => {
+	let [num, ...operators] = precedence;
+	let bp = num === 1 ? "nbp" : "lbp";
+	let len = A.length;
+
+	operators.forEach(operator => {
+		let s = symbol(operator);
+		s[bp] = (len - index) * 10;
+	});
+});
+
+
+console.log($symbol_table);
+
+
 evaluate.rules = [
 	["(end)", () => undefined],
 	["(literal)", function() { return this.value; }],
-	["this", function() { return this.scope; }],
 
 	[";", (a, b) => void evaluate(a) || evaluate(b)],
 
@@ -138,6 +314,52 @@ evaluate.rules = [
 
 	["=", function(a, b) { /* TODO */ }], // ASSIGN
 ];
+
+
+function createToken(value, type) {
+	let token;
+
+	switch (type) {
+		case "(name)":
+			token = Object.create($symbol_table[value] || $symbol_table["(name)"]);
+			token.value = "value" in token ? token.value : value;
+			return token;
+
+		case "(number)":
+			token = Object.create($symbol_table["(literal)"]);
+			token.value = +value;
+			return token;
+
+		case "(string)":
+			token = Object.create($symbol_table["(literal)"]);
+			token.value = value.slice(1, -1);
+			return token;
+
+		case "(operator)":
+			token = Object.create($symbol_table[value]);
+			token.value = value;
+			return token;
+	}
+
+	return token;
+}
+
+
+let script = "1 + 2 / 3 * 4 + 1 - 2";
+
+$tokens = tokenize(script, createToken);
+
+next();
+let e = expression();
+
+
+function test(e) {
+	if (!e) return;
+	if (e.id === "(literal)") return e.value;
+	return "(" + test(e[0]) + " " + e.id + " " + test(e[1]) + ")";
+}
+
+console.log(test(e));
 
 
 </script>
