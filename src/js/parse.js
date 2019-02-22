@@ -1,10 +1,11 @@
+const {Observable} = require("./observable");
+
+
 /// watch$
 const watch$ = (function() {
 
 	const ARRAY_METHODS = ["reverse", "splice", "push", "pop", "unshift", "shift", "sort"];
 	const DATE_METHODS = ["setDate", "setFullYear", "setHours", "setMilliseconds", "setMonth", "setSeconds", "setTime", "setUTCDate", "setUTCFullYear", "setUTCHours", "setUTCMilliseconds", "setUTCMinutes", "setUTCSeconds", "setYear"];
-
-	let numm = 0;
 
 	function mutationObservableFromClass$(object, methods) {
 		let key = methods[0];
@@ -13,9 +14,6 @@ const watch$ = (function() {
 		}
 
 		let observable$ = new Observable(observer => {
-			// numm++;
-			// console.log("mutation watch$ ob: " + numm);
-
 			let prototype = Object.getPrototypeOf(object);
 			let o = Object.create(prototype);
 			Object.setPrototypeOf(object, o);
@@ -32,10 +30,6 @@ const watch$ = (function() {
 			o[key].observable$ = observable$;
 
 			return function() {
-
-				// numm--;
-				// console.log("--mutation watch$ ob: " + numm);
-
 				delete o[key].observable$;
 				Object.setPrototypeOf(object, prototype);
 			}
@@ -76,8 +70,8 @@ const watch$ = (function() {
 		}
 
 		let observable$ = new Observable(function(observer) {
-			// num++;
-			// console.log("watch$ ob: " + num, object, prop);
+			num++;
+			console.log("watch$ ob: " + num, object, prop);
 
 			let value = object[prop];
 			let subscription = mutationObservable$(value).subscribe(observer);
@@ -105,8 +99,8 @@ const watch$ = (function() {
 			/// cleanup!
 			return function() {
 
-				// num--;
-				// console.log("-watch$ ob: " + num, object, prop);
+				num--;
+				console.log("-watch$ ob: " + num, object, prop);
 
 				subscription.unsubscribe();
 				delete set.observable$;
@@ -127,7 +121,8 @@ const watch$ = (function() {
 let $tokens;
 let $token;
 
-function noop() {}
+function noop() {
+}
 
 function next(id) {
 	if (id && $token && $token.id !== id) {
@@ -147,7 +142,7 @@ function expression(rbp) {
 	next();
 
 	let left = t.nud() || t;
-	while ($token.lbp > rbp) {
+	while($token.lbp > rbp) {
 		t = $token;
 		next();
 		left = t.led(left) || t;
@@ -514,11 +509,10 @@ infix(110, "=>", function(left) {
 
 
 /// Tokenizer
-tokenize.re = /(as|if)|([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)|((?:\d*\.\d+)|\d+)|('[^']*'|"[^"]*")|(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!?:;.,<>=\[\]\(\){}])|(\s)|./g;
+tokenize.re = /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)|((?:\d*\.\d+)|\d+)|('[^']*'|"[^"]*")|(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!?:;.,<>=\[\]\(\){}])|(\s)|./g;
 
 tokenize.types = [
 	"",
-	"(operator)",
 	"(name)",
 	"(number)",
 	"(string)",
@@ -586,72 +580,73 @@ function evaluate(token) {
 	return evaluateRules[token.id][token.length].apply(token, token);
 }
 
-function evaluateRule(id, length, fn) {
+function evaluateRule(id, fn) {
+	let length = fn.length;
 	evaluateRules[id] = evaluateRules[id] || {};
 	evaluateRules[id][length] = fn;
 }
 
-evaluateRule("(end)", 0, () => undefined);
-evaluateRule("(literal)", 0, function() {
+evaluateRule("(end)", () => undefined);
+evaluateRule("(literal)", function() {
 	return this.value;
 });
 
-evaluateRule("(array)", 0, function() {
+evaluateRule("(array)", function() {
 	return this.value.map(evaluate);
 });
 
-evaluateRule("{", 1, function(a) {
+evaluateRule("{", function(a) {
 	return a.reduce(function(object, o) {
 		object[o.key] = evaluate(o);
 		return object;
 	}, {});
 });
 
-evaluateRule("+", 1, (a) => +evaluate(a));
-evaluateRule("-", 1, (a) => -evaluate(a));
-evaluateRule("!", 1, (a) => !evaluate(a));
+evaluateRule("+", (a) => +evaluate(a));
+evaluateRule("-", (a) => -evaluate(a));
+evaluateRule("!", (a) => !evaluate(a));
 
-evaluateRule(";", 2, (a, b) => {
+evaluateRule(";", (a, b) => {
 	evaluate(a);
 	return evaluate(b);
 });
 
-evaluateRule("&&", 2, (a, b) => evaluate(a) && evaluate(b));
-evaluateRule("||", 2, (a, b) => evaluate(a) || evaluate(b));
-evaluateRule("===", 2, (a, b) => evaluate(a) === evaluate(b));
-evaluateRule("!==", 2, (a, b) => evaluate(a) !== evaluate(b));
-evaluateRule("==", 2, (a, b) => evaluate(a) == evaluate(b));
-evaluateRule("!=", 2, (a, b) => evaluate(a) != evaluate(b));
-evaluateRule("<", 2, (a, b) => evaluate(a) < evaluate(b));
-evaluateRule("<=", 2, (a, b) => evaluate(a) <= evaluate(b));
-evaluateRule(">", 2, (a, b) => evaluate(a) > evaluate(b));
-evaluateRule(">=", 2, (a, b) => evaluate(a) >= evaluate(b));
+evaluateRule("&&", (a, b) => evaluate(a) && evaluate(b));
+evaluateRule("||", (a, b) => evaluate(a) || evaluate(b));
+evaluateRule("===", (a, b) => evaluate(a) === evaluate(b));
+evaluateRule("!==", (a, b) => evaluate(a) !== evaluate(b));
+evaluateRule("==", (a, b) => evaluate(a) == evaluate(b));
+evaluateRule("!=", (a, b) => evaluate(a) != evaluate(b));
+evaluateRule("<", (a, b) => evaluate(a) < evaluate(b));
+evaluateRule("<=", (a, b) => evaluate(a) <= evaluate(b));
+evaluateRule(">", (a, b) => evaluate(a) > evaluate(b));
+evaluateRule(">=", (a, b) => evaluate(a) >= evaluate(b));
 
-evaluateRule("+", 2, (a, b) => evaluate(a) + evaluate(b));
-evaluateRule("-", 2, (a, b) => evaluate(a) - evaluate(b));
-evaluateRule("*", 2, (a, b) => evaluate(a) * evaluate(b));
-evaluateRule("/", 2, (a, b) => evaluate(a) / evaluate(b));
-evaluateRule("%", 2, (a, b) => evaluate(a) % evaluate(b));
+evaluateRule("+", (a, b) => evaluate(a) + evaluate(b));
+evaluateRule("-", (a, b) => evaluate(a) - evaluate(b));
+evaluateRule("*", (a, b) => evaluate(a) * evaluate(b));
+evaluateRule("/", (a, b) => evaluate(a) / evaluate(b));
+evaluateRule("%", (a, b) => evaluate(a) % evaluate(b));
 
-evaluateRule("?", 3, (a, b, c) => evaluate(a) ? evaluate(b) : evaluate(c));
+evaluateRule("?", (a, b, c) => evaluate(a) ? evaluate(b) : evaluate(c));
 
-evaluateRule("(name)", 0, function() {
+evaluateRule("(name)", function() {
 	return this.setObjectProp(this.value in this.local ? this.local : this.scope, this.value);
 });
 
-evaluateRule("this", 0, function() {
+evaluateRule("this", function() {
 	return this.scope;
 });
 
-evaluateRule(".", 2, function(a, b) {
+evaluateRule(".", function(a, b) {
 	return this.setObjectProp(evaluate(a), b.value);
 });
 
-evaluateRule("[", 2, function(a, b) {
+evaluateRule("[", function(a, b) {
 	return this.setObjectProp(evaluate(a), evaluate(b));
 });
 
-evaluateRule("(", 2, function(a, b) {
+evaluateRule("(", function(a, b) {
 
 	if (a.id === "(array)") {
 		/// @TODO: 이거 중복인데....
@@ -670,13 +665,13 @@ evaluateRule("(", 2, function(a, b) {
 	return fn && fn.apply(this.object, evaluate(b));
 });
 
-evaluateRule("(", 3, function(a, b, c) {
+evaluateRule("(", function(a, b, c) {
 	let fn = this.setObjectProp(evaluate(a), b.id === "(name)" ? b.value : evaluate(b));
 	return fn && fn.apply(this.object, evaluate(c));
 });
 
 
-evaluateRule("=>", 2, function(a, b) {
+evaluateRule("=>", function(a, b) {
 
 	let args = [a.value];
 	let tokens = _flat_tokens(b);
@@ -690,7 +685,7 @@ evaluateRule("=>", 2, function(a, b) {
 });
 
 
-evaluateRule("as", 3, function(a, b, c) {
+evaluateRule("as", function(a, b, c) {
 
 	let arrayLike = evaluate(a) || [];
 
@@ -729,7 +724,7 @@ evaluateRule("as", 3, function(a, b, c) {
 });
 
 
-evaluateRule("=", 2, function(a, b) {
+evaluateRule("=", function(a, b) {
 	let A = evaluate(a);
 	let B = evaluate(b);
 
@@ -741,7 +736,7 @@ evaluateRule("=", 2, function(a, b) {
 });
 
 
-evaluateRule("|", 3, function(a, b, c) {
+evaluateRule("|", function(a, b, c) {
 	let value = evaluate(a);
 	let args = c.map(evaluate);
 
@@ -755,7 +750,7 @@ function _flat_tokens(token) {
 	let tokens = [];
 
 	let stack = [token];
-	while (stack.length) {
+	while(stack.length) {
 		let t = stack.pop();
 		tokens.push(t);
 		if (t.length) {
@@ -766,7 +761,7 @@ function _flat_tokens(token) {
 	return tokens;
 }
 
-evaluateRule("as", 4, function(a, b, c, d) {
+evaluateRule("as", function(a, b, c, d) {
 
 	let arrayLike = evaluate(a) || [];
 
@@ -814,7 +809,7 @@ evaluateRule("as", 4, function(a, b, c, d) {
 });
 
 
-evaluateRule("if", 2, function(a, b) {
+evaluateRule("if", function(a, b) {
 
 	this.ifcondition = evaluate(b);
 	if (this.ifcondition) {
@@ -874,13 +869,16 @@ function $parse(script) {
 
 			let watchers = [];
 			tokens.forEach(token => {
-				token.watch = function(object, prop) {
+				token.watch = function() {
 					watchers.push(watch$(token.object, token.prop).takeUntil(stop$));
 				};
 			});
 
 			function nextValue() {
+
+
 				stop$.next();
+
 				watchers = [];
 				let value = evaluate(root);
 
@@ -912,9 +910,10 @@ let nextTick = function() {
 	let queue = [];
 
 	function nextTick(fn) {
+		if (fn && typeof fn !== "function") throw TypeError("argument is must be function.");
+
 		if (queue.length === 0) {
 			Promise.resolve().then(() => {
-				console.log("nextTick", i++);
 				nextTick.commit();
 			})
 		}
@@ -926,7 +925,7 @@ let nextTick = function() {
 
 	nextTick.commit = function() {
 		let fn;
-		while (fn = queue[index++]) {
+		while(fn = queue[index++]) {
 			fn();
 		}
 
@@ -940,7 +939,7 @@ let nextTick = function() {
 
 /// @FIXME: JS는 말고 템플릿에서도 적용되는데... 1pxContext 처럼 이름을 지으면 붙여줘야겠다.
 class JSContext {
-	static create(global, local) {
+	static connect(global, local) {
 		let context = new JSContext(global, local);
 		let ret = context.watch$.bind(context);
 		Object.setPrototypeOf(ret, context);
@@ -994,7 +993,11 @@ class JSContext {
 		}).takeUntil(this.disconnect$);
 	}
 
-	on$(el, type, useCapture, handler) {
+	on$(el, type, useCapture) {
+		if (Array.isArray(type)) {
+			return Observable.merge(...type.map(type => this.on$(el, type, useCapture)));
+		}
+
 		return Observable.fromEvent(el, type, useCapture).takeUntil(this.disconnect$);
 	}
 
@@ -1011,5 +1014,6 @@ class JSContext {
 }
 
 
+exports.$parse = $parse;
 exports.nextTick = nextTick;
 exports.JSContext = JSContext;
