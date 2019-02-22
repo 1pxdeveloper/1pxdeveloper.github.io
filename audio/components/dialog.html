@@ -2,70 +2,96 @@
 
 	<template>
 		<main>
-			<section *if="!start">
+			<section *if="!isstart">
+				<h1 style="margin: auto">Mission English</h1>
 				<h1 style="margin: auto">start to click</h1>
 			</section>
 
-			<section [hidden]="!start">
-				<flex>
-					<h2 class="msg" [class.isfinal]="isFinal">{{ text1 }}{{'?' if isFinal }}</h2>
-				</flex>
-
+			<section [hidden]="!isstart">
 				<mic-wave $wave></mic-wave>
+
+				<div class="prev-msg" [class.me]="prev_ask_turn_me">{{ prev_ask }}</div>
+				<flex></flex>
+
+
+				<h2 class="msg you">{{ ask }}</h2>
+				<h2 class="msg" [class.isfinal]="isFinal">{{ text1 }}{{isFinal ? '' : ''  }}</h2>
+
+
+				<flex></flex>
+
+
 			</section>
 		</main>
 	</template>
 
-	<script>$module.component("ai-app", function(stt) {
+	<script>$module.component("ai-app", function(STT) {
 
 		return class AIApp {
 			init($) {
 				let $this = this;
 
-				$this.start = false;
+				$this.isstart = false;
 				$this.text1 = "";
 				$this.isFinal = false;
 
-				$.on$(document, ["mousedown", "touchstart"], true).take(1).subscribe(event => {
+				$this.prev_ask = "";
+				$this.ask = "Hi there! What can I do for you?";
+				$this.text1 = "";
 
-
-					// speakSound("Can I help you?");
-
-
-					stt(function(event) {
-
-
-						console.log(event.resultIndex, event.results);
-
-
-						let results = Array.from(event.results[event.resultIndex]);
-
-
-						// results.sort((a, b) => b.confidence - a.confidence);
-
-						let ret = results[0];
-
-						console.log(ret);
-
-						// console.log(results);
-
-						// console.log(event);
-
-						$this.text1 = ret.transcript;
-						$this.isFinal = event.results[event.resultIndex].isFinal;
-					});
-
-					this.$wave.start();
-
-					this.start = true;
-				})
+				$.on$(document, ["mousedown", "touchstart"], true).take(1).subscribe(() => this.start());
 			}
 
 			start() {
+				let $this = this;
+
+				this.isstart = true;
+				this.$wave.start();
+
+
+				// speakSound("Can I help you?");
+
+
+				STT(function(event) {
+					console.log(event.resultIndex, event.results);
+					let results = Array.from(event.results[event.resultIndex]);
+
+					// results.sort((a, b) => b.confidence - a.confidence);
+
+					let ret = results[0];
+
+					console.log(ret);
+
+					// console.log(results);
+					// console.log(event);
+
+					if ($this.ask) {
+						$this.prev_ask = $this.ask;
+					}
+
+					$this.ask = "";
+					$this.text1 = ret.transcript;
+					$this.isFinal = event.results[event.resultIndex].isFinal;
+
+					if ($this.isFinal) {
+
+						setTimeout(function() {
+
+							$this.ask = "Okay. Thank you.";
+							$this.prev_ask = $this.text1;
+							$this.prev_ask_turn_me = true;
+							$this.text1 = "";
+
+
+						}, 3000);
+					}
+				});
 
 
 			}
 		}.prototype;
+
+
 	});
 	</script>
 </web-component>
@@ -74,7 +100,7 @@
 <web-component name="mic-wave">
 	<template>
 		<canvas $canvas width="375" height="150"></canvas>
-		<h1>공항이 어딘지 알고싶어요.</h1>
+		<!--<h1>공항이 어딘지 알고싶어요.</h1>-->
 	</template>
 </web-component>
 
@@ -150,7 +176,7 @@
 });
 
 
-$module.factory("stt", function() {
+$module.factory("STT", function() {
 
 	return function mic(fn) {
 		window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;

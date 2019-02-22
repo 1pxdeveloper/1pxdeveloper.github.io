@@ -12,6 +12,11 @@ body {
 }
 body {
   display: flex;
+  font-weight: 200;
+}
+* {
+  font: inherit;
+  box-sizing: border-box;
 }
 ai-app {
   display: block;
@@ -23,6 +28,7 @@ ai-app {
   border-radius: 30px;
   background: #fff;
   box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  box-sizing: content-box;
 }
 ai-app main {
   display: flex;
@@ -35,6 +41,7 @@ ai-app main > section {
   flex: 1;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 flex,
 [flex] {
@@ -45,6 +52,7 @@ flex {
 }
 h1 {
   text-align: center;
+  font-size: 32px;
 }
 divider {
   display: block;
@@ -56,22 +64,39 @@ header {
 }
 mic-wave {
   display: block;
-  height: 50%;
-  margin-top: -75px;
+  position: absolute;
+  bottom: 0px;
 }
 mic-wave h1 {
   font-weight: 100;
   font-size: 24px;
   text-align: center;
 }
+.prev-msg {
+  padding: 16px;
+  font-size: 16px;
+  position: absolute;
+  top: 0;
+  font-style: italic;
+  width: 100%;
+}
+.prev-msg.me {
+  text-align: right;
+}
 .msg {
-  text-align: center;
+  text-align: right;
   padding: 16px;
   color: #ccc;
-  margin: auto;
+  width: 100%;
+  font-size: 32px;
+  font-weight: 200;
 }
 .msg.isfinal {
   color: #000;
+}
+.msg.you {
+  color: #000;
+  text-align: left;
 }
 .speech-bubble {
   position: relative;
