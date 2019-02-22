@@ -133,21 +133,30 @@ class WebComponentDefine extends HTMLElement {
 
 
 function customElementsDefine() {
-	let name = this.getAttribute("name");
-	if (!name) {
-		throw new SyntaxError("name attribute is required.")
-	}
 
-	if (window.customElements.get(name)) {
-		throw new SyntaxError(name + " is already defined.")
-	}
 
-	let template = this.querySelector("template");
-	WebComponentDefine.map[name.toUpperCase()] = {
-		template: template
-	};
+	setTimeout(() => {
 
-	window.customElements.define(name, class extends WebComponent {});
+		let name = this.getAttribute("name");
+		if (!name) {
+			throw new SyntaxError("name attribute is required.")
+		}
+
+		if (window.customElements.get(name)) {
+			throw new SyntaxError(name + " is already defined.")
+		}
+
+		let template = this.querySelector("template");
+		WebComponentDefine.map[name.toUpperCase()] = {
+			template: template
+		};
+
+		window.customElements.define(name, class extends WebComponent {});
+
+
+	});
+
+
 }
 
 WebComponentDefine.map = {};
