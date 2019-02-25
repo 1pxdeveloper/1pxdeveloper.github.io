@@ -12,10 +12,6 @@ DocumentFragment.from = function(nodes) {
 
 class WebComponent extends HTMLElement {
 
-	constructor() {
-		super();
-	}
-
 	connectedCallback() {
 
 		console.log("connectedCallback");
@@ -32,50 +28,47 @@ class WebComponent extends HTMLElement {
 			return;
 		}
 
+		$module.require("template." + this.tagName.toLowerCase(), component => {
 
-		let originalContent = Array.from(this.childNodes);
+			let originalContent = Array.from(this.childNodes);
 
-		/// @FIXME: init & template & compile async 하게 만들기
+			/// @FIXME: init & template & compile async 하게 만들기
 
-		/// Apply Template Engine
-		let o = WebComponentDefine.map[this.tagName];
+			/// Apply Template Engine
+			let template = component.querySelector("template");
+			template = template.cloneNode(true).content;
 
+			/// @FIXME: private scope;;;;
+			/// @FIXME: nextTick dependancy
+			let context = JSContext.connect(this);
+			$compile(template, context);
+			this.init(context);
+			nextTick.commit(); /// @NOTE: 즉각 업데이트를 하기 위함.
 
-		/// @FIXME: ... 여기서 굳이 importNode여야 한가?
-		let template = o.template.cloneNode(true).content;
+			/// Attach Shady DOM!!
+			let contents = DocumentFragment.from(this.childNodes);
 
+			// @TODO: select="h1,h2,h3"
+			// for (let content of template.querySelectorAll("content[select]")) {
+			// 	content.remove();
+			// }
 
-
-
-		/// @FIXME: private scope;;;;
-		/// @FIXME: nextTick dependancy
-		let context = JSContext.connect(this);
-		$compile(template, context);
-		this.init(context);
-		nextTick.commit(); /// @NOTE: 즉각 업데이트를 하기 위함.
-
-		/// Attach Shady DOM!!
-		let contents = DocumentFragment.from(this.childNodes);
-
-		// @TODO: select="h1,h2,h3"
-		// for (let content of template.querySelectorAll("content[select]")) {
-		// 	content.remove();
-		// }
-
-		let content = template.querySelector("content");
-		if (content) {
-			content.replaceWith(contents);
-		}
-		this.appendChild(template);
+			let content = template.querySelector("content");
+			if (content) {
+				content.replaceWith(contents);
+			}
+			this.appendChild(template);
 
 
-		/// Override disconnected
-		// this.destroy = () => {
-		// 	delete this.destroy;
-		// 	context.disconnect();
-		// 	while(this.lastChild) this.lastChild.remove();
-		// 	this.appendChild(DocumentFragment.from(originalContent));
-		// };
+			/// Override disconnected
+			this.destroy = () => {
+				delete this.destroy;
+				context.disconnect();
+				while(this.lastChild) this.lastChild.remove();
+				this.appendChild(DocumentFragment.from(originalContent));
+			};
+
+		});
 
 
 		/// Override connected Call
@@ -89,68 +82,25 @@ class WebComponent extends HTMLElement {
 		this.disconnected(...arguments);
 	}
 
-	init(context) {
+	init(context) {}
 
-	}
+	connected() {}
 
-	created() {
+	disconnected() {}
 
-	}
-
-	connected() {
-
-	}
-
-	disconnected() {
-
-	}
-
-	destroy() {
-
-	}
+	destroy() {}
 }
 
 
-class WebComponentDefine extends HTMLElement {
-	constructor() {
-		super();
-		customElementsDefine.call(this);
-	}
+/// @FIXME;...
 
-	connectedCallback() {
-		this.remove();
-	}
-}
-
-
-function customElementsDefine() {
-
-
-	setTimeout(() => {
-
-		let name = this.getAttribute("name");
-		if (!name) {
-			throw new SyntaxError("name attribute is required.")
-		}
-
-		if (window.customElements.get(name)) {
-			throw new SyntaxError(name + " is already defined.")
-		}
-
-		let template = this.querySelector("template");
-		WebComponentDefine.map[name.toUpperCase()] = {
-			template: template
-		};
+$module.template = function(name) {
+	return function(html) {
+		html = String.raw(html);
+		let o = document.createElement("web-component");
+		o.innerHTML = html;
+		$module.value("template." + name, o);
 
 		window.customElements.define(name, class extends WebComponent {});
-
-
-	});
-
-
-}
-
-WebComponentDefine.map = {};
-window.customElements.define("web-component", WebComponentDefine);
-
-exports.customElementsDefine = customElementsDefine;
+	}
+};

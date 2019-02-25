@@ -8,66 +8,6 @@
 
 <script>
 
-$module.component("todo-app", `
-
-	<cart $cart></cart>
-	<http $http get="/api/blogs/:user_id/:id" params="{id, user_id}"></http>
-
-	<var [blogs]="$http.res"></var>
-
-	<speech-to-text $stt></speech-to-text>
-
-	<animation duration="3000">
-		<transform [translate.x.%]="30"></transform>
-	</animation>
-
-
-	<template>
-		<div>{{ title }}</div>
-		<form #form>
-			<label><input type="text" [(value.change)]="id" /></label>
-			<p> {{ "id is required." if id }}</p>
-		</form>
-
-		<ul>
-			<li *foreach="blogs as blog" [blog]="blog">
-				<h1>{{ blog.title }}</h1>
-				<h2>{{ blog.desc | markdown }}</h2>
-			</li>
-		</ul>
-
-
-		<ul>
-			<li *foreach="cart.items as item" [item]="item">
-				<h1>{{ item.title }}</h1>
-				<h2>{{ blog.price | KRW }}</h2>
-			</li>
-			<h3> {{ cart.total | KRW }}</h3>
-		</ul>
-	</template>
-
-
-`, ["STT", "Library"], function(STT, Library) {
-
-	return class TodoApp extends TodoApp {
-
-		init($) {
-
-		}
-
-		addTodo() {
-			STT().then(res => console.log(res));
-
-
-		}
-
-		revertTodo() {
-
-		}
-	}
-});
-
-
 
 
 </script>

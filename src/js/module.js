@@ -83,7 +83,7 @@
 				count++;
 				args[index] = value;
 
-				console.log("!!!!!!!!!", value, count);
+				// console.log("!!!!!!!!!", value, count);
 
 				if (count === length) {
 					ret = args;
@@ -137,6 +137,7 @@
 	$module.component = createPrefixModule("component.");
 	$module.service = createPrefixModule("service.");
 	$module.pipe = createPrefixModule("pipe.");
+
 
 	window.$module = $module;
 
