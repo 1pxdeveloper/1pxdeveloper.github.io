@@ -8,8 +8,8 @@
 	window.require = (path) => exports;
 
 	[
-		"observable.js",
 		"module.js",
+		"observable.js",
 		"parse.js",
 		"compile.js",
 		"component.js",

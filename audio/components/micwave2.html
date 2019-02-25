@@ -1,6 +1,5 @@
 <web-component name="mic-wave">
 	<template>
-		<canvas $canvas width="375" height="150"></canvas>
 
 		<section>
 			<div $c1></div>
@@ -18,7 +17,7 @@
 	return class MicWave {
 
 		init($) {
-
+			this.dots = [this.$c1, this.$c2, this.$c3, this.$c4];
 		}
 
 		start() {
@@ -32,9 +31,6 @@
 		}
 
 		start_microphone(stream) {
-			let canvas = this.$canvas;
-			let ctx = canvas.getContext("2d");
-
 			let audioContext = new AudioContext();
 			let microphone_stream = audioContext.createMediaStreamSource(stream);
 
@@ -47,39 +43,29 @@
 
 			let array_freq_domain = new Uint8Array(2048);
 
+			let dots = this.dots;
+			let prev = [6, 6, 6, 6];
+			let smoothing = 0.8;
+
 			function draw() {
 				requestAnimationFrame(draw);
+				analyser_node.getByteFrequencyData(array_freq_domain);
 
-				analyser_node.getByteTimeDomainData(array_freq_domain);
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				prev = dots.map((dot, i) => {
 
-				let HEIGHT = canvas.height;
-				let sliceWidth = 1;
-				let x = 0;
+					let v = array_freq_domain[i+5] / 128.0;
+					v = Math.max(6, v * 18);
+					v = (prev[i] * smoothing) + (v * (1 - smoothing));
 
-				ctx.beginPath();
-				ctx.lineWidth = 1;
-				ctx.strokeStyle = "#555";
+					dot.style.height = v + "px";
 
-				for (let i = 0; i < canvas.width; i++) {
-
-					let v = array_freq_domain[i] / 128.0;
-					let y = v * HEIGHT / 2;
-
-					if (i === 0) {
-						ctx.moveTo(x, y);
-					} else {
-						ctx.lineTo(x, y);
-					}
-
-					x += sliceWidth;
-				}
-
-				ctx.stroke();
+					return v;
+				});
 			}
 
 			draw();
 		}
+
 	}.prototype;
 });
 

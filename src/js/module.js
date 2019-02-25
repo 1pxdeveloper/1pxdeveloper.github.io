@@ -1,13 +1,17 @@
 (function() {
 
-	function Subject(value) {
-		this.queue = Object.create(null);
+	function Registry(value) {
 		this.value = value || Object.create(null);
+		this.queue = Object.create(null);
 	}
 
-	Subject.prototype = {
-		subscribe(name, callback) {
-			if (name in this.value) {
+	Registry.prototype = {
+		isDefined(name) {
+			return name in this.value;
+		},
+
+		whenDefined(name, callback) {
+			if (this.isDefined(name)) {
 				return callback(this.value[name]);
 			}
 
@@ -15,7 +19,11 @@
 			this.queue[name].push(callback);
 		},
 
-		publish(name, value) {
+		define(name, value) {
+			if (this.isDefined(name)) {
+				throw new TypeError(name + " is already defined.");
+			}
+
 			this.value[name] = value;
 
 			if (this.queue[name]) {
@@ -29,49 +37,55 @@
 
 	let $value = Object.create(null);
 	let $factory = Object.create(null);
-	let $subject_value = new Subject($value);
-	let $subject_factory = new Subject($factory);
+	let $registry_of_value = new Registry($value);
+	let $registry_of_factory = new Registry($factory);
 
 
 	function value(name, value) {
-		$subject_value.publish(name, value);
+		$registry_of_value.define(name, value);
 	}
 
-	function factory(name, factoryFn) {
+	function makeFactory(factoryFn) {
 		if (!factoryFn.$inject) {
 			let str = String(factoryFn);
 			str = str.slice(str.indexOf("(") + 1, str.indexOf(")")).trim();
 			factoryFn.$inject = str ? str.split(/\s*,\s*/) : [];
 		}
-		$subject_factory.publish(name, factoryFn);
+
+		return factoryFn;
 	}
 
+	function factory(name, factoryFn) {
+		$registry_of_factory.define(name, makeFactory(factoryFn));
+	}
+
+	function makeArray(arr) {
+		return Array.isArray(arr) ? arr : [arr];
+	}
 
 	function require(names, callback) {
-		if (!Array.isArray(names)) {
-			names = [names];
-		}
-
+		names = makeArray(names);
 		if (names.length === 0) {
 			return callback();
 		}
 
-
-		let args = [];
 		let count = 0;
+		let args = [];
+		let length = names.length;
 
-		let ret = [];
+		let ret;
 
 		names.forEach((name, index) => {
 
 			invokeFactory(name);
-			$subject_value.subscribe(name, function(value) {
-				args[index] = value;
+
+			$registry_of_value.whenDefined(name, value => {
 				count++;
+				args[index] = value;
 
 				console.log("!!!!!!!!!", value, count);
 
-				if (count === names.length) {
+				if (count === length) {
 					ret = args;
 					callback.apply(null, args);
 				}
@@ -83,11 +97,9 @@
 
 
 	function invokeFactory(name) {
-		let exist = false;
-		$subject_value.subscribe(name, () => exist = true);
-		if (exist) return;
+		if ($registry_of_value.isDefined(name)) return;
 
-		$subject_factory.subscribe(name, factory => {
+		$registry_of_factory.whenDefined(name, factory => {
 
 			require(factory.$inject, function() {
 
@@ -95,7 +107,7 @@
 				factory.invokeCount = factory.invokeCount || 0;
 				factory.invokeCount++;
 
-				$subject_value.publish(name, factory.apply(null, arguments));
+				$registry_of_value.define(name, factory.apply(null, arguments));
 			});
 		});
 	}
@@ -112,8 +124,7 @@
 		};
 
 		ret.require = function(names, callback) {
-			if (!Array.isArray(names)) names = [names];
-			names = names.map(name => prefix + name);
+			names = makeArray(names).map(name => prefix + name);
 			return require(names, callback);
 		};
 
@@ -124,14 +135,14 @@
 	let $module = {value, factory, require};
 	$module.directive = createPrefixModule("directive.");
 	$module.component = createPrefixModule("component.");
-	$module.service = createPrefixModule("server.");
+	$module.service = createPrefixModule("service.");
 	$module.pipe = createPrefixModule("pipe.");
-
-	$module.$value = $value;
-	$module.$factory = $factory;
 
 	window.$module = $module;
 
+	/// 테스트 용
+	$module.$value = $value;
+	$module.$factory = $factory;
 
 })();
 

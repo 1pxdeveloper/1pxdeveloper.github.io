@@ -69,16 +69,6 @@ divider {
 header {
   padding: 0 16px;
 }
-mic-wave {
-  display: block;
-  position: absolute;
-  bottom: 0px;
-}
-mic-wave h1 {
-  font-weight: 100;
-  font-size: 24px;
-  text-align: center;
-}
 .prev-msg {
   padding: 16px;
   font-size: 16px;
@@ -163,6 +153,24 @@ cursor {
   font-family: monospace;
   font-size: 16px;
   color: #ccc;
+}
+mic-wave {
+  display: flex;
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  height: 78px;
+}
+mic-wave section {
+  display: flex;
+  margin: auto;
+}
+mic-wave section div {
+  background: #999;
+  width: 6px;
+  height: 6px;
+  border-radius: 6px;
+  margin: auto 2px;
 }
 @-moz-keyframes blink {
   50% {
