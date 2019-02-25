@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+
+<script>
+
+
+function LCS(s1, s2) {
+	s1 = s1 || [];
+	s2 = s2 || [];
+
+	let M = [];
+	for (let i = 0; i <= s1.length; i++) {
+		M.push([]);
+
+		for (let j = 0; j <= s2.length; j++) {
+			let currValue = 0;
+			if (i === 0 || j === 0) {
+				currValue = 0;
+			} else if (s1[i - 1] === s2[j - 1]) {
+				currValue = M[i - 1][j - 1] + 1;
+			} else {
+				currValue = Math.max(M[i][j - 1], M[i - 1][j]);
+			}
+
+			M[i].push(currValue);
+		}
+	}
+
+	let i = s1.length;
+	let j = s2.length;
+
+	// let s3 = [];
+	let s4 = [];
+	let s5 = [];
+
+	while (M[i][j] > 0) {
+		if (s1[i - 1] === s2[j - 1] && (M[i - 1][j - 1] + 1 === M[i][j])) {
+			// s3.unshift(s1[i - 1]);
+
+			s4[i - 1] = s1[i - 1];
+			s5[j - 1] = s1[i - 1];
+
+			i--;
+			j--;
+		} else if (M[i - 1][j] > M[i][j - 1]) {
+			i--;
+		} else {
+			j--;
+		}
+	}
+
+	return [s4, s5];
+}
+
+
+let a = "hlelo world my old name".split("");
+
+let b = "world hlelo my abc name is good".split("");
+
+
+let map = {};
+
+a.forEach((c, index) => {
+	map[c] = map[c] || [];
+	map[c].push(index);
+});
+
+
+b.forEach((c, index) => {
+
+	if (!map[c]) {
+		return;
+	}
+
+	let d = map[c].map(startIndex => {
+
+		for (let i = 0; i < 100; i++) {
+
+			if (a[startIndex + i] === b[index + i]) {
+				continue;
+			}
+
+			return a.slice(startIndex, startIndex + i);
+		}
+	});
+
+	console.log(d.join(""));
+
+});
+
+
+// let index = 0;
+// let prev;
+//
+// let c = b.map(c => {
+//
+// 	let i = 0;
+// 	// while (map[c] && map[c].length) {
+// 	// 	i = map[c].shift();
+// 	// 	if (i >= index) break;
+// 	// }
+//
+// 	if (map[c] && map[c].length === 1) {
+// 		i = map[c][0];
+// 		delete map[c];
+// 	}
+//
+// 	if (i > 0) {
+// 		index = i;
+// 	}
+//
+// 	return index > i ? -1 : c;
+//
+//
+// 	// return map[c];
+// });
+//
+//
+// console.log(a, b);
+//
+//
+// console.log(c);
+//
+// console.log(LCS(a, b));
+
+
+</script>
+</body>
+</html>

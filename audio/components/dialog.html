@@ -11,7 +11,7 @@
 				<div class="prev_ask" [class.me]="prev_ask_turn_me" style="padding: 16px">In Cafe</div>
 
 				<section flex hbox>
-					<h2 class="msg" [class.isfinal]="isFinal" style="margin: auto">{{ text1 }}{{isFinal ? '?' : '' }}
+					<h2 class="msg" [class.isfinal]="isFinal" style="margin: auto; text-align: right">{{ text1 }}{{isFinal ? '?' : '' }}
 						<cursor class="blink" [hidden]="isFinal"></cursor>
 					</h2>
 				</section>
