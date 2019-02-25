@@ -47,6 +47,13 @@ flex,
 [flex] {
   flex: 1;
 }
+[hbox] {
+  display: flex;
+}
+[vbox] {
+  display: flex;
+  flex-direction: column;
+}
 flex {
   display: flex;
 }
@@ -80,11 +87,8 @@ mic-wave h1 {
   font-style: italic;
   width: 100%;
 }
-.prev-msg.me {
-  text-align: right;
-}
 .msg {
-  text-align: right;
+  text-align: center;
   padding: 16px;
   color: #ccc;
   width: 100%;
@@ -93,10 +97,6 @@ mic-wave h1 {
 }
 .msg.isfinal {
   color: #000;
-}
-.msg.you {
-  color: #000;
-  text-align: left;
 }
 .speech-bubble {
   position: relative;
@@ -141,4 +141,46 @@ mic-wave h1 {
   border-bottom: 0;
   margin-top: -10px;
   margin-right: -20px;
+}
+cursor {
+  display: inline-block;
+  height: 1em;
+  border-right: 2px solid #ccc;
+}
+@-webkit-keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.blink {
+  animation: blink 1s step-start 0s infinite;
+  -webkit-animation: blink 1s step-start 0s infinite;
+}
+.hint {
+  width: 100%;
+  display: block;
+  text-align: center;
+  font-family: monospace;
+  font-size: 16px;
+  color: #ccc;
+}
+@-moz-keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@-webkit-keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@-o-keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }

@@ -407,9 +407,6 @@ Observable.merge = function(...observables) {
 
 		observables.forEach(observable => {
 
-			console.info(observable);
-
-
 			return observable.subscribe({
 				next(value) {
 					observer.next(value)

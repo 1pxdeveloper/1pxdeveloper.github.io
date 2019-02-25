@@ -21,9 +21,6 @@ class WebComponent extends HTMLElement {
 		console.log("connectedCallback");
 
 		if (!this._binded) {
-
-			console.log("connectedCallback not bind");
-
 			$module.component.require(this.tagName.toLowerCase(), (component) => {
 				if (component) {
 					Object.setPrototypeOf(component, WebComponent.prototype);
@@ -36,18 +33,12 @@ class WebComponent extends HTMLElement {
 		}
 
 
-		console.log("connectedCallback binded!!");
-
-
 		let originalContent = Array.from(this.childNodes);
 
 		/// @FIXME: init & template & compile async 하게 만들기
 
 		/// Apply Template Engine
 		let o = WebComponentDefine.map[this.tagName];
-
-
-		console.log("~~~~~~~~~~~~~~~~~", o);
 
 
 		/// @FIXME: ... 여기서 굳이 importNode여야 한가?

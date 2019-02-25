@@ -8,5 +8,32 @@
 
 <h1>Hello, world</h1>
 
+
+<script>
+
+
+class Subject {
+	constructor() {
+		this._callbacks = [];
+	}
+
+	subscribe(callbackFn) {
+		if ("_value" in this) {
+			callbackFn(this._value);
+		}
+		this._callbacks.push(callbackFn);
+	}
+
+	publish(value) {
+		this._value = value;
+		for (let callback of this._callbacks) {
+			callback(value);
+		}
+	}
+}
+
+</script>
+
+
 </body>
 </html>
