@@ -16,6 +16,7 @@ $module.component("mic-wave", function() {
 
 		init($) {
 			this.dots = [this.$c1, this.$c2, this.$c3, this.$c4];
+			this.playing = false;
 		}
 
 		start() {
@@ -28,7 +29,13 @@ $module.component("mic-wave", function() {
 			);
 		}
 
+		stop() {
+
+		}
+
 		start_microphone(stream) {
+			this.playing = true;
+
 			let audioContext = new AudioContext();
 			let microphone_stream = audioContext.createMediaStreamSource(stream);
 

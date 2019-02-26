@@ -10,20 +10,15 @@ $module.template("ai-app")`
 
 		<main [hidden]="!isstart">
 			<section>
-				<div class="prev_ask" [class.me]="prev_ask_turn_me" style="padding: 16px">In Cafe</div>
+				<div class="prev_ask" [class.me]="prev_ask_turn_me" style="padding: 16px" (click)="test(event.target)">In Cafe</div>
 
 				<section flex hbox>
-					<h2 class="msg" [class.isfinal]="isFinal" style="margin: auto; text-align: right">{{ text1 }}{{isFinal ? '?' : '' }}
-						<cursor class="blink" [hidden]="isFinal"></cursor>
-					</h2>
+					<!--<h2 class="msg" [class.isfinal]="isFinal" style="margin: auto; text-align: left">{{ text1 }}</h2>-->
+					
+					
+					<h2 class="msg" [class.isfinal]="isFinal" style="margin: auto; text-align: left; color:#000">{{ animate(text2) }}</h2>
 				</section>
-
-				<section vbox style="height: 200px">
-					<div class="" [class.me]="" style="text-align: center">"{{ prev_ask }}"</div>
-					<br>
-					<h2 class="hint" style="">{{ hint }}</h2>
-				</section>
-
+				
 				<mic-wave $wave></mic-wave>
 			</section>
 		</main>
@@ -60,27 +55,88 @@ $module.component("ai-app", function(STT) {
 
 			this.stage = 0;
 
-			$.on$(document, ["mousedown", "touchstart"], true).take(1).subscribe(() => this.start());
+			$.on$(document, ["mousedown", "touchstart", "keydown"], true).take(1).subscribe(() => this.start());
+
+			window.app = this;
 		}
 
 		start() {
 			this.isstart = true;
-			this.$wave.start();
+			this.text1 = DB[0][0];
 
-			this.stt = STT(event => {
-				console.log(event.resultIndex, event.results);
-				let results = Array.from(event.results[event.resultIndex]);
-				let ret = results[0];
 
-				this.text1 = capitalize(ret.transcript);
-				this.isFinal = event.results[event.resultIndex].isFinal;
+			let index = 0;
 
-				if (this.isFinal) {
-					this.stop();
-				}
+			let text = DB[index][0];
+			this.text2 = text;
+
+
+			setInterval(() => {
+
+				index++;
+				index = index % DB.length;
+
+				text = DB[index][0];
+				this.text2 = text;
+
+
+			}, 3000);
+		}
+
+		test(el) {
+
+			el.animate([
+				{transform: "translate(0)"},
+				{transform: "translate(100px, 100px)"}
+			], {
+				duration: 1000
+			})
+		}
+
+		animate(text) {
+			if (!text) return "";
+
+
+			let c = text.split(/(\s+)/);
+			// let c = text.split("");
+
+
+			let frag = document.createDocumentFragment();
+
+			c.map((t, index) => {
+				let span = document.createElement("span");
+				span.innerText = t;
+				span.style.display = "inline-block";
+				span.style.whiteSpace = "pre";
+				span.style.opacity = 0;
+				// span.style.transform = "translate(0,-100px)";
+
+				requestAnimationFrame(function() {
+					span.animate([
+						{
+							opacity: 0,
+							transform: "translate(0, 10px)"
+							// transform: "scale(.5)"
+						},
+
+						{
+							opacity: 1,
+							transform: "translate(0,0)"
+							// transform: "scale(1)"
+						},
+
+					], {
+						fill: "forwards",
+						easing: "ease",
+						delay: 25 * index,
+						duration: 1000
+					});
+				});
+
+				frag.appendChild(span);
 			});
 
-			this.next();
+			return frag;
 		}
 
 		stop() {

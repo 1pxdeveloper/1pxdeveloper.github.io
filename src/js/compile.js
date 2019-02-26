@@ -58,7 +58,7 @@ function compile_element_node(el, context) {
 
 
 	/// @FIXME:... default template directive
-	let hasTemplateDirective = ["*repeat", "*if", "*else"].some(attrName => {
+	let hasTemplateDirective = ["*foreach", "*if", "*else"].some(attrName => {
 		let hasAttr = el.hasAttribute(attrName);
 		if (hasAttr) {
 			let attrValue = el.getAttribute(attrName);
@@ -264,7 +264,7 @@ function compile_text_node(textNode, context) {
 
 
 /// Default Template Directive
-$module.directive("*repeat", function() {
+$module.directive("*foreach", function() {
 
 	function LCS(s1, s2) {
 		s1 = s1 || [];
@@ -338,7 +338,7 @@ $module.directive("*repeat", function() {
 		let placeholder = document.createComment("repeat: " + script);
 		let placeholderEnd = document.createComment("endrepeat");
 		let repeatNode = el.cloneNode(true);
-		repeatNode.removeAttribute("*repeat");
+		repeatNode.removeAttribute("*foreach");
 
 		el.before(placeholder);
 		el.replaceWith(placeholderEnd);
