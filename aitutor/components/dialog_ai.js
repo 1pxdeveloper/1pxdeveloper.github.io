@@ -17,6 +17,15 @@ $module.template("ai-app")`
 				<h2 *foreach="query as text, index" class="msg me" [class.isfinal]="isFinal" style="" [leave]="mySpeakCompleteAnimate.bind(this)"><div>{{ animate2(text, mySpeakComplete.bind(this)) }}</div></h2>
 
 
+					<h2 $hint class="msg" style="text-align: right; color: #888; font-size: 26px" [hidden]="!prev_ask">
+						<div style="border-radius: 13px; border: 1px solid #ccc; font-size: 13px; display: inline-block; padding: 4px 8px">MISSION</div>
+						<div style="margin-top: 8px"></div>
+						{{ prev_ask }}
+						<p class="hint" style="text-align: right; margin-top: 16px" [_hidden]="text1">{{ hint }}</p>
+					</h2>	
+
+
+
 			</section>
 			<mic-wave $wave></mic-wave>
 		</main>
@@ -75,25 +84,31 @@ $module.component("ai-app", function(STT) {
 
 
 		start() {
+
+			this.$wave.start();
+			this.$wave.state = "listen";
+
+
 			this.isstart = true;
 			this.text1 = DB[0][0];
 
 
-			let index = 0;
+			this.stage = 0;
 
-			let text = DB[index][0];
+			let text = DB[this.stage][0];
 
 			this.pushText(text);
 
 
 			setInterval(() => {
-				index++;
-				index = index % DB.length;
+				this.stage++;
+				this.stage = this.stage % DB.length;
 
-				text = DB[index][0];
+				text = DB[this.stage][0];
 
 				this.flag = !this.flag;
 				this.pushText(text);
+
 
 			}, 6000);
 
@@ -103,12 +118,12 @@ $module.component("ai-app", function(STT) {
 				[
 					{
 						// opacity: 1,
-						transform: "translate(0,-100px) scale(0.6)",
+						transform: `translate(0,0) scale(0.6)`,
 					},
 
 					{
 						// opacity: 0,
-						transform: "translate(0,-180px) scale(0.6)",
+						transform: "translate(0,-100%) scale(0.6)",
 					},
 
 				], {
@@ -128,7 +143,7 @@ $module.component("ai-app", function(STT) {
 
 					{
 						// opacity: 0,
-						transform: "translate(0,-80px) scale(0.6)",
+						transform: "translate(0,-100%) scale(0.6)",
 					},
 
 				], {
@@ -144,6 +159,10 @@ $module.component("ai-app", function(STT) {
 			if (this.flag) {
 				this.texts.push(text);
 			} else {
+
+				this.prev_ask = "";
+				this.hint = "";
+
 				this.query.push(text);
 			}
 		}
@@ -154,6 +173,7 @@ $module.component("ai-app", function(STT) {
 
 		mySpeakComplete() {
 			this.query.shift();
+			this.$wave.state = "listen";
 		}
 
 		tutorSpeakCompleteAnimate(el) {
@@ -167,14 +187,19 @@ $module.component("ai-app", function(STT) {
 				}
 			}
 
+
 			let animation = [
 				[
 					{
-						transform: "translate(0, 0) scale(1)",
+						top: "50%",
+						transform: "translate(0, -50%) scale(1)",
+						transformOrigin: "0 50%"
 					},
 
 					{
-						transform: "translate(0,-100px) scale(0.6)",
+						top: "0%",
+						transform: `translate(0,0) scale(0.6)`,
+						transformOrigin: "0 0"
 					},
 
 				], {
@@ -185,6 +210,19 @@ $module.component("ai-app", function(STT) {
 			];
 
 			animation.onfinish = (animation) => {
+
+				this.prev_ask = DB[this.stage+1][1];
+				this.hint = DB[this.stage+1][0];
+
+				this.$hint.animate([
+					{opacity: 0},
+					{opacity: 1},
+				], {
+					fill: "forwards",
+					easing: "ease",
+					duration: 1000
+				});
+
 				this.tutorLegacyNode = animation.target;
 				return false;
 			};
@@ -263,7 +301,7 @@ $module.component("ai-app", function(STT) {
 				], {
 					fill: "forwards",
 					easing: "ease",
-					delay: 50 * index,
+					delay: 70 * index,
 					duration: 50
 				});
 				animation.target = span;
@@ -273,9 +311,11 @@ $module.component("ai-app", function(STT) {
 			});
 
 
-			animations[animations.length - 1].onfinish = function() {
+			animations[animations.length - 1].onfinish = () => {
+
 
 				setTimeout(() => {
+					this.$wave.state = "speech";
 					callbackFn();
 				}, 1000);
 

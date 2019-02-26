@@ -96,6 +96,7 @@ header
   width 100%
 
 .msg
+  position absolute
   text-align left;
   padding 16px
   color #ccc
@@ -103,8 +104,9 @@ header
   font-size 32px
   font-weight 200
   transform-origin 0 0
-  top 100px
-  position absolute
+  top 50%
+  width 100%
+  transform translate(0, -50%)
 
   &.isfinal
     color black
@@ -294,16 +296,16 @@ mic-wave
   .d1, .d2, .d3
     display flex
     border-radius 50%
-    width 100px
-    height 100px
-    background rgba(0, 0, 0, .1)
-    box-shadow 0 0 10px rgba(0, 0, 0, .1)
+    width 88px
+    height 88px
+    background rgba(0, 0, 0, .05)
+    box-shadow 0 0 10px rgba(0, 0, 0, .05)
     margin auto
 
   .d2
-    width 75%
-    height 75%
+    width 90%
+    height 90%
 
   .d3
-    width 50%
-    height 50%
+    width 90%
+    height 90%

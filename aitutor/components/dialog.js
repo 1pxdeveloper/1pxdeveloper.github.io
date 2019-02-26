@@ -19,6 +19,8 @@ $module.template("ai-app")`
 					</h2>	
 
 <section style="margin: auto; text-align: right; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);  width: 100%;" [hidden]="text1">
+
+
 					<h2 class="msg" style="color: #888; font-size: 26px" [class.isfinal]="isFinal" >
 					{{ prev_ask }}
 

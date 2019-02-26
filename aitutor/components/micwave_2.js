@@ -20,6 +20,14 @@ $module.component("mic-wave", function() {
 		init($) {
 			this.dots = [this.$c1, this.$c2, this.$c3];//, this.$c4];
 			this.state = "stop";
+
+			$`this.state`.subscribe(state => {
+				if (state !== "speech") {
+					this.dots.forEach(dot => {
+						dot.style.transform = null;
+					})
+				}
+			})
 		}
 
 		start() {
@@ -72,7 +80,7 @@ $module.component("mic-wave", function() {
 						v = Math.min(v, 1.5);
 						v = (prev[i] * smoothing) + (v * (1 - smoothing));
 
-						dot.style.transform = "scale(" + (v*(i+1)) + ")";
+						dot.style.transform = "scale(" + (v * (i + 1)) + ")";
 
 						// dot.style.height = v + "px";
 
