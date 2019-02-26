@@ -1,4 +1,9 @@
+[hidden] {
+  display: none !important;
+}
 * {
+  font: inherit;
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
@@ -7,17 +12,10 @@ body {
   background: #f1f1f1;
   height: 100%;
 }
-[hidden] {
-  display: none !important;
-}
 body {
   display: flex;
   font-family: "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", 'dotum', sans-serif;
   font-weight: 200;
-}
-* {
-  font: inherit;
-  box-sizing: border-box;
 }
 ai-app {
   display: block;
@@ -43,6 +41,7 @@ ai-app {
 }
 ai-app main {
   display: flex;
+  position: relative;
   flex-direction: column;
   border: 1px inset rgba(0,0,0,0.2);
   height: 100%;
@@ -53,6 +52,7 @@ ai-app main > section {
   display: flex;
   flex-direction: column;
   position: relative;
+  z-index: 1;
 }
 flex,
 [flex] {
@@ -89,59 +89,26 @@ header {
   width: 100%;
 }
 .msg {
-  text-align: right;
+  text-align: left;
   padding: 16px;
   color: #ccc;
   width: 100%;
   font-size: 32px;
   font-weight: 200;
+  transform-origin: 0 0;
+  top: 100px;
+  position: absolute;
 }
 .msg.isfinal {
   color: #000;
 }
-.speech-bubble {
-  position: relative;
-  background: #ccc;
-  border-radius: 0.4em;
-  padding: 12px;
-  margin: 12px;
-}
-.speech-bubble:after {
-  content: '';
-  position: absolute;
-  left: 0;
+.msg.me {
   top: 50%;
-  width: 0;
-  height: 0;
-  border: 20px solid transparent;
-  border-right-color: #ccc;
-  border-left: 0;
-  border-top: 0;
-  margin-top: -10px;
-  margin-left: -20px;
-}
-.speech-bubble-me {
-  position: relative;
-  background: #aaa;
-  border-radius: 0.4em;
-  padding: 12px;
-  margin: 12px;
+  width: 100%;
+  margin: auto;
   text-align: right;
-  margin-bottom: 24px;
-}
-.speech-bubble-me:after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 50%;
-  width: 0;
-  height: 0;
-  border: 20px solid transparent;
-  border-left-color: #aaa;
-  border-right: 0;
-  border-bottom: 0;
-  margin-top: -10px;
-  margin-right: -20px;
+  transform-origin: 100% 50%;
+  transform: translate(0, -50%);
 }
 cursor {
   display: inline-block;
@@ -171,6 +138,7 @@ mic-wave {
   bottom: 0px;
   width: 100%;
   height: 78px;
+  z-index: 0;
 }
 mic-wave section {
   display: flex;
@@ -194,7 +162,7 @@ wait-dots {
   vertical-align: middle;
   line-height: 1;
 }
-wait-dots >section {
+wait-dots > section {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -203,7 +171,7 @@ wait-dots >section {
   height: 30px;
   border-radius: 15px;
 }
-wait-dots >section > div {
+wait-dots > section > div {
   display: flex;
   vertical-align: middle;
   width: 8px;

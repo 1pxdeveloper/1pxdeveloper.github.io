@@ -213,6 +213,19 @@ Observable.prototype.do = function(fn) {
 };
 
 
+Observable.prototype.complete = function(fn) {
+
+	return this.pipe(observer => {
+		return {
+			complete() {
+				fn();
+				observer.complete();
+			}
+		}
+	});
+};
+
+
 Observable.prototype.mergeMap = function(fn) {
 	return this.pipe(observer => {
 		return {
@@ -254,19 +267,18 @@ Observable.prototype.filter = function(fn) {
 };
 
 Observable.prototype.take = function(num) {
-	let ret = [];
 
-	return new Observable(observer => {
-		this.subscribe({
+	let count = 0;
+	return this.pipe(observer => {
+		return {
 			next(value) {
-				ret.push(value);
-				if (ret.length === num) {
-					observer.next(ret);
+				observer.next(value);
+				if (++count >= num) {
 					observer.complete();
 				}
 			}
-		})
-	})
+		}
+	});
 };
 
 Observable.prototype.takeUntil = function(observable$) {
@@ -389,12 +401,13 @@ Observable.zip = function(...observables) {
 
 Observable.merge = function(...observables) {
 
-	let index = 0;
-	let len = observables.length;
 
 	return new Observable(observer => {
 
-		observables.forEach(observable => {
+		let index = 0;
+		let len = observables.length;
+
+		let s = observables.map(observable => {
 
 			return observable.subscribe({
 				next(value) {
@@ -404,13 +417,21 @@ Observable.merge = function(...observables) {
 					observer.error(err)
 				},
 				complete() {
-					len++;
+					index++;
 					if (len === index) {
 						observer.complete();
 					}
 				}
 			});
 		});
+
+		return function() {
+
+			console.log("merge clean!!!!", s);
+
+
+			s.forEach(s => s.unsubscribe());
+		}
 	});
 };
 

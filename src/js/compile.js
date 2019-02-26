@@ -245,6 +245,7 @@ function compile_text_node(textNode, context) {
 
 		let next = textNode.splitText(index + 2);
 		let script = textNode.nodeValue.slice(2, -2);
+		textNode.nodeValue = "";
 		context.watch$(script, _nodeValue.bind(textNode));
 
 		textNode = next;
@@ -361,13 +362,22 @@ $module.directive("*foreach", function() {
 					if (container[index].node.leave) {
 
 						let node = container[index].node;
-						let a = node.animate.apply(node, node.leave);
-						a.oncancel = a.onfinish = () => {
+						let leave = container[index].node.leave;
+						if (typeof leave === "function") {
+							leave = leave(node);
+						}
 
-							if (node.leave.onfinish) {
-								node.leave.onfinish();
+						let a = node.animate.apply(node, leave);
+						a.target = node;
+
+						a.oncancel = a.onfinish = () => {
+							let ret;
+							if (leave.onfinish) {
+								 ret = leave.onfinish(a);
 							}
-							node.remove();
+							if (ret !== false) {
+								node.remove();
+							}
 						}
 
 					}

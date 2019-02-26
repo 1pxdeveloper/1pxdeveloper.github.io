@@ -1,27 +1,24 @@
 @import core
 
-* {
-  margin: 0;
-  padding: 0;
-}
-
-html, body {
-  background: #f1f1f1;
-  height 100%
-}
-
 [hidden] {
   display none !important
 }
+
+*
+  font inherit
+  box-sizing border-box
+  margin: 0;
+  padding: 0;
+
+html, body
+  background: #f1f1f1;
+  height 100%
 
 body
   display: flex
   font-family "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", 'dotum', sans-serif;
   font-weight 200
 
-*
-  font inherit
-  box-sizing border-box
 
 ai-app
   display block
@@ -43,6 +40,7 @@ ai-app
 
   main
     display: flex;
+    position relative
     flex-direction: column;
     border: 1px inset rgba(0, 0, 0, .2);
     height: 100%;
@@ -53,6 +51,7 @@ ai-app
       display: flex;
       flex-direction: column
       position relative
+      z-index 1
 
 
 flex, [flex] {
@@ -97,66 +96,26 @@ header
   width 100%
 
 .msg
-  text-align right;
+  text-align left;
   padding 16px
   color #ccc
   width 100%
   font-size 32px
   font-weight 200
+  transform-origin 0 0
+  top 100px
+  position absolute
 
   &.isfinal
     color black
 
-
-.speech-bubble {
-  position: relative;
-  background: #ccc;
-  border-radius: .4em;
-  padding: 12px;
-  margin: 12px;
-}
-
-.speech-bubble:after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 0;
-  height: 0;
-  border: 20px solid transparent;
-  border-right-color: #ccc;
-  border-left: 0;
-  border-top: 0;
-  margin-top: -10px;
-  margin-left: -20px;
-}
-
-
-.speech-bubble-me {
-  position: relative;
-  background: #aaa;
-  border-radius: .4em;
-  padding: 12px;
-  margin: 12px;
-  text-align: right;
-  margin-bottom: 24px;
-}
-
-.speech-bubble-me:after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 50%;
-  width: 0;
-  height: 0;
-  border: 20px solid transparent;
-  border-left-color: #aaa;
-  border-right: 0;
-  border-bottom: 0;
-  margin-top: -10px;
-  margin-right: -20px;
-}
-
+  &.me
+    top 50%
+    width 100%
+    margin auto
+    text-align right
+    transform-origin 100% 50%
+    transform translate(0, -50%)
 
 cursor
   display inline-block
@@ -199,6 +158,7 @@ mic-wave
   height 78px;
   //height 50%
   //margin-top -75px
+  z-index 0
 
   section
     display flex
@@ -238,7 +198,7 @@ wait-dots
   vertical-align middle
   line-height 1
 
-  >section
+  > section
     hbox()
     background #eee
     padding 8px
@@ -282,7 +242,7 @@ wait-dots
 }
 
 @keyframes wait-dots2 {
-  0%,25% {
+  0%, 25% {
     transform translate(0, 0)
     opacity 1
   }
@@ -299,7 +259,7 @@ wait-dots
 }
 
 @keyframes wait-dots3 {
-  0%,50% {
+  0%, 50% {
     transform translate(0, 0)
     opacity 1
   }
@@ -316,8 +276,6 @@ wait-dots
 }
 
 
-
-
 //[state="listen"]
 //.d1 {
 //  animation updown linear 0.5s infinite alternate
@@ -332,15 +290,14 @@ wait-dots
 //}
 
 
-
 mic-wave
   .d1, .d2, .d3
     display flex
     border-radius 50%
     width 100px
     height 100px
-    background rgba(0,0,0,.1)
-    box-shadow 0 0 10px rgba(0,0,0,.1)
+    background rgba(0, 0, 0, .1)
+    box-shadow 0 0 10px rgba(0, 0, 0, .1)
     margin auto
 
   .d2
