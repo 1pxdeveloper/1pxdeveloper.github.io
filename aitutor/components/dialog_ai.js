@@ -10,13 +10,10 @@ $module.template("ai-app")`
 
 		<main [hidden]="!isstart">
 			<section>
-				<div class="prev_ask" [class.me]="prev_ask_turn_me" style="padding: 16px" (click)="test(event.target)">In Cafe</div>
+				<!--<div class="prev_ask" [class.me]="prev_ask_turn_me" style="padding: 16px; position: absolute" *foreach="prevs as prev, index" [leave]="headout">{{ prev }}</div>-->
 
 				<section flex hbox>
-					<!--<h2 class="msg" [class.isfinal]="isFinal" style="margin: auto; text-align: left">{{ text1 }}</h2>-->
-					
-					
-					<h2 class="msg" [class.isfinal]="isFinal" style="margin: auto; text-align: left; color:#000">{{ animate(text2) }}</h2>
+					<h2 *foreach="texts as text, index" class="msg" style="position:absolute; top: 100px; text-align: left; color:#000" [leave]="test">{{ animate(text, temp.bind(this)) }}</h2>
 				</section>
 				
 				<mic-wave $wave></mic-wave>
@@ -34,6 +31,7 @@ $module.component("ai-app", function(STT) {
 	}
 
 	let DB = [
+		["I'll just translate it into Korean. I need a longer sentence naturally more naturally.", ""],
 		["What can I get for you?", "무엇을 도와드릴까요?"],
 		["I’d like an americano, please.", "아메리카노 한 잔 주세요."],
 		["What size would you like?", "어떤 사이즈로 드릴까요?"],
@@ -47,11 +45,8 @@ $module.component("ai-app", function(STT) {
 	return class AIApp {
 		init($) {
 			this.isstart = false;
-			this.text1 = "";
-			this.isFinal = false;
-
-			this.ask = "";
-			this.text1 = "";
+			this.texts = [];
+			this.prevs = [];
 
 			this.stage = 0;
 
@@ -59,6 +54,7 @@ $module.component("ai-app", function(STT) {
 
 			window.app = this;
 		}
+
 
 		start() {
 			this.isstart = true;
@@ -68,7 +64,8 @@ $module.component("ai-app", function(STT) {
 			let index = 0;
 
 			let text = DB[index][0];
-			this.text2 = text;
+
+			this.pushText(text);
 
 
 			setInterval(() => {
@@ -77,33 +74,96 @@ $module.component("ai-app", function(STT) {
 				index = index % DB.length;
 
 				text = DB[index][0];
-				this.text2 = text;
+				this.pushText(text);
+
+			}, 5000);
 
 
-			}, 3000);
+			/// Animation
+			this.headout = [
+				[
+					{
+						opacity: 1,
+						transform: "translate(0, 0)",
+					},
+
+					{
+						opacity: 0,
+						transform: "translate(0,-10px)",
+					},
+
+				], {
+					fill: "forwards",
+					easing: "ease",
+					duration: 1000
+				}
+			];
+
+
+			this.test = [
+				[
+					{
+						// opacity: 1,
+						transform: "translate(0, 0) scale(1)",
+						transformOrigin: "0 0",
+						// fontSize: "32px"
+						// transform: "scale(.5)"
+					},
+
+					// {
+					// 	offset: 0.80,
+					// 	// opacity: 0,
+					// 	transform: "translate(0,-100px) scale(1)",
+					// 	transformOrigin: "0 0",
+					// 	// fontSize: "32px",
+					// },
+					//
+					{
+						offset: 1,
+						// opacity: 0,
+						transform: "translate(0,-100px) scale(0.5)",
+						transformOrigin: "0 0",
+						// fontSize: "16px"
+						// transform: "scale(1)"
+					},
+
+				], {
+					fill: "forwards",
+					easing: "ease",
+					duration: 1500
+				}
+			];
+
+			this.test.onfinish = (event) => {
+
+				// console.log(event);
+
+				// console.log(this.texts.slice());
+
+				this.prevs.shift();
+				this.prevs.push(this.pprev);
+			}
 		}
 
-		test(el) {
-
-			el.animate([
-				{transform: "translate(0)"},
-				{transform: "translate(100px, 100px)"}
-			], {
-				duration: 1000
-			})
+		pushText(text) {
+			this.prevs.shift();
+			this.texts.push(text);
 		}
 
-		animate(text) {
+		temp() {
+			this.prevs.shift();
+			this.pprev = this.texts.shift();
+		}
+
+		animate(text, callbackFn) {
 			if (!text) return "";
-
 
 			let c = text.split(/(\s+)/);
 			// let c = text.split("");
 
-
 			let frag = document.createDocumentFragment();
 
-			c.map((t, index) => {
+			let animations = c.map((t, index) => {
 				let span = document.createElement("span");
 				span.innerText = t;
 				span.style.display = "inline-block";
@@ -111,31 +171,35 @@ $module.component("ai-app", function(STT) {
 				span.style.opacity = 0;
 				// span.style.transform = "translate(0,-100px)";
 
-				requestAnimationFrame(function() {
-					span.animate([
-						{
-							opacity: 0,
-							transform: "translate(0, 10px)"
-							// transform: "scale(.5)"
-						},
+				let animation = span.animate([
+					{
+						opacity: 0,
+						transform: "translate(0, 10px)"
+						// transform: "scale(.5)"
+					},
 
-						{
-							opacity: 1,
-							transform: "translate(0,0)"
-							// transform: "scale(1)"
-						},
+					{
+						opacity: 1,
+						transform: "translate(0,0)"
+						// transform: "scale(1)"
+					},
 
-					], {
-						fill: "forwards",
-						easing: "ease",
-						delay: 25 * index,
-						duration: 1000
-					});
+				], {
+					fill: "forwards",
+					easing: "ease",
+					delay: 50 * index,
+					duration: 1000
 				});
+				animation.target = span;
 
 				frag.appendChild(span);
+				return animation;
 			});
 
+			console.log(animations[animations.length - 1]);
+
+
+			animations[animations.length - 1].onfinish = callbackFn;
 			return frag;
 		}
 

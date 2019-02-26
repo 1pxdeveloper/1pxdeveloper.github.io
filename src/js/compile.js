@@ -235,17 +235,7 @@ function _nodeValue(value) {
 }
 
 function compile_text_node(textNode, context) {
-
-
-	console.log("compile_text_node");
-	console.log(textNode.nodeValue);
-
-
 	let index = textNode.nodeValue.indexOf("{{");
-
-
-	console.log(index);
-
 
 	while(index >= 0) {
 		textNode = textNode.splitText(index);
@@ -365,7 +355,28 @@ $module.directive("*foreach", function() {
 				if (d[index] === undefined) {
 					values_for_reuse[index] = value;
 					container[index].context.disconnect();
-					container[index].node.remove();
+
+
+					/// @FIXME: Animation 임시
+					if (container[index].node.leave) {
+
+						let node = container[index].node;
+						let a = node.animate.apply(node, node.leave);
+						a.oncancel = a.onfinish = () => {
+
+							if (node.leave.onfinish) {
+								node.leave.onfinish();
+							}
+							node.remove();
+						}
+
+					}
+					else {
+						container[index].node.remove();
+					}
+
+
+
 				} else {
 					fixed_container.push(container[index]);
 				}

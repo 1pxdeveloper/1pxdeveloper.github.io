@@ -273,18 +273,7 @@ Observable.prototype.takeUntil = function(observable$) {
 	return new Observable(observer => {
 		let s = this.subscribe(observer);
 		let stop = s.unsubscribe.bind(s);
-
-
-		observable$.subscribe(stop, stop, function() {
-
-
-			console.log("complete!!");
-
-
-			stop();
-
-
-		});
+		observable$.subscribe(stop, stop, stop);
 	});
 };
 

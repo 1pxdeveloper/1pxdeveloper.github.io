@@ -1,10 +1,11 @@
 $module.template("mic-wave")`
 	<template>
 		<section [attr.state]="state">
-			<div $c1 class="c1"></div>
-			<div $c2></div>
-			<div $c3 class="c2"></div>
-			<!--<div $c4></div>-->
+			<div $c1 class="d1">
+				<div $c2 class="d2">
+					<div $c3 class="d3"></div>
+				</div>
+			</div>
 		</section>
 	</template>
 `;
@@ -12,7 +13,7 @@ $module.template("mic-wave")`
 
 $module.component("mic-wave", function() {
 
-	let SIZE = 10;
+	let SIZE = 0.5;
 
 	return class MicWave {
 
@@ -57,6 +58,7 @@ $module.component("mic-wave", function() {
 			let loop = 0;
 
 			let self = this;
+
 			function draw() {
 				requestAnimationFrame(draw);
 
@@ -66,10 +68,13 @@ $module.component("mic-wave", function() {
 					prev = dots.map((dot, i) => {
 
 						let v = array_freq_domain[i + 5] / 128.0;
-						v = Math.max(SIZE, v * 18);
+						v = Math.max(SIZE, v);
+						v = Math.min(v, 1.5);
 						v = (prev[i] * smoothing) + (v * (1 - smoothing));
 
-						dot.style.height = v + "px";
+						dot.style.transform = "scale(" + (v*(i+1)) + ")";
+
+						// dot.style.height = v + "px";
 
 						return v;
 					});

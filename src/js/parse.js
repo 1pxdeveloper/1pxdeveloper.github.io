@@ -1017,3 +1017,6 @@ class JSContext {
 exports.$parse = $parse;
 exports.nextTick = nextTick;
 exports.JSContext = JSContext;
+
+
+$module.value("nextTick", nextTick);
