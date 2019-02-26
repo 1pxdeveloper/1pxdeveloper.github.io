@@ -1,0 +1,100 @@
+vendor-prefix(prop, args)
+  -ms-{prop} args
+  -moz-{prop} args
+  -webkit-{prop} args
+  {prop} args
+
+flex-flow()
+  vendor-prefix(flex-flow, arguments)
+
+align-items()
+  vendor-prefix(align-items, arguments)
+
+flex-wrap()
+  vendor-prefix(flex-wrap, arguments)
+
+transform()
+  vendor-prefix(transform, arguments)
+
+translate()
+  vendor-prefix(translate, arguments)
+
+/* hbox and vbox classes */
+hbox($align = center)
+  $align-items = $align
+  if $align == start
+    $align-items = flex-start
+  if $align == end
+    $align-items = flex-end
+
+  display flex
+  flex-direction row
+  align-items $align-items
+
+vbox($align = stretch)
+  $align-items = $align
+  if $align == start
+    $align-items = flex-start
+  if $align == end
+    $align-items = flex-end
+
+  display flex
+  flex-flow column
+  align-items $align-items
+
+flex(f = 1)
+  flex f
+
+layer()
+  position absolute
+  top 0
+  left 0
+  right 0
+  bottom 0
+
+wpx($i)
+  unit($i* 8, "px")
+
+$thin = 100
+$light = 300
+$regular = 500
+$bold = 600
+$black = 900
+
+ratio($w, $h)
+  &:before
+    content: " "
+    display block
+    padding-top unit($h /$w * 100, "%")
+
+mobile()
+  @media (max-width: 767px)
+    {block}
+
+tablet()
+  @media (min-width: 768px) and (max-width: 1023px)
+    {block}
+
+desktop()
+  @media (min-width: 1024px)
+    {block}
+
+mobile-and-tablet()
+  @media (max-width: 1023px)
+    {block}
+
+tablet-and-desktop()
+  @media (min-width: 768px)
+    {block}
+
+
+hover()
+  +mobile-and-tablet()
+    &:active
+      {block}
+
+  +desktop()
+    &:hover
+      {block}
+
+
