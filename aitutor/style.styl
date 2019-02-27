@@ -171,8 +171,7 @@ cursor
   width 100%
   display block
   text-align center
-  font-family monospace
-  font-size 16px
+  font-size 18px
   color #ccc
 
 
@@ -338,25 +337,6 @@ mic-wave
 ai-message
   display block
 
-  .msg
-    color #000
-    top 50%
-    transform-origin 0 0
-    transform translate(0, -50%)
-
-    &[who="me"]
-      transform-origin 100% 0
-      text-align right
-
-    &[state="done"]
-      transition top 1s, transform 1s
-      top 0
-      transform translate(0, 0) scale(0.6)
-
-    &[state="prev"]
-      transition top 1s, transform 1s
-      top 0
-      transform translate(0, -100%) scale(0.6)
 
 
 
@@ -366,4 +346,68 @@ ui-speech-to-text
   width 100%
   height 100%
   overflow hidden
+
+
+
+.msg
+  color #000
+  top 50%
+  transform-origin 0 0
+  transform translate(0, -50%)
+
+  &[who="me"]
+    transform-origin 100% 0
+    text-align right
+
+  &[state="done"]
+    transition top 1s, transform 1s
+    top 0
+    transform translate(0, 0) scale(0.6)
+
+  &[state="prev"]
+    transition top 1s, transform 1s
+    top 0
+    transform translate(0, -100%) scale(0.6)
+
+
+
+.hints
+  position relative
+  overflow hidden
+  margin-top 16px
+
+  .hint
+    background #fff
+    //animation fade 1s infinite
+
+  .hint2
+    position absolute
+    top 0
+    //animation fade2 1s infinite
+
+
+@keyframes fade {
+  from {
+    transform translate3d(0,0,0)
+    opacity 1
+  }
+
+  to {
+    transform translate3d(0,-100%,0)
+    opacity 0
+  }
+}
+
+
+@keyframes fade2 {
+  from {
+    transform translate3d(0,100%,0)
+    opacity 0
+  }
+
+  to {
+    transform translate3d(0,0,0)
+    opacity 1
+  }
+}
 

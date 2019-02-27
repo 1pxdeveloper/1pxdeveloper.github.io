@@ -10,10 +10,11 @@ $module.factory("DB", function() {
 	];
 
 	let DB2 = [
-		["Last time, we completed all 'Travel' missions. Good job. I prepared missions about 'Sports' and 'Cafe' this time. What's your choice?", ""],
-		["", ""],
+		["Last time, we completed all 'Travel' missions. I prepared missions about 'Sports' and 'Cafe' this time. What's your choice?", ""],
+
+		["원하는 주제를 알려주세요.", "I would like to talk about _______."],
 		["Really? Then, let's talk about 'Cafe' with me. Are you ready?", ""],
-		["", ""],
+		["", "I an ready."],
 
 		["What can I get for you?", "무엇을 도와드릴까요?"],
 		["I’d like an americano, please.", "아메리카노 한 잔 주세요."],
@@ -65,6 +66,9 @@ $module.factory("DB", function() {
 	function randomPick(array) {
 		return array[parseInt(Math.random() * array.length)]
 	}
+
+	// return DB3;
+
 
 	return randomPick([DB2, DB3, DB4]);
 

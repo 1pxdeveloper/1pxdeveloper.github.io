@@ -9,7 +9,7 @@ $module.template("ai-message")`
 `;
 
 
-$module.component("ai-message", function(DB) {
+$module.component("ai-message", function(Observable, DB) {
 
 	return class {
 		init($) {
@@ -92,6 +92,13 @@ $module.component("ai-message", function(DB) {
 			// let c = text.split("");
 
 			let frag = document.createDocumentFragment();
+
+			let a = "";
+
+			// return Observable.interval(50).take(c.length).map(i => {
+			// 	a += c[i];
+			// 	return a;
+			// });
 
 			let animations = c.map((t, index) => {
 				let span = document.createElement("span");

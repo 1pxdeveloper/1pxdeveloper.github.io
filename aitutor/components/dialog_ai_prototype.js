@@ -1,7 +1,7 @@
 $module.template("ai-app-prototype")`
 
 	<template>
-		<section *if="!isstart">
+		<section flex *if="!isstart">
 			<h1 style="margin: auto">Mission English</h1>
 		</section>
 
