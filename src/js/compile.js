@@ -19,9 +19,6 @@ function $compile(el, context) {
 		context = new JSContext(context);
 	}
 
-	console.log(context);
-
-
 	traverse(el, node => {
 		switch (node.nodeType) {
 			case Node.ELEMENT_NODE:

@@ -740,10 +740,6 @@ evaluateRule("|", function(a, b, c) {
 	let value = evaluate(a);
 	let args = c.map(evaluate);
 
-	if (b.value in this.scope) {
-		return this.scope[b.value](value, ...args);
-	}
-
 	return module.pipe.require(b.value, pipe => {
 		return pipe(value, ...args);
 	});

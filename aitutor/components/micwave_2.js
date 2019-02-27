@@ -13,7 +13,7 @@ $module.template("mic-wave")`
 
 $module.component("mic-wave", function() {
 
-	let SIZE = 0.5;
+	let SIZE = 1;
 
 	return class MicWave {
 
@@ -77,10 +77,10 @@ $module.component("mic-wave", function() {
 
 						let v = array_freq_domain[i + 5] / 128.0;
 						v = Math.max(SIZE, v);
-						v = Math.min(v, 1.5);
+						// v = Math.min(v, 1.5);
 						v = (prev[i] * smoothing) + (v * (1 - smoothing));
 
-						dot.style.transform = "scale(" + (v * (i + 1)) + ")";
+						dot.style.transform = "scale(" + (v * (i + 1) * 0.75) + ")";
 
 						// dot.style.height = v + "px";
 
@@ -96,7 +96,7 @@ $module.component("mic-wave", function() {
 });
 
 
-$module.factory("STT", function() {
+$module.factory("STT", function(Observable) {
 
 	return function mic(fn) {
 		window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -134,7 +134,33 @@ $module.factory("STT", function() {
 			console.log("onspeechend");
 		};
 
-		let x = recognition.start();
+		recognition.start();
+
+
+		recognition[Symbol.observable] = function() {
+
+			return new Observable(function(observer) {
+
+
+				function handler(event) {
+
+					console.log("!!!!!!!!!!!!");
+
+
+					observer.next(event);
+				}
+
+				recognition.addEventListener("result", handler);
+
+				return () => {
+					console.log("!!!!!!!!!!!! end");
+
+
+					recognition.removeEventListener("result", handler);
+				}
+			});
+		};
+
 
 		return recognition;
 	}
