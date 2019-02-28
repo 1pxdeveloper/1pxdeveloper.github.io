@@ -7,7 +7,7 @@ $module.template("ui-speech-to-text")`
 				<!--<wait-dots [hidden]="text1"></wait-dots>-->
 			</h2>
 		</section>
-		<mic-wave $wave></mic-wave>
+		<!--<mic-wave $wave></mic-wave>-->
 	</template>
 
 `;
@@ -42,8 +42,8 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT) {
 			return new Promise(resolve => {
 
 				this.isstart = true;
-				this.$wave.start();
-				this.$wave.state = "listen";
+				// this.$wave.start();
+				// this.$wave.state = "listen";
 
 				this.stt = STT(event => {
 					// console.log(event.resultIndex, event.results);
@@ -70,13 +70,13 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT) {
 				});
 
 
-				this.stt.addEventListener("speechstart", () => {
-					this.$wave.state = "speech";
-				});
-
-				this.stt.addEventListener("speechend", () => {
-					this.$wave.state = "listen";
-				});
+				// this.stt.addEventListener("speechstart", () => {
+				// 	this.$wave.state = "speech";
+				// });
+				//
+				// this.stt.addEventListener("speechend", () => {
+				// 	this.$wave.state = "listen";
+				// });
 			});
 		}
 
@@ -127,30 +127,6 @@ $module.factory("STT", function(Observable) {
 
 		recognition.start();
 
-
-		recognition[Symbol.observable] = function() {
-
-			return new Observable(function(observer) {
-
-
-				function handler(event) {
-
-					console.log("!!!!!!!!!!!!");
-
-
-					observer.next(event);
-				}
-
-				recognition.addEventListener("result", handler);
-
-				return () => {
-					console.log("!!!!!!!!!!!! end");
-
-
-					recognition.removeEventListener("result", handler);
-				}
-			});
-		};
 
 		return recognition;
 	}

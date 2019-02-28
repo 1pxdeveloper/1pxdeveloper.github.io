@@ -38,9 +38,6 @@ class Observable {
 			if (Object(observable) !== observable)
 				throw new TypeError(observable + " is not an object");
 
-			console.log("########", observable);
-			console.log("########", cls);
-
 			if (observable instanceof cls)
 				return observable;
 
@@ -149,9 +146,12 @@ class SubscriptionObserver {
 		this._subscription._observer.next && this._subscription._observer.next(value);
 	}
 
-	error(value) {
+	error(err) {
 		if (this.closed) return;
-		this._subscription._observer.error && this._subscription._observer.error(value);
+
+		console.error(err);
+
+		this._subscription._observer.error && this._subscription._observer.error(err);
 		cleanupSubscription(this._subscription);
 	}
 

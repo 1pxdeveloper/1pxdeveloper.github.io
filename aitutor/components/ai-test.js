@@ -12,12 +12,11 @@ $module.template("ai-test")`
 				<ui-text-to-speech $ui_tts></ui-text-to-speech>
 
 
-
 				<h2 $hint class="msg" style="text-align: right; color: #888; font-size: 26px" [hidden]="!hint">
 					<!--<div style="border-radius: 13px; border: 1px solid #ccc; font-size: 13px; display: inline-block; padding: 4px 8px">MISSION</div>-->
 					<div style="margin-top: 8px"></div>
 					{{ prev_ask }}
-					<p class="hint" style="text-align: right; margin-top: 16px" [_hidden]="text1">{{ hint }}</p>
+					<!--<p class="hint" style="text-align: right; margin-top: 16px">{{ hint }}</p>-->
 				</h2>
 
 
@@ -68,7 +67,10 @@ $module.component("ai-test", function(STT, DB) {
 			this.isstart = true;
 
 
-			let text = `Your father fell down while trying to fix the antenna on the roof. You didn't panic and called 911 right away.`;
+			let text = DB[this.stage][0];
+
+			console.log(text);
+
 
 			this.$ui_tts.speak(text).then(_ => {
 
@@ -80,6 +82,10 @@ $module.component("ai-test", function(STT, DB) {
 			}).then(_ => {
 
 				this.stage += 2;
+
+				return $timeout(500);
+
+			}).then(_ => {
 
 				return this.next();
 			})
@@ -101,9 +107,18 @@ $module.component("ai-test", function(STT, DB) {
 
 			}).then(_ => {
 
-				return this.$ui_stt.listen()
+				this.prev_ask = DB[this.stage + 1][1];
+				this.hint = DB[this.stage + 1][0];
+
+				return this.$ui_stt.listen(_ => {
+					this.prev_ask = "";
+					this.hint = "";
+
+
+				})
 
 			}).then(text => {
+
 
 				return this.$dialog.speak(text);
 

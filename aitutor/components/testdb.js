@@ -65,17 +65,25 @@ $module.factory("DB", function() {
 
 
 	let DB911 = [
-		[`Your father fell down while trying to fix the antenna on the roof. You didn't panic and called 911 right away.`, ""],
+		["You have seen a man fall down on the roof. You didn't panic and called 911 right away.", ""],
 		["", ""],
-		[`Nine-one-one operator. What's your emergency?`, "지금 어떤 상황인지 911에 알려주세요.", "아버지가 지붕에서 떨어졌어요."],
-		["My father has fallen off the roof.", ""],
-		["Off the roof? What's your address?", ""],
 
-		["Uh, 242 Beatrice Lane.", "집 주소를 알려주세요.", "베아트리스가 242번지요."],
-		["We will send paramedics immediately. Is he badly hurt?"],
-		["It seems like he broke his leg.", "어디를 다쳤는지 자세히 알려주세요.", "그의 다리가 부러진 것 같아요."],
-		["Okay. He shouldn't try to move, stand, or sit up."]
+		["Nine-one-one operator. What's your emergency?"],
+		["I saw a man has fallen off the roof.", "당신이 목격한 것을 911에 알려주세요.", "어떤 남자가 지붕에서 떨어졌어요."],
+		["Okay. Where are you now?", ""],
+
+		["I'm at the LG Science Park.", "현재 위치를 알려주세요.", "저는 LG사이언스파크에 있습니다."],
+		["We will send paramedics immediately. Let me know about his injury."],
+		["It seems like he broke his left leg", "그가 어디를 다쳤는지 자세히 알려주세요.", "그의 왼쪽 다리가 부러진 것 같아요."],
+
+		["All right. Do not let him move, stand, or sit up. Thank you for calling."],
+		["Thank you", "미션이 종료되었습니다."],
 	];
+
+
+
+
+
 
 
 	function randomPick(array) {

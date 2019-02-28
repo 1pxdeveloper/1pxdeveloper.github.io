@@ -16,7 +16,7 @@ $module.template("ai-app")`
 				<h2 $hint class="msg" style="text-align: right; color: #888; font-size: 26px" [hidden]="!hint">
 					<!--<div style="border-radius: 13px; border: 1px solid #ccc; font-size: 13px; display: inline-block; padding: 4px 8px">MISSION</div>-->
 					<div style="margin-top: 8px"></div>
-					{{ prev_ask }}
+					{{ prev_ask }}<br>
 					<p class="hint" style="text-align: right; margin-top: 16px" [_hidden]="text1">{{ hint }}</p>
 				</h2>
 

@@ -412,7 +412,15 @@ $module.directive("*foreach", function() {
 							if (enter) {
 								r.node.classList.add(enter);
 							}
-						})
+						});
+
+						setTimeout(function() {
+							let enter = r.node.getAttribute("transition-enter");
+							if (enter) {
+								r.node.classList.add(enter);
+							}
+						}, 100);
+
 					}
 
 					return r;

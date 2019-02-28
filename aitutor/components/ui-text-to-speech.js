@@ -18,12 +18,12 @@ $module.component("ui-text-to-speech", function(Observable, TTS) {
 
 		speak(text, index) {
 			this.words = [];
+
 			return new Promise(resolve => {
 
 				TTS.speak$(text, index).complete(_ => resolve(text)).subscribe(word => {
 					this.words.push(word);
 				});
-
 
 			});
 		}
@@ -68,7 +68,6 @@ $module.factory("TTS", function(Observable) {
 				};
 
 				synth.speak(utterThis);
-
 			});
 
 		}
