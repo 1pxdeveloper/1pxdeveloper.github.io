@@ -52,7 +52,7 @@ $module.component("ai-test", function(STT, DB, randomPick) {
 			this.tutorLegacyNode = null;
 			this.myLegacyNode = null;
 
-			this.stage = 2;
+			this.stage = 0;
 
 			this.fallback_count = 0;
 
