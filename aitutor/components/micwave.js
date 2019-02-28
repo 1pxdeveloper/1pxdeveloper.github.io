@@ -126,17 +126,3 @@ $module.factory("STT", function() {
 		return recognition;
 	}
 });
-
-
-function speakSound(msg) {
-	let url = "https://ai-tutor-lg-ai.appspot.com/tts?text=" + encodeURIComponent(msg);
-
-	let audio = document.createElement('audio');
-	audio.style.display = "none";
-	audio.src = url;
-	audio.autoplay = true;
-	audio.onended = function() {
-		audio.remove() //Remove when played.
-	};
-	document.body.appendChild(audio);
-}

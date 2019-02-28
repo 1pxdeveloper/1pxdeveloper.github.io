@@ -20,40 +20,53 @@ body
   font-weight 200
 
 
-ai-app
-  display block
-  margin: auto;
-  background: #fff;
+main
+  display: flex;
+  position relative
+  flex-direction: column;
+  height: 100%;
+  margin auto
+  background #fff
 
-  +tablet-and-desktop()
-    width: 375px;
-    height: 667px;
-    padding: 48px 15px;
-    border: 1px solid rgba(0, 0, 0, .2);
-    border-radius: 30px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, .1);
-    box-sizing content-box
-
-  +mobile()
+  content
+    display block
     width 100%
     height 100%
+    overflow hidden
+    transform translate3d(0, 0, 0)
+    background url("../imgs/bg1.png") no-repeat center 100%
+    background-size contain
+
+
++tablet-and-desktop()
+  body
+    background #fafafa
 
   main
-    display: flex;
-    position relative
-    flex-direction: column;
-    border: 1px inset rgba(0, 0, 0, .2);
-    height: 100%;
-    overflow-y: scroll;
+    width: 375px;
+    height: 667px;
+    border-radius: 36px;
+    box-shadow: 0 0 32px rgba(0, 0, 0, .2), 0 12px 24px rgba(0, 0, 0, .5)
+    box-sizing content-box
+    border 16px solid #111
+    border-top-width 60px
+    border-bottom-width 60px
 
-    > section
-      flex 1;
-      display: flex;
-      flex-direction: column
-      position relative
-      z-index 1
+    &:before {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 5px;
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, .2)
+      border-radius: 10px;
+    }
 
 
+///
 flex, [flex] {
   flex: 1;
 }
@@ -70,6 +83,21 @@ flex, [flex] {
 
 flex
   display flex
+
+
+ai-app
+  display flex
+  margin: auto;
+  width 100%
+  height 100%
+  background: #fff
+  overflow hidden
+  position relative
+
+  > section
+    display flex
+    width 100%
+    height 100%
 
 h1 {
   text-align: center;
@@ -103,13 +131,9 @@ header
   width 100%
   font-size 32px
   font-weight 200
-  transform-origin 0 0
   top 50%
-  width 100%
+  transform-origin 0 0
   transform translate(0, -50%)
-
-  &.isfinal
-    color black
 
   &.me
     top 50%
@@ -118,6 +142,11 @@ header
     text-align right
     transform-origin 100% 50%
     transform translate(0, -50%)
+    color #ccc
+
+    &.isfinal
+      color #000
+
 
 cursor
   display inline-block
@@ -147,8 +176,7 @@ cursor
   width 100%
   display block
   text-align center
-  font-family monospace
-  font-size 16px
+  font-size 18px
   color #ccc
 
 
@@ -296,8 +324,8 @@ mic-wave
   .d1, .d2, .d3
     display flex
     border-radius 50%
-    width 88px
-    height 88px
+    width 64px
+    height 64px
     background rgba(0, 0, 0, .05)
     box-shadow 0 0 10px rgba(0, 0, 0, .05)
     margin auto
@@ -309,3 +337,92 @@ mic-wave
   .d3
     width 90%
     height 90%
+
+
+ai-message
+  display block
+
+
+
+
+ui-speech-to-text
+  display flex
+  margin auto
+  width 100%
+  height 100%
+  overflow hidden
+
+
+
+.msg
+  color #000
+  top 50%
+  transform-origin 0 0
+  transform translate(0, -50%)
+
+  &[who="me"]
+    transform-origin 100% 0
+    text-align right
+
+  &[state="done"]
+    transition top 1s, transform 1s
+    top 0
+    transform translate(0, 0) scale(0.6)
+
+  &[state="prev"]
+    transition top 1s, transform 1s
+    top 0
+    transform translate(0, -100%) scale(0.6)
+
+
+
+.hints
+  position relative
+  overflow hidden
+  margin-top 16px
+
+  .hint
+    background #fff
+    //animation fade 1s infinite
+
+  .hint2
+    position absolute
+    top 0
+    //animation fade2 1s infinite
+
+
+@keyframes fade {
+  from {
+    transform translate3d(0,0,0)
+    opacity 1
+  }
+
+  to {
+    transform translate3d(0,-100%,0)
+    opacity 0
+  }
+}
+
+
+@keyframes fade2 {
+  from {
+    transform translate3d(0,100%,0)
+    opacity 0
+  }
+
+  to {
+    transform translate3d(0,0,0)
+    opacity 1
+  }
+}
+
+.tts-word
+  display inline-block
+  white-space pre-wrap
+  transition all 0.5s
+  opacity 0
+  transform translate3d(15px,0,0)
+
+.tts-word-animation
+  opacity 1
+  transform translate3d(0,0,0)

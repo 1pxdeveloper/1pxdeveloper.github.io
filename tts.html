@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+
+	<link rel="stylesheet" href="mo.css"/>
+</head>
+
+
+<body>
+
+<main>
+	<div id="test" style="font-size: 32px; font-weight: 200; margin: auto; padding: 16px; text-align: left; width: 100%; white-space: pre-wrap"></div>
+</main>
+
+<script>
+var synth = window.speechSynthesis;
+
+
+document.onkeydown = function() {
+
+	let voices = synth.getVoices();
+
+
+	var EN = voices.filter(v => v.lang.startsWith("en"));
+
+
+	let index = 1;
+
+	let voice = EN[index];
+
+
+	function speak(sentence, rate, pitch) {
+		rate = rate || 1;
+		pitch = pitch || 1;
+
+		let utterThis = new SpeechSynthesisUtterance(sentence + " ");
+		utterThis.lang = 'en-US';
+		utterThis.voice = voice;
+		utterThis.rate = rate;
+		utterThis.pitch = pitch;
+
+		utterThis.onboundary = function(event) {
+			console.log(event);
+
+			if (event.name === "word") {
+
+				let text = event.target.text;
+				let nextIndex = text.slice(event.charIndex).indexOf(" ");
+				let word = text.slice(event.charIndex, event.charIndex + nextIndex) + " ";
+
+				let span = document.createElement("span");
+				span.innerText = word;
+				requestAnimationFrame(function() {
+					span.className = "test";
+				});
+
+				// let chars = word.split("");
+				//
+				// chars.forEach((c, index) => {
+				// 	let cspan = document.createElement("span");
+				// 	cspan.innerText = c;
+				// 	cspan.className = "test";
+				// 	cspan.style.opacity = 0;
+				// 	span.appendChild(cspan);
+				//
+				// 	requestAnimationFrame(function() {
+				// 		cspan.style.animation = "test both 0.5s " + (index * 25) + "ms";
+				// 	});
+				// });
+
+				document.getElementById("test").appendChild(span);
+			}
+		};
+
+		// utterThis.onend = function(event) {
+		//
+		// 	let text = event.target.text;
+		// 	document.getElementById("test").innerText = text;
+		//
+		// };
+
+		synth.speak(utterThis);
+	}
+
+
+	speak("What can I do for you?");
+
+	setTimeout(function() {
+
+		speak(`I said, "What can I do for you?"`, 0.8, 1.1);
+
+	}, 3000);
+
+
+
+	document.onkeydown = null;
+}
+
+
+</script>
+</body>
+</html>

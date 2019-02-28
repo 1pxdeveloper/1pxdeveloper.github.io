@@ -13,7 +13,7 @@ $module.template("mic-wave")`
 
 $module.component("mic-wave", function() {
 
-	let SIZE = 0.5;
+	let SIZE = 1;
 
 	return class MicWave {
 
@@ -77,10 +77,10 @@ $module.component("mic-wave", function() {
 
 						let v = array_freq_domain[i + 5] / 128.0;
 						v = Math.max(SIZE, v);
-						v = Math.min(v, 1.5);
+						// v = Math.min(v, 1.5);
 						v = (prev[i] * smoothing) + (v * (1 - smoothing));
 
-						dot.style.transform = "scale(" + (v * (i + 1)) + ")";
+						dot.style.transform = "scale(" + (v * (i + 1) * 0.75) + ")";
 
 						// dot.style.height = v + "px";
 
@@ -94,62 +94,3 @@ $module.component("mic-wave", function() {
 
 	}.prototype;
 });
-
-
-$module.factory("STT", function() {
-
-	return function mic(fn) {
-		window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-		let recognition = new SpeechRecognition();
-		recognition.continuous = true;
-		recognition.interimResults = true;
-		recognition.maxAlternatives = 10;
-		recognition.lang = 'en-US';
-
-		console.log(recognition);
-
-		recognition.onnomatch = function(event) {
-			console.log("onnomatch");
-		};
-
-		recognition.onresult = function(event) {
-			console.log(event.resultIndex, event.results);
-			fn(event);
-		};
-
-		recognition.onsoundstart = function(event) {
-			console.log("onsoundstart");
-		};
-
-		recognition.onsoundend = function(event) {
-			console.log("onsoundend");
-		};
-
-		recognition.onspeechstart = function(event) {
-			console.log("onspeechstart");
-		};
-
-		recognition.onspeechsend = function(event) {
-			console.log("onspeechend");
-		};
-
-		let x = recognition.start();
-
-		return recognition;
-	}
-});
-
-
-function speakSound(msg) {
-	let url = "https://ai-tutor-lg-ai.appspot.com/tts?text=" + encodeURIComponent(msg);
-
-	let audio = document.createElement('audio');
-	audio.style.display = "none";
-	audio.src = url;
-	audio.autoplay = true;
-	audio.onended = function() {
-		audio.remove() //Remove when played.
-	};
-	document.body.appendChild(audio);
-}

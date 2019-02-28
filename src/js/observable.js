@@ -38,7 +38,7 @@ class Observable {
 			if (Object(observable) !== observable)
 				throw new TypeError(observable + " is not an object");
 
-			if (observable.constructor === cls)
+			if (observable instanceof cls)
 				return observable;
 
 			return new cls(observer => observable.subscribe(observer));
@@ -146,9 +146,12 @@ class SubscriptionObserver {
 		this._subscription._observer.next && this._subscription._observer.next(value);
 	}
 
-	error(value) {
+	error(err) {
 		if (this.closed) return;
-		this._subscription._observer.error && this._subscription._observer.error(value);
+
+		console.error(err);
+
+		this._subscription._observer.error && this._subscription._observer.error(err);
 		cleanupSubscription(this._subscription);
 	}
 
@@ -295,8 +298,6 @@ Observable.prototype.share = function() {
 	let subscription;
 
 	return new Observable(observer => {
-		// console.log('share', observers.length, observers.indexOf(observer));
-
 		observers.push(observer);
 
 		subscription = subscription || this.subscribe({
@@ -426,10 +427,6 @@ Observable.merge = function(...observables) {
 		});
 
 		return function() {
-
-			console.log("merge clean!!!!", s);
-
-
 			s.forEach(s => s.unsubscribe());
 		}
 	});
@@ -450,5 +447,8 @@ Observable.subject = function() {
 	return o;
 };
 
+
+$module.value("Observable", Observable);
+$module.value("Subject", Observable.subject);
 
 exports.Observable = Observable;
