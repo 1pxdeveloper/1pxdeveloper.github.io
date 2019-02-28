@@ -1,3 +1,11 @@
+$module.factory("randomPick", function() {
+
+	return function randomPick(array) {
+		return array[parseInt(Math.random() * array.length)]
+	}
+
+});
+
 $module.factory("DB", function() {
 
 	let DB = [
@@ -69,15 +77,15 @@ $module.factory("DB", function() {
 		["", ""],
 
 		["Nine-one-one operator. What's your emergency?"],
-		["I saw a man has fallen off the roof.", "당신이 목격한 것을 911에 알려주세요.", "어떤 남자가 지붕에서 떨어졌어요."],
+		["I saw a man has fallen off the roof.", "당신이 목격한 것을 911에 알려주세요.", '"어떤 남자가 지붕에서 떨어졌어요."'],
 		["Okay. Where are you now?", ""],
 
-		["I'm at the LG Science Park.", "현재 위치를 알려주세요.", "저는 LG사이언스파크에 있습니다."],
+		["I'm at the LG Science Park.", "현재 위치를 알려주세요.", '"저는 LG사이언스파크에 있습니다."'],
 		["We will send paramedics immediately. Let me know about his injury."],
-		["It seems like he broke his left leg", "그가 어디를 다쳤는지 자세히 알려주세요.", "그의 왼쪽 다리가 부러진 것 같아요."],
+		["It seems like he broke his left leg", "그가 어디를 다쳤는지 자세히 알려주세요.", '"그의 왼쪽 다리가 부러진 것 같아요."'],
 
 		["All right. Do not let him move, stand, or sit up. Thank you for calling."],
-		["Thank you", "미션이 종료되었습니다."],
+		["Thank you", "미션이 종료되었습니다.", "미션이 종료되었습니다."],
 	];
 
 
@@ -86,9 +94,6 @@ $module.factory("DB", function() {
 
 
 
-	function randomPick(array) {
-		return array[parseInt(Math.random() * array.length)]
-	}
 
 	// return DB3;
 

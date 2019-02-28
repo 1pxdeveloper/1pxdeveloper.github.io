@@ -12,13 +12,12 @@ $module.template("ai-test")`
 				<ui-text-to-speech $ui_tts></ui-text-to-speech>
 
 
-				<h2 $hint class="msg" style="text-align: right; color: #888; font-size: 26px" [hidden]="!hint">
-					<!--<div style="border-radius: 13px; border: 1px solid #ccc; font-size: 13px; display: inline-block; padding: 4px 8px">MISSION</div>-->
+				<h2 $hint class="msg" style="text-align: center; color: #888; font-size: 21px; padding: 0 32px;" [hidden]="!hint">
+					<!--<div style="border-radius: 13px; border: 1px solid #ccc; font-size: 13px; display: inline-block; padding: 4px 8px" [hidden]="fallback_count === 0">이렇게 말해보세요.</div>-->
 					<div style="margin-top: 8px"></div>
-					{{ prev_ask }}
+					{{ prev_ask }} <span [hidden]="fallback_count === 0" style="color: #ccc; font-size: 16px;"><br>를 영어로 말해보세요.</span>
 					<!--<p class="hint" style="text-align: right; margin-top: 16px">{{ hint }}</p>-->
 				</h2>
-
 
 			</section>
 		</section>
@@ -27,7 +26,7 @@ $module.template("ai-test")`
 `;
 
 
-$module.component("ai-test", function(STT, DB) {
+$module.component("ai-test", function(STT, DB, randomPick) {
 
 	const {Observable} = require("1px");
 
@@ -41,7 +40,7 @@ $module.component("ai-test", function(STT, DB) {
 		})
 	}
 
-	return class AIApp {
+	return class {
 		init($) {
 			this.isstart = false;
 
@@ -53,7 +52,9 @@ $module.component("ai-test", function(STT, DB) {
 			this.tutorLegacyNode = null;
 			this.myLegacyNode = null;
 
-			this.stage = 0;
+			this.stage = 2;
+
+			this.fallback_count = 0;
 
 			this.voiceIndex = parseInt(Math.random() * 100);
 
@@ -67,36 +68,37 @@ $module.component("ai-test", function(STT, DB) {
 			this.isstart = true;
 
 
-			let text = DB[this.stage][0];
+			// let text = DB[this.stage][0];
+			//
+			// console.log(text);
+			//
+			//
+			// this.$ui_tts.speak(text).then(_ => {
+			//
+			// 	this.$ui_tts.words = [];
+			//
+			// 	return this.$dialog.ask(text)
+			//
+			//
+			// }).then(_ => {
+			//
+			// 	this.stage += 2;
+			//
+			// 	return $timeout(500);
+			//
+			// }).then(_ => {
+			//
+			// 	return this.next();
+			// })
 
-			console.log(text);
-
-
-			this.$ui_tts.speak(text).then(_ => {
-
-				this.$ui_tts.words = [];
-
-				return this.$dialog.ask(text)
-
-
-			}).then(_ => {
-
-				this.stage += 2;
-
-				return $timeout(500);
-
-			}).then(_ => {
-
-				return this.next();
-			})
-
-
+			this.stage += 2;
+			return this.next();
 		}
 
-		next() {
+		next(fallback_text) {
 
 
-			let text = DB[this.stage][0];
+			let text = fallback_text || DB[this.stage][0];
 
 
 			this.$ui_tts.speak(text, this.voiceIndex).then(_ => {
@@ -107,7 +109,7 @@ $module.component("ai-test", function(STT, DB) {
 
 			}).then(_ => {
 
-				this.prev_ask = DB[this.stage + 1][1];
+				this.prev_ask = DB[this.stage + 1][Math.min(2, this.fallback_count + 1)];
 				this.hint = DB[this.stage + 1][0];
 
 				return this.$ui_stt.listen(_ => {
@@ -126,23 +128,57 @@ $module.component("ai-test", function(STT, DB) {
 			}).then(text => {
 
 
+				if (this.fallback_count < 2) {
+					return this.fallback();
+				}
+
+				this.fallback_count = 0;
+
 				this.stage += 2;
 				this.next();
 			});
 
-
-			// this.next();
-
-			/// 2문장 연속으로 출력
-
-			// this.$dialog.ask(DB[this.stage][0]);
-			//
-			// setTimeout(() => {
-			//
-			// this.$dialog.ask(DB[this.stage+1][0]);
-			//
-			// }, 2000);
 		}
+
+		fallback() {
+
+
+			let F2 = ["I didn't get that. Can you say it again?",
+				"I missed what you said. What was that?",
+				"Sorry, could you say that again?",
+				"Sorry, can you say that again?",
+				"Can you say that again?",
+				"Sorry, I didn't get that. Can you rephrase?",
+				"Sorry, what was that?",
+				"One more time?",
+				"What was that?",
+				"Say that one more time?",
+				"I didn't get that. Can you repeat?",
+				"I missed that, say that again?"];
+
+			// let F3 = ["Hmm... ", "Well.. ", "I said, ", "Excuse me, "];
+
+
+			this.fallback_count++;
+
+			let text = randomPick(["Sorry?", "Pardon?"]);
+
+			if (this.fallback_count > 1) {
+
+				text = randomPick(F2);
+
+				// let Q = DB[this.stage][0];
+				//
+				// let a = Q.split(".");
+				// a = a[a.length - 1] + ".";
+				//
+				// text += " " + a;
+			}
+
+			this.next(text);
+		}
+
+
 	}.prototype;
 
 })

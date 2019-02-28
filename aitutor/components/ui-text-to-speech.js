@@ -53,6 +53,8 @@ $module.factory("TTS", function(Observable) {
 
 				let utterThis = new SpeechSynthesisUtterance(text);
 				utterThis.voice = voice;
+				utterThis.rate = 1 + ((Math.random() - 0.5) * 0.1);
+				utterThis.pitch = 1 + ((Math.random() - 0.5) * 0.1);
 
 				utterThis.onboundary = function(event) {
 
