@@ -35,6 +35,9 @@ main
     overflow hidden
     transform translate3d(0, 0, 0)
 
+    background url("../imgs/bg1.png") no-repeat 0 100%
+    background-size contain
+
 +tablet-and-desktop()
   body
     background #fafafa
@@ -132,9 +135,6 @@ header
   transform-origin 0 0
   transform translate(0, -50%)
 
-  &.isfinal
-    color black
-
   &.me
     top 50%
     width 100%
@@ -142,6 +142,11 @@ header
     text-align right
     transform-origin 100% 50%
     transform translate(0, -50%)
+    color #ccc
+
+    &.isfinal
+      color #000
+
 
 cursor
   display inline-block
@@ -411,3 +416,13 @@ ui-speech-to-text
   }
 }
 
+.tts-word
+  display inline-block
+  white-space pre-wrap
+  transition all 0.5s
+  opacity 0
+  transform translate3d(15px,0,0)
+
+.tts-word-animation
+  opacity 1
+  transform translate3d(0,0,0)

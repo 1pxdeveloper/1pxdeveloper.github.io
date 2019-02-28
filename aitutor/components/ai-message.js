@@ -1,48 +1,32 @@
 $module.template("ai-message")`
 
 	<template>
-		<transition name="ai-message">
-			<p *foreach="messages as msg, index" class="msg" [index]="index" [attr.who]="msg.who" [attr.state]="msg.state">{{ msg | animate: update.bind(this) }}</p>
-		</transition>
+		<p *foreach="messages as msg, index" class="msg" [index]="index" [attr.who]="msg.who" 
+		[attr.state]="msg.state">{{ msg | animate }}</p>
 	</template>
 
 `;
 
 
-$module.component("ai-message", function(Observable, DB) {
+$module.component("ai-message", function(Observable, DB, TTS) {
 
 	return class {
 		init($) {
 			this.messages = [];
+
 			this.transition$ = $.on$(this, "webkitTransitionEnd", true).filter(event => {
-
-
 				console.log(event.target, event.target.index);
+				return event.target.index === this.messages.length - 1;
+			});
 
-				return event.target.index === this.messages.length-1;
-			})
+			// $.on$(document, "click", true).subscribe(_ => {this.test();});
 		}
 
 		test() {
 			this.flag = false;
-			this.speak("Mission English");
+			this.ask("You are in the cafe now. Order coffee and make a payment through conversation into with employee.");
 
 			this.stage = 0;
-
-			this.transition$ = $.on$(this, "webkitTransitionEnd", true);
-
-
-			setInterval(() => {
-
-				this.push(DB[this.stage][0], flag);
-				this.flag = !this.flag;
-
-				this.stage++;
-				this.stage = this.stage % DB.length;
-
-
-			}, 5000)
-
 		}
 
 		update() {
@@ -78,6 +62,9 @@ $module.component("ai-message", function(Observable, DB) {
 		}
 
 		animate(msg, callbackFn) {
+			setTimeout(this.update.bind(this), 250);
+			return msg.text;
+
 			if (!msg) return "";
 			let text = msg.text || "";
 

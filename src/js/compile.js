@@ -405,6 +405,14 @@ $module.directive("*foreach", function() {
 					} else {
 						r = createRepeatNode(repeatNode, context, $row, $index, value, index);
 						placeholder.before(r.node);
+
+						/// @FIXME...
+						requestAnimationFrame(function() {
+							let enter = r.node.getAttribute("transition-enter");
+							if (enter) {
+								r.node.classList.add(enter);
+							}
+						})
 					}
 
 					return r;

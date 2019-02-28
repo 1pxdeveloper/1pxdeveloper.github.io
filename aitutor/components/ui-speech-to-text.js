@@ -2,10 +2,10 @@ $module.template("ui-speech-to-text")`
 
 	<template>
 		<section flex hbox>
-			<h2 class="msg" style="margin: auto; text-align: right; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);  width: 100%">{{ text1 }}
+			<h2 class="msg me">{{ text1 }}
 				<!--<cursor class="blink" [hidden]="isFinal"></cursor>-->
 				<!--<wait-dots [hidden]="text1"></wait-dots>-->
-			</h2>	
+			</h2>
 		</section>
 		<mic-wave $wave></mic-wave>
 	</template>
@@ -59,6 +59,9 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT) {
 					this.isFinal = event.results[event.resultIndex].isFinal;
 
 					if (this.isFinal) {
+
+						this.stt.stop();
+
 						setTimeout(() => {
 							resolve(this.text1);
 							this.text1 = "";
@@ -81,4 +84,74 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT) {
 	}.prototype
 
 
+});
+
+
+$module.factory("STT", function(Observable) {
+
+	return function mic(fn) {
+		window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+		let recognition = new SpeechRecognition();
+		recognition.continuous = true;
+		recognition.interimResults = true;
+		recognition.maxAlternatives = 10;
+		recognition.lang = 'en-US';
+
+		console.log(recognition);
+
+		recognition.onnomatch = function(event) {
+			console.log("onnomatch");
+		};
+
+		recognition.onresult = function(event) {
+			console.log(event.resultIndex, event.results);
+			fn(event);
+		};
+
+		recognition.onsoundstart = function(event) {
+			console.log("onsoundstart");
+		};
+
+		recognition.onsoundend = function(event) {
+			console.log("onsoundend");
+		};
+
+		recognition.onspeechstart = function(event) {
+			console.log("onspeechstart");
+		};
+
+		recognition.onspeechsend = function(event) {
+			console.log("onspeechend");
+		};
+
+		recognition.start();
+
+
+		recognition[Symbol.observable] = function() {
+
+			return new Observable(function(observer) {
+
+
+				function handler(event) {
+
+					console.log("!!!!!!!!!!!!");
+
+
+					observer.next(event);
+				}
+
+				recognition.addEventListener("result", handler);
+
+				return () => {
+					console.log("!!!!!!!!!!!! end");
+
+
+					recognition.removeEventListener("result", handler);
+				}
+			});
+		};
+
+		return recognition;
+	}
 });

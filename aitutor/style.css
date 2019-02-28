@@ -31,6 +31,8 @@ main content {
   height: 100%;
   overflow: hidden;
   transform: translate3d(0, 0, 0);
+  background: url("../imgs/bg1.png") no-repeat 0 100%;
+  background-size: contain;
 }
 @media (min-width: 768px) {
   body {
@@ -119,9 +121,6 @@ header {
   transform-origin: 0 0;
   transform: translate(0, -50%);
 }
-.msg.isfinal {
-  color: #000;
-}
 .msg.me {
   top: 50%;
   width: 100%;
@@ -129,6 +128,10 @@ header {
   text-align: right;
   transform-origin: 100% 50%;
   transform: translate(0, -50%);
+  color: #ccc;
+}
+.msg.me.isfinal {
+  color: #000;
 }
 cursor {
   display: inline-block;
@@ -268,6 +271,17 @@ ui-speech-to-text {
 .hints .hint2 {
   position: absolute;
   top: 0;
+}
+.tts-word {
+  display: inline-block;
+  white-space: pre-wrap;
+  transition: all 0.5s;
+  opacity: 0;
+  transform: translate3d(15px, 0, 0);
+}
+.tts-word-animation {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
 }
 @-moz-keyframes blink {
   50% {
