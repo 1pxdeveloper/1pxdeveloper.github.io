@@ -10,23 +10,20 @@ $module.template("ai-app")`
 
 		<main [hidden]="!isstart">
 			<section>
-				<!--<div class="prev_ask" [class.me]="prev_ask_turn_me" style="padding: 16px; position: absolute" *foreach="prevs as prev, index" [leave]="headout">{{ prev }}</div>-->
-
 				<h2 *foreach="texts as text, index" class="msg" style="position:absolute; color:#000;" [leave]="tutorSpeakCompleteAnimate.bind(this)">{{ animate(text, tutorSpeakComplete.bind(this)) }}</h2>
 				
-				<h2 *foreach="query as text, index" class="msg me" [class.isfinal]="isFinal" style="" [leave]="mySpeakCompleteAnimate.bind(this)"><div>{{ animate2(text, mySpeakComplete.bind(this)) }}</div></h2>
-
-
-					<h2 $hint class="msg" style="text-align: right; color: #888; font-size: 26px" [hidden]="!prev_ask">
-						<div style="border-radius: 13px; border: 1px solid #ccc; font-size: 13px; display: inline-block; padding: 4px 8px">MISSION</div>
-						<div style="margin-top: 8px"></div>
-						{{ prev_ask }}
-						<p class="hint" style="text-align: right; margin-top: 16px" [_hidden]="text1">{{ hint }}</p>
-					</h2>	
-
-
-
+				<h2 *foreach="query as text, index" class="msg me" [class.isfinal]="isFinal" [leave]="mySpeakCompleteAnimate.bind(this)">
+					<div>{{ animate2(text, mySpeakComplete.bind(this)) }}</div>
+				</h2>
+ 
+				<h2 $hint class="msg" style="text-align: right; color: #888; font-size: 26px" [hidden]="!prev_ask">
+					<div style="border-radius: 13px; border: 1px solid #ccc; font-size: 13px; display: inline-block; padding: 4px 8px">MISSION</div>
+					<div style="margin-top: 8px"></div>
+					{{ prev_ask }}
+					<p class="hint" style="text-align: right; margin-top: 16px" [_hidden]="text1">{{ hint }}</p>
+				</h2>	
 			</section>
+
 			<mic-wave $wave></mic-wave>
 		</main>
 	</template>

@@ -7,41 +7,39 @@ $module.template("ai-app")`
 				<h1 style="margin: auto">start to click</h1>
 			</section>
 		</main>
-
+	
 		<main [hidden]="!isstart">
 			<section>
 				<div class="prev_ask" [class.me]="prev_ask_turn_me" style="padding: 16px">What can I get for you?</div>
-
+	
 				<section flex hbox>
 					<h2 class="msg" [class.isfinal]="isFinal" style="margin: auto; text-align: right; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);  width: 100%">{{ text1 }}{{isFinal ? '?' : '' }}
 						<!--<cursor class="blink" [hidden]="isFinal"></cursor>-->
 						<!--<wait-dots [hidden]="text1"></wait-dots>-->
-					</h2>	
-
-<section style="margin: auto; text-align: right; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);  width: 100%;" [hidden]="text1">
-
-
-					<h2 class="msg" style="color: #888; font-size: 26px" [class.isfinal]="isFinal" >
-					{{ prev_ask }}
-
-						<p class="hint" style="text-align: right; margin-top: 16px" [_hidden]="text1">{{ hint }}</p>
-
-					</h2>	
-						
-						
-
-
-</section>
-
-
+					</h2>
+	
+					<section style="margin: auto; text-align: right; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);  width: 100%;" [hidden]="text1">
+	
+	
+						<h2 class="msg" style="color: #888; font-size: 26px" [class.isfinal]="isFinal">
+							{{ prev_ask }}
+	
+							<p class="hint" style="text-align: right; margin-top: 16px" [_hidden]="text1">{{ hint }}</p>
+	
+						</h2>
+	
+	
+					</section>
+	
+	
 				</section>
-
+	
 				<!--<section vbox style="height: 200px">-->
-					<!--&lt;!&ndash;<div class="" [class.me]="" style="text-align: center">"{{ prev_ask }}"</div>&ndash;&gt;-->
-					<!--&lt;!&ndash;<br>&ndash;&gt;-->
-
+				<!--<div class="" [class.me]="" style="text-align: center">"{{ prev_ask }}"</div>-->
+				<!--<br>-->
+	
 				<!--</section>-->
-
+	
 				<mic-wave $wave></mic-wave>
 			</section>
 		</main>

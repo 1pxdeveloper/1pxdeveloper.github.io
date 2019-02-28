@@ -62,8 +62,6 @@ function expression(rbp) {
 	return left;
 }
 
-
-///
 let $symbol_table = {};
 
 let $symbol_prototype = {
@@ -123,28 +121,16 @@ function constant(id, value) {
 	return s;
 }
 
-function prefix(operators, nud) {
-	nud = nud || default_prefix_nud;
-	for (let operator of operators) {
-		let s = symbol(operator);
-		s.nud = nud;
-	}
+function prefix(operator, nud) {
+	symbol(operator).nud = nud || default_prefix_nud;
 }
 
-function infix(operators, led) {
-	led = led || default_infix_led;
-	for (let operator of operators) {
-		let s = symbol(operator);
-		s.led = led;
-	}
+function infix(operator, led) {
+	symbol(operator).led = led || default_infix_led;
 }
 
-function infixr(operators, led) {
-	led = led || default_infixr_led;
-	for (let operator of operators) {
-		let s = symbol(operator);
-		s.led = led;
-	}
+function infixr(operator, led) {
+	symbol(operator).led = led || default_infixr_led;
 }
 
 
@@ -209,9 +195,10 @@ parse.operator_precedence.forEach((precedence, index, A) => {
 });
 
 
-prefix(["!", "+", "-"]);
-infix(["*", "/", "%", "+", "-", "<", "<=", ">", ">=", "in", "instanceof", "===", "!==", "==", "!=", "&&", "||", ";", "if"]);
-infixr(["**", "="]);
+/// define parse rule of operators
+["!", "+", "-"].forEach(o => prefix(o));
+["*", "/", "%", "+", "-", "<", "<=", ">", ">=", "in", "instanceof", "===", "!==", "==", "!=", "&&", "||", ";", "if"].forEach(o => infix(o));
+["**", "="].forEach(o => infixr(o));
 
 prefix("[", function() {
 	let args = this.push([]);
@@ -289,8 +276,7 @@ infix(["("], function(left) {
 });
 
 
-/// evaluate
-
+/// evaluate rules
 /// @FIXME: 꼭 apply를 token으로 해야 될 필요가 있을까? 쓰는게 setObjectProp (watch용), this.global 은 공통인데?, literal 떄문에?? a를 만들면 되지 않을까? this.push(this.value)로...
 function evaluate(token) {
 	return evaluate.table[token.id][token.length].apply(token, token);
@@ -361,7 +347,6 @@ evaluate.table = evaluate.rules.reduce((table, def) => {
 	table[id][length] = fn;
 	return table;
 }, Object.create(null));
-
 
 
 /// Tokenizer
