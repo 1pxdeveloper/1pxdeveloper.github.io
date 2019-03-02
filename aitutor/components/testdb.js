@@ -153,7 +153,7 @@ $module.factory("DB", function(randomPick) {
 				'We will call your number. Then, you come here. okay?',
 			],
 
-			["ok", "okay", "thanks", "thank you"]
+			["ok", "okay", "thanks", "thank you", "thank"]
 		],
 
 
@@ -162,7 +162,7 @@ $module.factory("DB", function(randomPick) {
 				'Okay, thanks',
 			],
 
-			["ok", "okay", "thanks", "thank you"]
+			["ok", "okay", "thanks", "thank you", "thank", "welcome", "bye"]
 		]
 	];
 

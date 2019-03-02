@@ -31,9 +31,9 @@
 	<content>
 		<!--<ai-app-prototype></ai-app-prototype>-->
 		<!--<ai-app></ai-app>-->
-		<animated-dialog id="app"></animated-dialog>
 
-		<ui-speech-to-text id="stt" style="margin: auto; height: auto;"></ui-speech-to-text>
+		<animated-dialog id="app"></animated-dialog>
+		<ui-speech-to-text id="stt" style="margin: auto; height: auto; opacity: 0"></ui-speech-to-text>
 		<!--<ai-app-screen></ai-app-screen>-->
 
 		<!--<ui-text-to-speech id="tts"></ui-text-to-speech>-->
@@ -46,77 +46,26 @@
 
 $module.require(["DB", "$timeout"], function(DB, $timeout, STT) {
 
-	function capitalize(str) {
-		return str[0].toUpperCase() + str.slice(1);
-	}
-
 
 	window.app = document.getElementById("app");
 
 	// let guide = document.getElementById("guide");
 	let stt = document.getElementById("stt");
-	stt.guide_text = "커피 주문하기";
 
 	document.onclick = function() {
 		document.onclick = null;
-		next();
-
-		// app.ask(DB[0][0]).then(next);
+		intro();
 	};
 
-	let stage = 0;
-	let level = 0;
-	let voice = parseInt(Math.random() * 17);
+	function intro() {
+		stt.style.opacity = 1;
+		stt.guide_text = "Coffee, Travel, Sports, Music";
 
-	let query = "";
+		return stt.choice(["coffee", "travel", "sports", "music"]).then(query => {
 
-	function next() {
-		stt.style.opacity = 0;
-
-
-		let ment = DB[stage][0][level];
-		if (query && level === 0 && query !== "no" && query !== "yes" && query !== "ok" && query !== "okay") {
-			ment = capitalize(query) + ". " + ment;
-		}
-
-		app.ask(ment, voice).then(_ => {
-
-			// guide.style.opacity = 1;
-			stt.style.opacity = 1;
-
-
-			return stt.listen(DB[stage][1]);
-
-		}).then(isok => {
-
-			if (isok) {
-				query = isok;
-
-				stage++;
-				level = 0;
-			} else {
-				if (DB[stage][0][level + 1]) {
-					level++;
-				} else {
-					stage++;
-					level = 0;
-				}
-
-
-			}
-
-			return next();
-
-		}).catch(err => {
-
-			if (DB[stage][0][level + 1]) {
-				level++;
-			}
-
-			return next();
-
-		});
-
+			stt.style.opacity = 0;
+			app.ask("Okay, good. You choose the '" + query + "'.");
+		})
 	}
 
 

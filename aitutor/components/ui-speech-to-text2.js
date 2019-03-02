@@ -3,7 +3,7 @@ $module.template("ui-speech-to-text")`
 	<template>
 		<section flex vbox>
 			<h2 style="text-align: center; width: 100%; font-size: 30px; color: #555">{{ guide_text }}</h2>
-			<mic-wave $wave [index]="index"></mic-wave>
+			<mic-wave $wave></mic-wave>
 		</section>
 	</template>
 
@@ -26,21 +26,31 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeo
 			this.isFinal = false;
 
 			// $.on$(document, ["mousedown", "touchstart", "keydown"], true).take(1).subscribe(() => this.listen());
-
 		}
 
 
 		listen(keywords) {
 
-			return new Promise(resolve => {
+			return new Promise((resolve, reject) => {
 
-				let isok = false;
+				let timer;
+				function fallbackPause() {
+					clearTimeout(timer);
+					timer = setTimeout(function() {
+						reject();
+					}, 7000)
+				}
+
+				let isok = "";
 
 				this.$wave.start();
 				this.$wave.state = "listen";
 
 
+
 				let s = STT.subscribe(event => {
+
+					fallbackPause();
 
 					this.text1 = event.type;
 
@@ -52,7 +62,6 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeo
 						let result = event.results[event.resultIndex];
 
 						Array.from(result).forEach(r => {
-
 
 							if (!isok) {
 								keywords.forEach(keyword => {
@@ -68,11 +77,11 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeo
 
 
 						if (result.isFinal) {
+							clearTimeout(timer);
 
 							this.$wave.state = "final";
 
 							setTimeout(function() {
-
 								resolve(isok);
 								s.unsubscribe();
 
@@ -86,43 +95,64 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeo
 						// }
 					}
 				});
-
-
-				// this.stt = STT(event => {
-				// 	console.log(event.resultIndex, event.results);
-				//
-				// 	// if (callback) {
-				// 	// 	callback();
-				// 	// }
-				// 	//
-				// 	// let results = Array.from(event.results[event.resultIndex]);
-				// 	// let ret = results[0];
-				// 	//
-				// 	// this.text1 = capitalize(ret.transcript);
-				// 	// this.isFinal = event.results[event.resultIndex].isFinal;
-				// 	//
-				// 	// if (this.isFinal) {
-				// 	//
-				// 	// 	this.stt.stop();
-				// 	//
-				// 	// 	setTimeout(() => {
-				// 	// 		resolve(this.text1);
-				// 	// 		this.text1 = "";
-				// 	// 	}, 1000);
-				// 	// }
-				// });
-
-
-				// this.stt.addEventListener("speechstart", () => {
-				// 	this.$wave.state = "speech";
-				// });
-				//
-				// this.stt.addEventListener("speechend", () => {
-				// 	this.$wave.state = "listen";
-				// });
 			});
 		}
 
+
+		choice(keywords) {
+
+			keywords = keywords.map(str => str.toLowerCase());
+
+			return new Promise((resolve, reject) => {
+
+				let isok = "";
+
+				this.$wave.start();
+				this.$wave.state = "listen";
+
+				let s = STT.subscribe(event => {
+					console.log(event);
+
+					if (event.results) {
+						this.$wave.state = "speech";
+
+						let result = event.results[event.resultIndex];
+
+						Array.from(result).forEach(r => {
+
+							if (!isok) {
+								keywords.forEach(keyword => {
+									if (r.transcript.toLowerCase().indexOf(keyword) >= 0) {
+										isok = keyword;
+									}
+								});
+							}
+						});
+
+						if (isok) {
+							this.$wave.state = "final";
+
+							setTimeout(function() {
+								resolve(isok);
+								s.unsubscribe();
+
+							}, 500);
+						}
+
+
+						else if (result.isFinal) {
+							this.$wave.state = "nomatch";
+							setTimeout(_ => {
+								this.$wave.state = "listen";
+
+							}, 500);
+						}
+
+
+					}
+				});
+			});
+		}
 
 	}.prototype
 

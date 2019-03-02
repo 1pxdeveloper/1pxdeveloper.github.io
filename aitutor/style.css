@@ -177,6 +177,9 @@ mic-wave section div[selected] {
 mic-wave [state="final"] div {
   background: #333;
 }
+mic-wave [state="nomatch"] div {
+  animation: shake 0.5s;
+}
 [state="listen"] .c1 {
   animation: updown linear 0.75s infinite alternate;
 }
@@ -330,6 +333,62 @@ ui-speech-to-text {
 @keyframes blink {
   50% {
     opacity: 0;
+  }
+}
+@-moz-keyframes shake {
+  0% {
+    transform: translate(-3px, 0);
+  }
+  25% {
+    transform: translate(3px, 0);
+  }
+  50% {
+    transform: translate(-3px, 0);
+  }
+  100% {
+    transform: translate(0px, 0);
+  }
+}
+@-webkit-keyframes shake {
+  0% {
+    transform: translate(-3px, 0);
+  }
+  25% {
+    transform: translate(3px, 0);
+  }
+  50% {
+    transform: translate(-3px, 0);
+  }
+  100% {
+    transform: translate(0px, 0);
+  }
+}
+@-o-keyframes shake {
+  0% {
+    transform: translate(-3px, 0);
+  }
+  25% {
+    transform: translate(3px, 0);
+  }
+  50% {
+    transform: translate(-3px, 0);
+  }
+  100% {
+    transform: translate(0px, 0);
+  }
+}
+@keyframes shake {
+  0% {
+    transform: translate(-3px, 0);
+  }
+  25% {
+    transform: translate(3px, 0);
+  }
+  50% {
+    transform: translate(-3px, 0);
+  }
+  100% {
+    transform: translate(0px, 0);
   }
 }
 @-moz-keyframes updown {

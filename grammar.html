@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+
+	<link rel="stylesheet" href="mo.css"/>
+</head>
+
+
+<body>
+
+<main>
+	<div id="test" style="font-size: 32px; font-weight: 200; margin: auto; padding: 16px; text-align: left; width: 100%; white-space: pre-wrap"></div>
+</main>
+
+<script>
+
+document.onclick = function() {
+	document.onclick = null;
+
+	let test = document.getElementById("test");
+
+
+	window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+	window.SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+
+	window.recognition = new SpeechRecognition();
+	recognition.continuous = true;
+	recognition.interimResults = true;
+	recognition.maxAlternatives = 10;
+	recognition.lang = 'en-US';
+
+	var grammar = '#JSGF V1.0; grammar colors; public <color> = aqua | azure | beige | bisque | black | blue | brown | chocolate | coral | crimson | cyan | fuchsia | ghostwhite | gold | goldenrod | gray | green | indigo | ivory | khaki | lavender | lime | linen | magenta | maroon | moccasin | navy | olive | orange | orchid | peru | pink | plum | purple | red | salmon | sienna | silver | snow | tan | teal | thistle | tomato | turquoise | violet | white | yellow ;'
+
+	var speechRecognitionList = new SpeechGrammarList();
+	speechRecognitionList.addFromString(grammar, 1);
+	recognition.grammars = speechRecognitionList;
+
+
+	console.log(recognition);
+
+	recognition.onnomatch = function(event) {
+		console.log("onnomatch");
+	};
+
+	recognition.onresult = function(event) {
+		console.log(event.resultIndex, event.results);
+		// fn(event);
+
+		let result = event.results[event.resultIndex];
+
+		let table = Object.create(null);
+		let a = [];
+
+		Array.from(result).forEach(r => {
+			// console.log("#", r);
+
+			let words = String(r.transcript).split(/\s+/);
+
+
+			words.forEach(word => {
+
+				if (!(word in table)) {
+					a.push(word);
+				}
+				table[word] = true;
+			})
+		});
+
+		test.innerText = a.join(" ");
+	};
+
+	recognition.onsoundstart = function(event) {
+		console.log("onsoundstart");
+	};
+
+	recognition.onsoundend = function(event) {
+		console.log("onsoundend");
+	};
+
+	recognition.onspeechstart = function(event) {
+		console.log("onspeechstart");
+	};
+
+	recognition.onspeechend = function(event) {
+		console.log("onspeechend");
+	};
+
+	recognition.start();
+
+}
+
+</script>
+</body>
+</html>

@@ -214,6 +214,30 @@ mic-wave [state="final"]
     background #333
 
 
+mic-wave [state="nomatch"]
+  div
+    animation shake 0.5s
+
+
+@keyframes shake {
+  0% {
+    transform translate(-3px, 0)
+  }
+
+  25% {
+    transform translate(3px, 0)
+  }
+
+  50% {
+    transform translate(-3px, 0)
+  }
+
+  100% {
+    transform translate(0px, 0)
+  }
+}
+
+
 @keyframes updown {
   from {
     transform translate(0, -6px)
