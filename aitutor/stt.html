@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>mic</title>
+	<link rel="stylesheet" href="style.css"/>
+	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/web-animations/2.3.1/web-animations.min.js"></script>-->
+	<script src="../src/js/1px.js"></script>
+	<!--<script type="module" src="./components/dialog.js"></script>-->
+	<!--<script type="module" src="components/waitdots.js"></script>-->
+	<script type="module" src="components/testdb.js"></script>
+
+	<script type="module" src="components/ui-speech-to-text2.js"></script>
+
+	<script type="module" src="components/ui-text-to-speech2.js"></script>
+
+	<script type="module" src="components/ai-test.js"></script>
+	<script type="module" src="components/animated-dialog.js"></script>
+
+
+	<script type="module" src="components/micwave.js"></script>
+
+
+</head>
+<body>
+
+<main>
+	<content>
+		<!--<ai-app-prototype></ai-app-prototype>-->
+		<!--<ai-app></ai-app>-->
+		<!--<animated-dialog id="app"></animated-dialog>-->
+		<ui-speech-to-text id="stt" style="margin: auto; height: auto"></ui-speech-to-text>
+		<!--<ai-app-screen></ai-app-screen>-->
+
+		<!--<ui-text-to-speech id="tts"></ui-text-to-speech>-->
+
+		<!--<ai-test></ai-test>-->
+
+		<!--<h2 id="guide" class="msg" style="text-align: center; font-size: 28px; color: #ccc; transition: opacity 1s">커피를 주문해보세요.</h2>-->
+
+		<!--<mic-wave id="mic" style="transition: opacity 1s"></mic-wave>-->
+
+
+
+
+	</content>
+</main>
+
+<script type="module">
+
+$module.require(["DB", "$timeout"], function(DB, $timeout) {
+
+	window.stt = document.getElementById("stt");
+
+	document.onclick = function() {
+		document.onclick = null;
+
+		stt.listen();
+
+	};
+
+
+
+});
+
+
+</script>
+
+</body>
+</html>

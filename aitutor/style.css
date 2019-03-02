@@ -26,13 +26,12 @@ main {
   background: #fff;
 }
 main content {
-  display: block;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
   overflow: hidden;
   transform: translate3d(0, 0, 0);
-  background: url("../imgs/bg1.png") no-repeat center 100%;
-  background-size: contain;
 }
 @media (min-width: 768px) {
   body {
@@ -156,8 +155,6 @@ cursor {
 }
 mic-wave {
   display: flex;
-  position: absolute;
-  bottom: 0px;
   width: 100%;
   height: 78px;
   z-index: 0;
@@ -167,17 +164,24 @@ mic-wave section {
   margin: auto;
 }
 mic-wave section div {
+  transition: background-color 0.5s;
   background: #999;
-  width: 8px;
-  height: 8px;
-  border-radius: 8px;
-  margin: auto 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 10px;
+  margin: auto 5px;
+}
+mic-wave section div[selected] {
+  height: 30px;
+}
+mic-wave [state="final"] div {
+  background: #333;
 }
 [state="listen"] .c1 {
-  animation: updown linear 0.5s infinite alternate;
+  animation: updown linear 0.75s infinite alternate;
 }
 [state="listen"] .c2 {
-  animation: updown linear 0.5s infinite alternate-reverse;
+  animation: updown linear 0.75s infinite alternate-reverse;
 }
 wait-dots {
   display: inline-block;
@@ -280,8 +284,33 @@ ui-speech-to-text {
   transform: translate3d(15px, 0, 0);
 }
 .tts-word-animation {
+  transition: all 0.5s;
   opacity: 1;
   transform: translate3d(0, 0, 0);
+}
+animated-dialog {
+  display: block;
+}
+animated-dialog p {
+  transition: top 1s, transform 1s;
+  opacity: 0;
+}
+animated-dialog p:nth-child(1) {
+  top: 0;
+  transform: translate(0, -100%) scale(0.6);
+  opacity: 1;
+}
+animated-dialog p:nth-child(2) {
+  top: 0;
+  transform: translate(0, 0) scale(0.6);
+  opacity: 1;
+}
+animated-dialog p:nth-child(3) {
+  transform: translate(0, -50%) scale(1);
+  opacity: 1;
+}
+ui-speech-to-text {
+  transition: opacity 1s;
 }
 @-moz-keyframes blink {
   50% {

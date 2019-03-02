@@ -15,11 +15,6 @@ $module.template("ui-speech-to-text")`
 
 $module.component("ui-speech-to-text", function(Observable, Subject, STT) {
 
-	function $timeout(delay) {
-		return new Promise(resolve => {
-			setTimeout(resolve, delay);
-		})
-	}
 
 	function capitalize(str) {
 		return str[0].toUpperCase() + str.slice(1);
@@ -127,7 +122,26 @@ $module.factory("STT", function(Observable) {
 
 		recognition.start();
 
+		setInterval(function() {
+
+			console.log("start again");
+			recognition.start();
+
+
+		}, 1000)
+
 
 		return recognition;
 	}
+});
+
+
+$module.factory("$timeout", function() {
+
+	return function $timeout(delay) {
+		return new Promise(resolve => {
+			setTimeout(resolve, delay);
+		})
+	}
+
 });

@@ -1,10 +1,9 @@
 $module.template("mic-wave")`
 	<template>
 		<section [attr.state]="state">
-			<div $c1 class="c1"></div>
-			<div $c2></div>
-			<div $c3 class="c2"></div>
-			<!--<div $c4></div>-->
+			<div $c1 [attr.selected]="index === 0" class="c1"></div>
+			<div $c2 [attr.selected]="index === 1"></div>
+			<div $c3 [attr.selected]="index === 2" class="c2"></div>
 		</section>
 	</template>
 `;
@@ -17,7 +16,7 @@ $module.component("mic-wave", function() {
 	return class MicWave {
 
 		init($) {
-			this.dots = [this.$c1, this.$c2, this.$c3];//, this.$c4];
+			this.dots = [this.$c1, this.$c2, this.$c3];
 			this.state = "stop";
 		}
 
@@ -52,11 +51,12 @@ $module.component("mic-wave", function() {
 
 			let dots = this.dots;
 			let prev = [SIZE, SIZE, SIZE, SIZE];
-			let smoothing = 0.8;
+			let smoothing = 0.9;
 
 			let loop = 0;
 
 			let self = this;
+
 			function draw() {
 				requestAnimationFrame(draw);
 
@@ -73,6 +73,11 @@ $module.component("mic-wave", function() {
 
 						return v;
 					});
+				} else {
+
+					dots.forEach((dot, i) => {
+						dot.style.height = 10 + "px";
+					});
 				}
 			}
 
@@ -80,49 +85,4 @@ $module.component("mic-wave", function() {
 		}
 
 	}.prototype;
-});
-
-
-$module.factory("STT", function() {
-
-	return function mic(fn) {
-		window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-		let recognition = new SpeechRecognition();
-		recognition.continuous = true;
-		recognition.interimResults = true;
-		recognition.maxAlternatives = 10;
-		recognition.lang = 'en-US';
-
-		console.log(recognition);
-
-		recognition.onnomatch = function(event) {
-			console.log("onnomatch");
-		};
-
-		recognition.onresult = function(event) {
-			console.log(event.resultIndex, event.results);
-			fn(event);
-		};
-
-		recognition.onsoundstart = function(event) {
-			console.log("onsoundstart");
-		};
-
-		recognition.onsoundend = function(event) {
-			console.log("onsoundend");
-		};
-
-		recognition.onspeechstart = function(event) {
-			console.log("onspeechstart");
-		};
-
-		recognition.onspeechsend = function(event) {
-			console.log("onspeechend");
-		};
-
-		let x = recognition.start();
-
-		return recognition;
-	}
 });

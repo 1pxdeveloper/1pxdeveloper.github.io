@@ -29,13 +29,15 @@ main
   background #fff
 
   content
-    display block
+    display flex
+    flex-direction column
     width 100%
     height 100%
     overflow hidden
     transform translate3d(0, 0, 0)
-    background url("../imgs/bg1.png") no-repeat center 100%
-    background-size contain
+
+//background url("../imgs/bg1.png") no-repeat center 100%
+//background-size contain
 
 
 +tablet-and-desktop()
@@ -182,8 +184,8 @@ cursor
 
 mic-wave
   display flex
-  position absolute
-  bottom 0px
+  //position absolute
+  //bottom 0px
   width 100%
   height 78px;
   //height 50%
@@ -195,11 +197,21 @@ mic-wave
     margin auto
 
     div
+      transition background-color 0.5s
       background #999
-      width 8px
-      height 8px
-      border-radius 8px
-      margin auto 6px
+      width 10px
+      height 10px
+      border-radius 10px
+      margin auto 5px
+
+      &[selected]
+        //background #555
+        height 30px
+
+
+mic-wave [state="final"]
+  div
+    background #333
 
 
 @keyframes updown {
@@ -215,11 +227,11 @@ mic-wave
 
 [state="listen"]
   .c1 {
-    animation updown linear 0.5s infinite alternate
+    animation updown linear 0.75s infinite alternate
   }
 
   .c2 {
-    animation updown linear 0.5s infinite alternate-reverse
+    animation updown linear 0.75s infinite alternate-reverse
   }
 
 
@@ -343,15 +355,12 @@ ai-message
   display block
 
 
-
-
 ui-speech-to-text
   display flex
   margin auto
   width 100%
   height 100%
   overflow hidden
-
 
 
 .msg
@@ -375,7 +384,6 @@ ui-speech-to-text
     transform translate(0, -100%) scale(0.6)
 
 
-
 .hints
   position relative
   overflow hidden
@@ -383,22 +391,24 @@ ui-speech-to-text
 
   .hint
     background #fff
-    //animation fade 1s infinite
+
+  //animation fade 1s infinite
 
   .hint2
     position absolute
     top 0
-    //animation fade2 1s infinite
+
+//animation fade2 1s infinite
 
 
 @keyframes fade {
   from {
-    transform translate3d(0,0,0)
+    transform translate3d(0, 0, 0)
     opacity 1
   }
 
   to {
-    transform translate3d(0,-100%,0)
+    transform translate3d(0, -100%, 0)
     opacity 0
   }
 }
@@ -406,12 +416,12 @@ ui-speech-to-text
 
 @keyframes fade2 {
   from {
-    transform translate3d(0,100%,0)
+    transform translate3d(0, 100%, 0)
     opacity 0
   }
 
   to {
-    transform translate3d(0,0,0)
+    transform translate3d(0, 0, 0)
     opacity 1
   }
 }
@@ -421,8 +431,35 @@ ui-speech-to-text
   white-space pre-wrap
   transition all 0.5s
   opacity 0
-  transform translate3d(15px,0,0)
+  transform translate3d(15px, 0, 0)
 
 .tts-word-animation
+  transition all 0.5s
   opacity 1
-  transform translate3d(0,0,0)
+  transform translate3d(0, 0, 0)
+
+
+animated-dialog
+  display block
+
+  p
+    transition top 1s, transform 1s
+    opacity 0
+
+  p:nth-child(1)
+    top 0
+    transform translate(0, -100%) scale(0.6)
+    opacity 1
+
+  p:nth-child(2)
+    top 0
+    transform translate(0, 0) scale(0.6)
+    opacity 1
+
+  p:nth-child(3)
+    transform translate(0, -50%) scale(1)
+    opacity 1
+
+
+ui-speech-to-text
+  transition opacity 1s

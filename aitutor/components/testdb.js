@@ -6,7 +6,7 @@ $module.factory("randomPick", function() {
 
 });
 
-$module.factory("DB", function() {
+$module.factory("DB", function(randomPick) {
 
 	let DB = [
 		["What can I get for you?", "무엇을 도와드릴까요?"],
@@ -89,10 +89,82 @@ $module.factory("DB", function() {
 	];
 
 
+	let DB_NEW = [
+
+		[
+			[
+				"Greeting. What can I get for you?",
+				"Sorry, What kind of coffee would you like?",
+				"Well, Americano, Latte, or Espresso? or ...",
+			],
+
+			["americano", "latte", "espresso", "black"]
+		],
+
+		// ["I’d like an americano, please.", "아메리카노 한 잔 주세요."],
+
+		[
+			[
+				"Okay, What size would you like?",
+				"What size?",
+				"Would you like the 'small', 'medium' or 'large' size?",
+				"'small', 'medium' or 'large'"
+			],
+
+			["small", "medium", "large", "short", "grande", "tall", "venti"]
+		],
+
+		// ["A small, please.", "작은 걸로 주세요."],
+
+		[
+			[
+				"Okay, Anything else besides the drink?",
+				"Do you want anything else?",
+				"anything else?"
+			],
+
+			["yes", "no"]
+		],
+
+		[
+			[
+				"Okay, And is that for here or to go?",
+				"for here or to go?"
+			],
+
+			["here", "go"]
+		],
 
 
+		[
+			[
+				"Okay. Your total comes to $3.49. Do you want to pay in cash or credit card?",
+				'Sorry. Are you paying with "cash" or "credit"?',
+				'cash? or credit?',
+			],
+
+			["cash", "credit"]
+		],
 
 
+		[
+			[
+				"Great. We’ll call your number when your order is ready. You can pick it up at the counter over there, okay?",
+				'We will call your number. Then, you come here. okay?',
+			],
+
+			["ok", "okay", "thanks", "thank you"]
+		],
+
+
+		[
+			[
+				'Okay, thanks',
+			],
+
+			["ok", "okay", "thanks", "thank you"]
+		]
+	];
 
 
 	// return DB3;
@@ -100,5 +172,5 @@ $module.factory("DB", function() {
 
 	// return randomPick([DB2, DB3, DB4]);
 
-	return DB911;
+	return DB_NEW;
 });

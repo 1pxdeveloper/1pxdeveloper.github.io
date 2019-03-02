@@ -5,7 +5,7 @@ function traverse(node, fn) {
 	fn = fn || noop;
 
 	let stack = [];
-	while(node) {
+	while (node) {
 		node = fn(node) === false ? stack.pop() : node.firstChild || stack.pop();
 		node && node.nextSibling && stack.push(node.nextSibling);
 	}
@@ -234,7 +234,7 @@ function _nodeValue(value) {
 function compile_text_node(textNode, context) {
 	let index = textNode.nodeValue.indexOf("{{");
 
-	while(index >= 0) {
+	while (index >= 0) {
 		textNode = textNode.splitText(index);
 
 		index = textNode.nodeValue.indexOf("}}");
@@ -283,7 +283,7 @@ $module.directive("*foreach", function() {
 		let s4 = [];
 		let s5 = [];
 
-		while(M[i][j] > 0) {
+		while (M[i][j] > 0) {
 			if (s1[i - 1] === s2[j - 1] && (M[i - 1][j - 1] + 1 === M[i][j])) {
 				// s3.unshift(s1[i - 1]);
 
@@ -370,18 +370,16 @@ $module.directive("*foreach", function() {
 						a.oncancel = a.onfinish = () => {
 							let ret;
 							if (leave.onfinish) {
-								 ret = leave.onfinish(a);
+								ret = leave.onfinish(a);
 							}
 							if (ret !== false) {
 								node.remove();
 							}
 						}
 
-					}
-					else {
+					} else {
 						container[index].node.remove();
 					}
-
 
 
 				} else {
@@ -408,18 +406,13 @@ $module.directive("*foreach", function() {
 
 						/// @FIXME...
 						requestAnimationFrame(function() {
-							let enter = r.node.getAttribute("transition-enter");
-							if (enter) {
-								r.node.classList.add(enter);
-							}
+							requestAnimationFrame(function() {
+								let enter = r.node.getAttribute("transition-enter");
+								if (enter) {
+									r.node.classList.add(enter);
+								}
+							});
 						});
-
-						setTimeout(function() {
-							let enter = r.node.getAttribute("transition-enter");
-							if (enter) {
-								r.node.classList.add(enter);
-							}
-						}, 100);
 
 					}
 

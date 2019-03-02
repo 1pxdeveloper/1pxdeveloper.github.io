@@ -140,8 +140,8 @@ symbol(":");
 symbol(")");
 symbol("]");
 
-symbol("(end)");
 symbol("(name)");
+symbol("(end)").nud = () => undefined;
 symbol("(literal)").nud = default_constant_nud;
 
 constant("true", true);
@@ -178,6 +178,8 @@ parse.operator_precedence = [
 
 	[2, "if"],
 
+	[2, "|"],
+
 	[2, "="],
 
 	[2, ";"],
@@ -199,6 +201,12 @@ parse.operator_precedence.forEach((precedence, index, A) => {
 ["!", "+", "-"].forEach(o => prefix(o));
 ["*", "/", "%", "+", "-", "<", "<=", ">", ">=", "in", "instanceof", "===", "!==", "==", "!=", "&&", "||", ";", "if"].forEach(o => infix(o));
 ["**", "="].forEach(o => infixr(o));
+
+prefix("(", function() {
+	let e = expression();
+	next(")");
+	return e;
+});
 
 prefix("[", function() {
 	let args = this.push([]);
@@ -244,25 +252,25 @@ prefix("{", function() {
 	next("}");
 });
 
-infix(["."], function(left) {
+infix(".", function(left) {
 	this.push(left);
 	this.push(next("(name)"));
 });
 
-infix(["["], function(left) {
+infix("[", function(left) {
 	this.push(left);
 	this.push(expression());
 	next("]");
 });
 
-infix(["?"], function(left) {
+infix("?", function(left) {
 	this.push(left);
 	this.push(expression());
 	next(":");
 	this.push(expression());
 });
 
-infix(["("], function(left) {
+infix("(", function(left) {
 	let args = this.push(left, []);
 
 	for (; ;) {
@@ -275,9 +283,21 @@ infix(["("], function(left) {
 	next(")");
 });
 
+infix("|", function(left) {
+	let args = this.push(left, []);
+
+	if ($token.id === ":") {
+		next(":");
+		for (; ;) {
+			args.push(expression());
+			if ($token.id !== ",") break;
+			next(",");
+		}
+	}
+});
+
 
 /// evaluate rules
-/// @FIXME: 꼭 apply를 token으로 해야 될 필요가 있을까? 쓰는게 setObjectProp (watch용), this.global 은 공통인데?, literal 떄문에?? a를 만들면 되지 않을까? this.push(this.value)로...
 function evaluate(token) {
 	return evaluate.table[token.id][token.length].apply(token, token);
 }
@@ -303,7 +323,7 @@ evaluate.rules = [
 	["+", (a, b) => evaluate(a) + evaluate(b)],
 	["-", (a, b) => evaluate(a) - evaluate(b)],
 	["*", (a, b) => evaluate(a) * evaluate(b)],
-	["*", (a, b) => Math.pow(evaluate(a), evaluate(b))],
+	["**", (a, b) => Math.pow(evaluate(a), evaluate(b))],
 	["/", (a, b) => evaluate(a) / evaluate(b)],
 	["%", (a, b) => evaluate(a) % evaluate(b)],
 	["%%", (a, b) => modulo(evaluate(a), evaluate(b))],
@@ -354,7 +374,7 @@ tokenize.lex = [
 	["(name)", /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)/],
 	["(number)", /((?:\d*\.\d+)|\d+)/],
 	["(string)", /('[^']*'|"[^"]*"|`[^`]*`)/],
-	["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|%%|\|\||[-|+*/%!?:;.,<>=\[\]\(\){}])/],
+	["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|%%|\*\*|\|\||[-|+*/%!?:;.,<>=\[\]\(\){}])/],
 	["(ws)", /(\s)/],
 	["(unknown)", /./]
 ];
@@ -395,23 +415,50 @@ function parse(script) {
 	let root = expression();
 	next("(end)");
 
-	return root;
+	let ret = function() {
+		return evaluate(root);
+	};
+
+	ret.root = root;
+
+	return ret;
 }
 
 
-/// Run
-let script = "1 + 2 / 3 * 4 + 1 - 2";
+/// @TODO: evaluate는 ++, --, =, 등 assign이 가능하고 watch는 assign이 불가능 하도록!!? (단 최종 assignment는 가능 ex) num_items = items.forEach(...).length;
 
-script = "[,,1,2,3,4,6,,]";
+
+/// @FIXME: 테스트용 코드.. 나중에 지울것!!
+parse.operator_precedence.forEach((precedence, index, A) => {
+	let [num, ...operators] = precedence;
+
+	for (let operator of operators) {
+		let s = symbol(operator);
+
+		if (num === 1 && !s.hasOwnProperty("nud")) {
+			console.warn(s.id, "no nud");
+		}
+
+		if (num === 2 && !s.hasOwnProperty("led")) {
+			console.warn(s.id, "no led");
+		}
+	}
+});
+
+
+/// Run
+let script = "1 + 2 / 3 * 4 - 1";
+
+// script = "";
 // script = "Math.round(1.5)";
 
 // script = "1 < 2 ? 5 : 3 < 2 ? 1 : 2";
 
 
-let root = parse(script);
+let r = parse(script);
 
-console.log(root);
-console.log(evaluate(root));
+console.log(r.root);
+console.log(parse(script)());
 console.log(eval(script));
 
 
