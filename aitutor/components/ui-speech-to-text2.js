@@ -38,7 +38,7 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeo
 					clearTimeout(timer);
 					timer = setTimeout(function() {
 						reject();
-					}, 7000)
+					}, 5000)
 				}
 
 				let isok = "";

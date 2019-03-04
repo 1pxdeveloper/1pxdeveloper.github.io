@@ -95,10 +95,10 @@ $module.factory("DB", function(randomPick) {
 			[
 				"Greeting. What can I get for you?",
 				"Sorry, What kind of coffee would you like?",
-				"Well, Americano, Latte, or Espresso? or ...",
+				"Well, Americano, Latte, Espresso or black coffee?",
 			],
 
-			["americano", "latte", "espresso", "black"]
+			["americano", "latte", "espresso", "black", "cappuccino"]
 		],
 
 		// ["I’d like an americano, please.", "아메리카노 한 잔 주세요."],
@@ -107,8 +107,8 @@ $module.factory("DB", function(randomPick) {
 			[
 				"Okay, What size would you like?",
 				"What size?",
-				"Would you like the 'small', 'medium' or 'large' size?",
-				"'small', 'medium' or 'large'"
+				"Would you like the small, medium or large size?",
+				"small, medium or large?"
 			],
 
 			["small", "medium", "large", "short", "grande", "tall", "venti"]
@@ -139,7 +139,7 @@ $module.factory("DB", function(randomPick) {
 		[
 			[
 				"Okay. Your total comes to $3.49. Do you want to pay in cash or credit card?",
-				'Sorry. Are you paying with "cash" or "credit"?',
+				'Sorry. Are you paying with cash or credit?',
 				'cash? or credit?',
 			],
 
