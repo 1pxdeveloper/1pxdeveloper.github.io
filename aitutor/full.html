@@ -13,8 +13,8 @@
 	<!--<script type="module" src="components/ui-speech-to-text.js"></script>-->
 	<!--<script type="module" src="components/ui-text-to-speech.js"></script>-->
 
-
-	<script type="module" src="components/ui-speech-to-text2.js"></script>
+	<!--<script type="module" src="components/ui-speech-to-text2.js"></script>-->
+	<script type="module" src="components/ui-speech-to-text3.js"></script>
 	<script type="module" src="components/ui-text-to-speech2.js"></script>
 
 	<!--<script type="module" src="components/ai-test.js"></script>-->
@@ -44,38 +44,49 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 
 	document.onclick = function() {
 		document.onclick = null;
-		intro();
+		next();
 	};
+
+	function show_stt() {
+		// stt.style.visibility = "visible";
+		stt.style.opacity = 1;
+	}
+
+	function hide_stt() {
+		// stt.style.visibility = "hidden";
+		stt.style.opacity = 0;
+	}
 
 	function intro() {
 		return app.ask("Hi. My name is Daniel. I am your AI tutor. Nice meet you.")
 
-			.then(_ => app.ask("You will learn English conversation from the roll play."))
+		.then(_ => app.ask("You will learn English conversation from the roll play."))
 
-			.then(_ => app.ask("which do you like coffee, travel, sports or music?"))
+		.then(_ => app.ask("which do you like coffee, travel, sports or music?"))
 
-			.then(_ => {
-				stt.style.opacity = 1;
-				stt.guide_text = "Coffee, Travel, Sports, Music";
-				return stt.choice(["coffee", "travel", "sports", "music"]);
-			})
+		.then(_ => {
+			show_stt();
+			stt.guide_text = "Coffee, Travel, Sports, Music";
+			return stt.listen(["coffee", "travel", "sports", "music"]).then(res => app.speak(res.transcript).then(_ => res.query))
+		})
 
-			.then(query => {
-				stt.style.opacity = 0;
-				return app.ask(`Okay, ${query}. That's good.`);
-			})
+		.then(res => {
+			let {query, transcript} = o;
+			hide_stt();
+			return app.ask(`Okay, ${query}. That's good.`);
+		})
 
-			.then(_ => app.ask(`But this is test version. So we have only one episode. okay?`, 1))
+		.then(_ => app.ask(`But this is test version. So we have only one episode. okay?`))
 
-			.then(_ => $timeout(1000))
+		.then(_ => $timeout(1000))
 
-			.then(_ => app.ask("You will order coffee at the cafe. Are you ready?"))
+		.then(_ => app.ask("You will order coffee at the cafe. Are you ready?"))
 
-			.then(_ => app.ask("Let's Start."))
+		.then(_ => app.ask("Let's Start."))
 
-			.then(_ => $timeout(1000))
+		.then(_ => $timeout(1000))
 
-			.then(_ => next());
+		.then(_ => next());
 	}
 
 	let stage = 0;
@@ -90,7 +101,7 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 
 
 	function next() {
-		stt.style.opacity = 0;
+		hide_stt();
 		stt.guide_text = "커피 주문하기";
 
 		let ment = DB[stage][0][level];
@@ -103,55 +114,53 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 		}
 
 		app.ask(ment, voice)
-			.then(_ => {
-				stt.style.opacity = 1;
+		.then(_ => {
+			show_stt();
 
+			if (DB[stage][0][level + 1]) {
+				return stt.listen(DB[stage][1]).then(res => app.speak(res.transcript).then(_ => res.query))
+			} else {
+				return stt.listen(DB[stage][1]).then(res => app.speak(res.transcript).then(_ => res.query))
+			}
+		})
+
+		.then(isok => {
+
+			if (isok) {
+				query = isok;
+
+				stage++;
+				level = 0;
+			}
+			else {
 				if (DB[stage][0][level + 1]) {
-					return stt.listen(DB[stage][1]);
-				}
-				else {
-					return stt.choice(DB[stage][1]);
-				}
-			})
-
-			.then(isok => {
-
-				if (isok) {
-					query = isok;
-
+					level++;
+				} else {
 					stage++;
 					level = 0;
 				}
-				else {
-					if (DB[stage][0][level + 1]) {
-						level++;
-					}
-					else {
-						stage++;
-						level = 0;
-					}
-
-					if (!DB[stage]) {
-						return outro();
-					}
-
-				}
-
-				return next();
-			})
-
-			.catch(err => {
 
 				if (!DB[stage]) {
 					return outro();
 				}
 
-				if (DB[stage][0][level + 1]) {
-					level++;
-				}
+			}
 
-				return next();
-			});
+			return next();
+		})
+
+		.catch(err => {
+
+			if (!DB[stage]) {
+				return outro();
+			}
+
+			if (DB[stage][0][level + 1]) {
+				level++;
+			}
+
+			return next();
+		});
 
 	}
 
@@ -160,39 +169,27 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 
 		app.ask("Great. You are finished first conversation. How's your feel?")
 
-			.then(_ => app.ask("Learning this expression will help you improve your English."))
+		.then(_ => app.ask("Learning this expression will help you improve your English."))
 
-			.then(_ => app.ask("Repeat after me."))
+		.then(_ => app.ask("Repeat after me."))
 
-			.then(_ => app.ask(`I would like black coffee. please.`))
+		.then(_ => app.ask(`I would like black coffee. please.`))
 
-			.then(_ => {
-				stt.style.opacity = 1;
-				stt.guide_text = "I would like black coffee. please.";
-				return stt.listen([""]);
-			})
+		.then(_ => {
+			show_stt();
 
-			.then(_ => {
-				stt.style.opacity = 0;
-				return app.ask("Perfect. Let's practice!")
-			})
+			stt.guide_text = "I would like black coffee. please.";
+			return stt.listen([""]);
+		})
 
-			.then(_ => app.ask(DB[0][0][0], voice))
+		.then(_ => {
+			hide_stt();
+			return app.ask("Perfect. Do not forget this expression.")
+		})
 
-			.then(_ => {
-				stt.style.opacity = 1;
-				stt.guide_text = "I would like black coffee. please.";
-				return stt.listen([""]);
-			})
-
-			.then(_ => {
-				stt.style.opacity = 0;
-				return app.ask("That's it! Good job. Do not forget this expression.")
-			})
-
-			.then(_ => {
-				return app.ask("That's all for today. See you next time.")
-			});
+		.then(_ => {
+			return app.ask("That's all for today. See you next time.")
+		});
 	}
 });
 

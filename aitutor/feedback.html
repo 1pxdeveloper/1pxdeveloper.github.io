@@ -44,7 +44,7 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 
 	document.onclick = function() {
 		document.onclick = null;
-		next();
+		outro();
 	};
 
 	function show_stt() {
@@ -166,20 +166,25 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 
 	function outro() {
 
-		app.ask("Great!")
+		app.ask("Great. You are finished first conversation. How's your feel?")
 
-		.then(_ => app.ask("You are finished first conversation. How's your feel?"))
+		.then(_ => app.ask("Learning this expression will help you improve your English."))
 
-		.then(_ => app.ask("Learning this expression will help you improve your English. Repeat after me."))
+		.then(_ => app.ask("Repeat after me."))
 
 		.then(_ => app.ask(`I try to play it once a week.`))
 
 		.then(_ => {
-			show_stt();
-			stt.guide_text = "I try to play it once a week.";
-			return stt.listen([""]);
+			return $timeout(2000)
 		})
 
+		// .then(_ => {
+		// 	show_stt();
+		//
+		// 	stt.guide_text = "I try to play it once a week.";
+		// 	return stt.listen([""]);
+		// })
+		//
 		.then(_ => {
 			return app.ask("Good job. Do not forget this expression.")
 		})

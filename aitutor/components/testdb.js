@@ -167,10 +167,72 @@ $module.factory("DB", function(randomPick) {
 	];
 
 
+	let DB_BREAD = [
+
+		[
+			["Do you know what time it is?", "지금 시간을 알려주세요.", ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "sorry"]],
+			["Sorry. I didn't catch that. What time is it now?", "지금 __시 __분이야.", ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "sorry"]],
+			["All right. I'll just check it out myself", "미안해", ["sorry"]],
+		],
+
+		[
+			["Okay... I'm so low on energy. I was not able to get lunch because of the meeting. Listen. My stomach is growling.", "먹을 것을 사다 준다고 제안해보세요.", ["to eat"]],
+			["I mean I'm starving.", "베이글을 사다 준다고 제안해보세요.", ["eat", "bagel"]],
+			["Did you hear me? There's nothing to eat here.", `"빵집에서 베이글이라도 좀 사올게."`, ["eat", "bagel"]],
+			["Oh god. Get me some bagels. please.", `"알겠어."`, ["yes", "ok", "okay", "know", "bagel"]]
+		],
+
+		[
+			["Thanks. Ah! I wish I had something to drink.", "어떤 음료를 원하는 지 물어보세요.", ["what", "drink", "beverage"]],
+			["Excuse me? Could you buy me something to drink?", "어떤 음료를 원하는 지 물어보세요.", ["what", "drink", "beverage"]],
+			["Hey! What's on your mind? I hope you bring me something to drink!", `"어떤 음료로 사올까?"`, ["what", "drink"]],
+			["You can buy a beverage for me, right?", `"알겠어."`, ["yes", "ok", "okay", "sure"]]
+		],
+
+		["Umm... Buy milk if you can. Do me a favor."]
+	];
+
+
+	let DB_ABC = [
+
+		[
+			["Hello, What do you do in your free time?", "평소에 즐기는 취미를 말해보세요.", ["movie", "sing", "song", "listen", "music", "sport"]],
+			["Sorry, I can hear that. What do you do? in your free time? What is your hobby?", "평소에 즐기는 취미를 말해보세요.", ["movie", "sing", "song", "lister", "music", "sport"]],
+			["Hmm...? then.. which do you like watch movie, to sing a song? or...", "평소에 즐기는 취미를 말해보세요.", ["movie", "sing", "song", "lister", "music", "sport"]],
+			["read books, playing guitar, or listen to music? or...", "평소에 즐기는 취미를 말해보세요.", ["movie", "sing", "song", "lister", "music", "sport"]],
+			["I like drawing. Do you like drawing?", "평소에 즐기는 취미를 말해보세요.", ["yes", "okay", "ok"]],
+		],
+
+		[
+			["Oh, do you? How often do you do it?", "얼마나 자주 하는지 알려주세요.", ["every", "day", "week", "once", "twice"]],
+			["Pardon? How often do you do?", "얼마나 자주 하는지 알려주세요.", ["every", "day", "week", "once", "twice"]],
+			["Sorry. How often?", "얼마나 자주 하는지 알려주세요.", ["every", "day", "week", "once", "twice"]],
+			["I try to draw once a week. How about you?", "얼마나 자주 하는지 알려주세요.", ["every", "day", "week", "once", "twice"]],
+			["every day? once a week? or once a month?", "얼마나 자주 하는지 알려주세요.", ["yes", "okay", "every", "day", "week", "once", "twice"]],
+		],
+
+		[
+			["Oh, I always wanted to do that. Can join with you later?", "할 수 있다고 말해주세요.", ["ok", "okay", "yes", "sure", "why not"]],
+			["Sorry? Can I join?", "할 수 있다고 말해주세요.", ["ok", "okay", "yes", "sure", "why not"]],
+			["Could you play with me?", "할 수 있다고 말해주세요.", ["ok", "okay", "yes", "sure", "why not"]],
+		],
+
+		[
+			["Wow! When do you available to do it together?", "언제 취미활동을 함께 할수 있는지 알려주세요.", ["next", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]],
+			["Sorry. What day do we together?", "언제 취미활동을 함께 할수 있는지 알려주세요.", ["next", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]],
+			["Next monday? or friday?", "언제 취미활동을 함께 할수 있는지 알려주세요.", ["next", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]],
+
+			["Do you available on next monday?", "언제 취미활동을 함께 할수 있는지 알려주세요.", ["ok", "okay", "yes", "sure", "why not"]],
+		],
+
+		["Okay. Thank you. See you then."]
+	];
+
+
 	// return DB3;
 
 
 	// return randomPick([DB2, DB3, DB4]);
 
-	return DB_NEW;
+	return DB_ABC;
 });

@@ -115,7 +115,7 @@ header {
   color: #ccc;
   width: 100%;
   font-size: 32px;
-  font-weight: 200;
+  font-weight: 100;
   top: 50%;
   transform-origin: 0 0;
   transform: translate(0, -50%);
@@ -314,6 +314,12 @@ animated-dialog p:nth-child(3) {
 }
 ui-speech-to-text {
   transition: opacity 1s;
+}
+ui-speech-to-text .transcript {
+  color: #ccc;
+}
+ui-speech-to-text .transcript.isfinal {
+  color: #111;
 }
 @-moz-keyframes blink {
   50% {
