@@ -14,22 +14,30 @@
 	<!--<script type="module" src="components/ui-text-to-speech.js"></script>-->
 
 	<!--<script type="module" src="components/ui-speech-to-text2.js"></script>-->
-	<script type="module" src="components/ui-speech-to-text3.js"></script>
+	<!--<script type="module" src="components/ui-speech-to-text3.js"></script>-->
+	<script type="module" src="components/ui-speech-to-text4.js"></script>
 	<script type="module" src="components/ui-text-to-speech2.js"></script>
 
 	<!--<script type="module" src="components/ai-test.js"></script>-->
 	<script type="module" src="components/animated-dialog.js"></script>
 
 	<script type="module" src="components/micwave.js"></script>
+
+
+	<script type="module" src="components/ui-script-editor.js"></script>
+
+
 </head>
 <body>
 
-<main>
+<main id="main">
 	<content>
 		<animated-dialog id="app"></animated-dialog>
 		<ui-speech-to-text id="stt" style="margin: auto; height: auto; opacity: 0"></ui-speech-to-text>
 	</content>
 </main>
+
+<ui-script-editor id="editor"></ui-script-editor>
 
 
 <script type="module">
@@ -39,13 +47,34 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 		return str[0].toUpperCase() + str.slice(1);
 	}
 
+	let editor = document.getElementById("editor");
+	document.onkeydown = function(e) {
+		if (e.key === "Escape") {
+			editor.hidden = !editor.hidden;
+		}
+	};
+
+
+	///
+	let missions;
+
 	window.app = document.getElementById("app");
 	let stt = document.getElementById("stt");
 
-	document.onclick = function() {
-		document.onclick = null;
-		intro();
+	let main = document.getElementById("main");
+	main.onclick = function() {
+		main.onclick = null;
+
+
+		missions = editor.getData();
+		if (!missions) {
+			alert("미션 스크립트가 없습니다.");
+			return;
+		}
+
+		next();
 	};
+
 
 	function show_stt() {
 		// stt.style.visibility = "visible";
@@ -57,39 +86,8 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 		stt.style.opacity = 0;
 	}
 
-	function intro() {
-		return app.ask("Hi. My name is Daniel. I am your AI tutor. Nice meet you.")
-
-		.then(_ => app.ask("You will learn English conversation from the roll play."))
-
-		.then(_ => app.ask("which do you like coffee, travel, sports or music?"))
-
-		.then(_ => {
-			show_stt();
-			stt.guide_text = "Coffee, Travel, Sports, Music";
-			return stt.listen(["coffee", "travel", "sports", "music"]).then(res => app.speak(res.transcript).then(_ => res.query))
-		})
-
-		.then(res => {
-			let {query, transcript} = o;
-			hide_stt();
-			return app.ask(`Okay, ${query}. That's good.`);
-		})
-
-		.then(_ => app.ask(`But this is test version. So we have only one episode. okay?`))
-
-		.then(_ => $timeout(1000))
-
-		.then(_ => app.ask("You will order coffee at the cafe. Are you ready?"))
-
-		.then(_ => app.ask("Let's Start."))
-
-		.then(_ => $timeout(1000))
-
-		.then(_ => next());
-	}
-
 	let stage = 0;
+	let step = 0;
 	let level = 0;
 
 	let voice = parseInt(Math.random() * 17);
@@ -97,10 +95,61 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 		voice = 2;
 	}
 
-	let query = "";
-
+	let prev_query = "";
 
 	function next() {
+		let current_stage = missions.sections[stage].missions;
+		let current_step = current_stage[step];
+
+		console.log("current_stage", current_stage);
+		console.log("current_step", current_step);
+
+
+		if (current_step.ask && current_step.ask[level]) {
+			app.ask(current_step.ask[level])
+
+			.then(_ => {
+
+				stt.guide_text = current_step.guide || "";
+
+				if (current_step.answer) {
+					show_stt();
+
+					return stt.listen(current_step.answer).then(res => {
+						hide_stt();
+
+						let {query, transcript} = res;
+
+						console.log(query);
+
+
+						return app.speak(transcript).then(_ => {
+
+							if (query) {
+								step++;
+								level = 0;
+								return next();
+							}
+						});
+
+
+
+
+					}).catch(err => {
+						hide_stt();
+
+						console.log(err);
+
+						level++;
+						return next();
+					});
+				}
+			})
+		}
+	}
+
+
+	function next2() {
 		hide_stt();
 		stt.guide_text = "커피 주문하기";
 
@@ -131,8 +180,7 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 
 				stage++;
 				level = 0;
-			}
-			else {
+			} else {
 				if (DB[stage][0][level + 1]) {
 					level++;
 				} else {

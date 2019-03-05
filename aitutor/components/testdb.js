@@ -234,5 +234,5 @@ $module.factory("DB", function(randomPick) {
 
 	// return randomPick([DB2, DB3, DB4]);
 
-	return DB_ABC;
+	return DB_NEW;
 });

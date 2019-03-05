@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+
+<script id="script" type="text/plain">
+
+#1
+Greeting. What can I get for you?
+Sorry, What kind of coffee would you like?
+Well, Americano, Latte, Espresso or black coffee?
+
+(커피를 주문해보세요.)
+
+- americano | latte | espresso | black | cappuccino
+
+
+#2
+Okay, ___. What size would you like?
+What size?
+Would you like the small, medium or large size?
+small, medium or large?
+
+(사이즈를 알려주세요.)
+
+- small | medium | large | short | grande | tall | venti
+
+
+___? okay, Anything else besides the drink?
+Do you want anything else?
+anything else?
+
+- yes | no | that's all | that is all
+
+
+#3
+Okay. Your total comes to $3.49. Do you want to pay in cash or credit card?
+Sorry. Are you paying with cash or credit?
+cash? or credit?
+
+- cash | credit | card
+
+
+#4
+___. Great. We’ll call your number when your order is ready. You can pick it up at the counter over there, okay?
+We will call your number. Then, you come here. okay?
+Your order is ready, I will call you. okay?
+okay?
+
+- ok | okay | thanks | thank you | thank | got it | yes
+
+
+#5
+Okay. Thanks
+
+
+
+
+
+
+
+</script>
+
+
+<script id="script2" type="text/plain">
+
+
+#1
+Hello, What do you do in your free time?
+Sorry, I can hear that. What do you do? in your free time?
+What is your hobby?
+Then.. Which do you like watching a movie, to sing a song? or...
+Or ... read books? playing guitar? or listen to music? or...
+
+(평소에 즐기는 취미를 말해보세요.)
+
+- movie | sing | song | listen | music | sport | game | baseball | soccer | football | riding | read | play | web surf
+- my hobby is | i like | i play | i try to
+
+
+I like play the game. Do you like game?
+
+- yes | i like | game | ok | sure
+
+
+
+#2
+Oh, do you? How often do you do it?
+Pardon? How often do you do?
+Sorry. How often?
+every day? once a week? or once a month?
+
+(얼마나 자주 하는지 알려주세요.)
+
+- everyday | sometimes | usually
+- (once|twice) a (week|month|year)
+
+
+#3
+
+Oh, ___. I always wanted to do that. Can join with you later?
+Sorry? Can I join?
+Could you play with me?
+
+(할 수 있다고 말해주세요.)
+
+- ok | okay | yes | sure | why not
+- i can
+
+
+#4
+
+Wow! When do you available to do it together?
+Sorry. What day do we together?
+Next saturday? or next sunday?
+
+(언제 취미활동을 함께 할수 있는지 알려주세요.)
+
+- next | later | soon
+- monday | tuesday | wednesday | thursday | friday | saturday | sunday
+- month | week | everday | everytime | always | now
+
+Do you available on next sunday?
+
+- monday | tuesday | wednesday | thursday | friday | saturday | sunday
+- ok | okay | yes | sure | why not
+
+
+#5
+Okay. Thank you. See you then.
+
+
+
+</script>
+
+
+<script>
+
+let t = document.getElementById("script2");
+let script = t.innerText;
+
+
+let ret = {sections: []};
+let section = {missions: []};
+let mission = {ask: [], answer: []};
+
+let lastStmt = "";
+
+let lines = script.split(/\n+/);
+lines.forEach(line => {
+	if (!line) return;
+
+	let start = line.charAt(0);
+
+	switch (start) {
+		case "#":
+			lastStmt = start;
+			line = line.slice(1).trim();
+			console.log("[section]", line);
+
+			mission = {ask: [], answer: []};
+			section = {missions: [mission]};
+			ret.sections.push(section);
+			break;
+
+		case "(":
+			lastStmt = start;
+			line = line.slice(1, -1).trim();
+			console.log("[guide]", line);
+
+			mission.guide = line;
+
+			break;
+
+		case "-":
+			lastStmt = start;
+			line = line.slice(1).trim();
+			line = line.replace(/\s*\|\s*/g, "|");
+			line = new RegExp(line, "i");
+
+			mission.answer.push(line);
+
+			console.log("[answer]", line);
+			break;
+
+		default:
+			if (lastStmt !== "" && mission.ask.length !== 0) {
+				mission = {ask: [], answer: []};
+				section.missions.push(mission);
+			}
+
+			lastStmt = "";
+			mission.ask.push(line);
+			console.log("[ask]", line);
+			break;
+	}
+
+});
+
+
+console.log(ret);
+
+
+</script>
+
+</body>
+</html>
