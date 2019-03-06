@@ -70,17 +70,16 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 			return stt.listen(["coffee", "travel", "sports", "music"]).then(res => app.speak(res.transcript).then(_ => res.query))
 		})
 
-		.then(res => {
-			let {query, transcript} = o;
+		.then(query => {
 			hide_stt();
 			return app.ask(`Okay, ${query}. That's good.`);
 		})
 
-		.then(_ => app.ask(`But this is test version. So we have only one episode. okay?`))
+		.then(_ => app.ask(`But this is test version. So we have only one episode.`))
 
 		.then(_ => $timeout(1000))
 
-		.then(_ => app.ask("You will order coffee at the cafe. Are you ready?"))
+		.then(_ => app.ask("Today Mission. You will order coffee at the cafe."))
 
 		.then(_ => app.ask("Let's Start."))
 

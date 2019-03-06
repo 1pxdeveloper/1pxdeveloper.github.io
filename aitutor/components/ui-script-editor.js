@@ -1,7 +1,7 @@
 $module.template("ui-script-editor")`
 
 	<template>
-		<textarea (input)="save()" [(value)]="script"></textarea>
+		<textarea [(value)]="script" (input)="save()"></textarea>
 	</template>
 
 `;

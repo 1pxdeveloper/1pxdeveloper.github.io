@@ -43,7 +43,7 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeo
 					clearTimeout(timer);
 					timer = setTimeout(function() {
 						reject();
-					}, 5000)
+					}, 6000)
 				}
 
 				let isok = "";
@@ -89,15 +89,8 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeo
 							this.isFinal = true;
 
 							this.$wave.state = "final";
-							// resolve({query: isok, transcript: result[0].transcript});
-							// s.unsubscribe();
-
-							setTimeout(function() {
-								resolve({query: isok, transcript: result[0].transcript});
-								s.unsubscribe();
-
-							}, 3000);
-
+							resolve({query: isok, transcript: result[0].transcript});
+							s.unsubscribe();
 						}
 
 						// else {
@@ -150,25 +143,19 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeo
 							this.isFinal = true;
 							this.$wave.state = "final";
 
-							setTimeout(function() {
-								resolve({query: isok, transcript: result[0].transcript});
-								s.unsubscribe();
-								this.isFinal = false;
-								this.text = "";
-
-							}, 3000);
+							resolve({query: isok, transcript: result[0].transcript});
+							s.unsubscribe();
+							this.isFinal = false;
+							this.text = "";
 
 						} else if (result.isFinal) {
 
 							this.isFinal = true;
 							this.$wave.state = "nomatch";
 
-							setTimeout(_ => {
-								this.$wave.state = "listen";
-								this.isFinal = false;
-								this.text = "";
-
-							}, 3000);
+							this.$wave.state = "listen";
+							this.isFinal = false;
+							this.text = "";
 						}
 
 

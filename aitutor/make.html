@@ -65,6 +65,9 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 	main.onclick = function() {
 		main.onclick = null;
 
+		stage = 0;
+		step = 0;
+		level = 0;
 
 		missions = editor.getData();
 		if (!missions) {
@@ -96,17 +99,23 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 	}
 
 	let prev_query = "";
+	let current_stage;
+	let current_step;
+
 
 	function next() {
-		let current_stage = missions.sections[stage].missions;
-		let current_step = current_stage[step];
+
+		current_stage = missions.sections[stage].missions;
+		current_step = current_stage[step];
 
 		console.log("current_stage", current_stage);
 		console.log("current_step", current_step);
 
 
 		if (current_step.ask && current_step.ask[level]) {
-			app.ask(current_step.ask[level])
+
+
+			app.ask(current_step.ask[level].replace(/__+/g, prev_query))
 
 			.then(_ => {
 
@@ -120,27 +129,27 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 
 						let {query, transcript} = res;
 
-						console.log(query);
-
-
 						return app.speak(transcript).then(_ => {
 
 							if (query) {
-								step++;
+								stage++;
+								step = 0;
 								level = 0;
+								prev_query = query;
 								return next();
 							}
+							else {
+								failLevelDown();
+								return next();
+							}
+
 						});
-
-
 
 
 					}).catch(err => {
 						hide_stt();
+						failLevelDown();
 
-						console.log(err);
-
-						level++;
 						return next();
 					});
 				}
@@ -148,6 +157,18 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 		}
 	}
 
+	function failLevelDown() {
+		if (current_step.ask[level + 1]) {
+			level++;
+		}
+		else if (current_stage[step + 1] && current_stage[step + 1].ask[0]) {
+			step++;
+			level = 0;
+		}
+		else {
+
+		}
+	}
 
 	function next2() {
 		hide_stt();
@@ -168,7 +189,8 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 
 			if (DB[stage][0][level + 1]) {
 				return stt.listen(DB[stage][1]).then(res => app.speak(res.transcript).then(_ => res.query))
-			} else {
+			}
+			else {
 				return stt.listen(DB[stage][1]).then(res => app.speak(res.transcript).then(_ => res.query))
 			}
 		})
@@ -180,10 +202,12 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 
 				stage++;
 				level = 0;
-			} else {
+			}
+			else {
 				if (DB[stage][0][level + 1]) {
 					level++;
-				} else {
+				}
+				else {
 					stage++;
 					level = 0;
 				}
