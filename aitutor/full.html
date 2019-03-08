@@ -44,8 +44,14 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 	window.app = document.getElementById("app");
 	let stt = document.getElementById("stt");
 
+	let flag = false;
 	document.onclick = function() {
 		document.onclick = null;
+		intro();
+	};
+
+	document.ontouchstart = function() {
+		document.ontouchstart = null;
 		intro();
 	};
 
@@ -60,34 +66,37 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 	}
 
 	function intro() {
+		if (flag) return;
+		flag = true;
+
 		return app.ask("Hi. My name is Daniel. I am your AI tutor. Nice meet you.")
 
-		.then(_ => app.ask("You will learn English conversation from the roll play."))
+			.then(_ => app.ask("You will learn English conversation from the roll play."))
 
-		.then(_ => app.ask("which do you like coffee, travel, sports or music?"))
+			.then(_ => app.ask("which do you like coffee, travel, sports or music?"))
 
-		.then(_ => {
-			show_stt();
-			stt.guide_text = "Coffee, Travel, Sports, Music";
-			return stt.listen(["coffee", "travel", "sports", "music"]).then(res => app.speak(res.transcript).then(_ => res.query))
-		})
+			.then(_ => {
+				show_stt();
+				stt.guide_text = "Coffee, Travel, Sports, Music";
+				return stt.listen(["coffee", "travel", "sports", "music"]).then(res => app.speak(res.transcript).then(_ => res.query))
+			})
 
-		.then(query => {
-			hide_stt();
-			return app.ask(`Okay, ${query}. That's good.`);
-		})
+			.then(query => {
+				hide_stt();
+				return app.ask(`Okay, ${query}. That's good.`);
+			})
 
-		.then(_ => app.ask(`But this is test version. So we have only one episode.`))
+			.then(_ => app.ask(`But this is test version. So we have only one episode.`))
 
-		.then(_ => $timeout(1000))
+			.then(_ => $timeout(1000))
 
-		.then(_ => app.ask("Today Mission. You will order coffee at the cafe."))
+			.then(_ => app.ask("Today Mission. You will order coffee at the cafe."))
 
-		.then(_ => app.ask("Let's Start."))
+			.then(_ => app.ask("Let's Start."))
 
-		.then(_ => $timeout(1000))
+			.then(_ => $timeout(1000))
 
-		.then(_ => next());
+			.then(_ => next());
 	}
 
 	let stage = 0;
@@ -115,53 +124,55 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 		}
 
 		app.ask(ment, voice)
-		.then(_ => {
-			show_stt();
+			.then(_ => {
+				show_stt();
 
-			if (DB[stage][0][level + 1]) {
-				return stt.listen(DB[stage][1]).then(res => app.speak(res.transcript).then(_ => res.query))
-			} else {
-				return stt.listen(DB[stage][1]).then(res => app.speak(res.transcript).then(_ => res.query))
-			}
-		})
-
-		.then(isok => {
-
-			if (isok) {
-				query = isok;
-
-				stage++;
-				level = 0;
-			}
-			else {
 				if (DB[stage][0][level + 1]) {
-					level++;
-				} else {
+					return stt.listen(DB[stage][1]).then(res => app.speak(res.transcript).then(_ => res.query))
+				}
+				else {
+					return stt.listen(DB[stage][1]).then(res => app.speak(res.transcript).then(_ => res.query))
+				}
+			})
+
+			.then(isok => {
+
+				if (isok) {
+					query = isok;
+
 					stage++;
 					level = 0;
 				}
+				else {
+					if (DB[stage][0][level + 1]) {
+						level++;
+					}
+					else {
+						stage++;
+						level = 0;
+					}
+
+					if (!DB[stage]) {
+						return outro();
+					}
+
+				}
+
+				return next();
+			})
+
+			.catch(err => {
 
 				if (!DB[stage]) {
 					return outro();
 				}
 
-			}
+				if (DB[stage][0][level + 1]) {
+					level++;
+				}
 
-			return next();
-		})
-
-		.catch(err => {
-
-			if (!DB[stage]) {
-				return outro();
-			}
-
-			if (DB[stage][0][level + 1]) {
-				level++;
-			}
-
-			return next();
-		});
+				return next();
+			});
 
 	}
 
@@ -170,27 +181,27 @@ $module.require(["DB", "$timeout"], function(DB, $timeout) {
 
 		app.ask("Great. You are finished first conversation. How's your feel?")
 
-		.then(_ => app.ask("Learning this expression will help you improve your English."))
+			.then(_ => app.ask("Learning this expression will help you improve your English."))
 
-		.then(_ => app.ask("Repeat after me."))
+			.then(_ => app.ask("Repeat after me."))
 
-		.then(_ => app.ask(`I would like black coffee. please.`))
+			.then(_ => app.ask(`I would like black coffee. please.`))
 
-		.then(_ => {
-			show_stt();
+			.then(_ => {
+				show_stt();
 
-			stt.guide_text = "I would like black coffee. please.";
-			return stt.listen([""]);
-		})
+				stt.guide_text = "I would like black coffee. please.";
+				return stt.listen([""]);
+			})
 
-		.then(_ => {
-			hide_stt();
-			return app.ask("Perfect. Do not forget this expression.")
-		})
+			.then(_ => {
+				hide_stt();
+				return app.ask("Perfect. Do not forget this expression.")
+			})
 
-		.then(_ => {
-			return app.ask("That's all for today. See you next time.")
-		});
+			.then(_ => {
+				return app.ask("That's all for today. See you next time.")
+			});
 	}
 });
 
