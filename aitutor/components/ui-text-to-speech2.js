@@ -70,14 +70,15 @@ $module.factory("TTS", function(Observable) {
 
 	return {
 		speak$(text, index) {
-
-			index = index || 1;
 			text = text.trim() + " ";
 
 			return new Observable(observer => {
 
 				let voices = synth.getVoices();
 				let EN = voices.filter(v => v.lang.startsWith("en"));
+				if (!index) {
+					index = EN[1].voiceURI === "Daniel" ? 1 : 3;
+				}
 				index = index % EN.length;
 
 				let voice = EN[index];

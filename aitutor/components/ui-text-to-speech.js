@@ -39,14 +39,15 @@ $module.factory("TTS", function(Observable) {
 
 	return {
 		speak$(text, index) {
-
-			index = index || 1;
 			text = text.trim() + " ";
 
 			return new Observable(observer => {
 
 				let voices = synth.getVoices();
 				let EN = voices.filter(v => v.lang.startsWith("en"));
+				if (!index) {
+					index = EN[1].voiceURI === "Daniel" ? 1 : 3;
+				}
 				index = index % EN.length;
 
 				let voice = EN[index];
@@ -57,7 +58,6 @@ $module.factory("TTS", function(Observable) {
 				utterThis.pitch = 1 + ((Math.random() - 0.5) * 0.1);
 
 				utterThis.onboundary = function(event) {
-
 					if (event.name === "word") {
 						let nextIndex = text.slice(event.charIndex).indexOf(" ");
 						let word = text.slice(event.charIndex, event.charIndex + nextIndex) + " ";
