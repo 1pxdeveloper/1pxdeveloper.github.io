@@ -11,7 +11,7 @@ $module.component("ui-script-editor", function(parseScript) {
 
 	return class {
 		init($) {
-			this.name = "test"; // location.search || "?";
+			this.name = location.search || "?";
 			this.script = localStorage.getItem(this.name) || "";
 		}
 
