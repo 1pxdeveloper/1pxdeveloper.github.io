@@ -2,7 +2,11 @@ $module.template("ui-text-to-speech")`
 
 	<template>
 		<section flex hbox>
-			<h2 class="msg"><span *foreach="words as word, index" class="tts-word" transition-enter="tts-word-animation">{{ word }}</span></h2>
+			<h2 class="msg">
+				<div *foreach="sentences as sentence, index">
+					<span *foreach="sentence.words as word, index" class="tts-word" transition-enter="tts-word-animation">{{ word }}</span>
+				</div>
+			</h2>
 		</section>
 	</template>
 
@@ -13,21 +17,36 @@ $module.component("ui-text-to-speech", function(Observable, TTS) {
 
 	return class {
 		init($) {
-			this.words = [];
+			this.sentences = [];
 		}
 
 		speak(text, index) {
-			this.words = [];
 
-			return new Promise(resolve => {
+			function speakSentence(sentences, text) {
+				let words = [];
+				sentences.push({words});
 
-				TTS.speak$(text, index)
-					.do(word => this.words.push(word))
-					.complete(_ => {
-						this.words = [];
-						resolve(text);
-					})
-					.subscribe()
+				return new Promise(resolve => {
+					TTS.speak$(text, index)
+						.do(word => {
+							words.push(word)
+						})
+						.complete(_ => {
+							words = [];
+							resolve(text);
+						})
+						.subscribe()
+				});
+			}
+
+			let promise = Promise.resolve();
+			text.split(/\n/).forEach(sentence => {
+				promise = promise.then(_ => speakSentence(this.sentences, sentence));
+			});
+
+			return promise.then(_ => {
+				this.sentences = [];
+				return text;
 			});
 		}
 
@@ -67,8 +86,8 @@ $module.factory("TTS", function(Observable) {
 				/// create voice utter
 				let utterThis = new SpeechSynthesisUtterance(text);
 				utterThis.voice = voice;
-				utterThis.rate = 1 + ((Math.random() - 0.5) * 0.2);
-				utterThis.pitch = 1 + ((Math.random() - 0.5) * 0.2);
+				utterThis.rate = 1 + ((Math.random() - 0.5) * 0.1);
+				utterThis.pitch = 1 + ((Math.random() - 0.5) * 0.1);
 
 
 				/// split word for animation
@@ -86,7 +105,7 @@ $module.factory("TTS", function(Observable) {
 
 				function nextWord(charIndex) {
 					let word = "";
-					while (start <= charIndex) {
+					while(start <= charIndex) {
 						word = text.slice(start, sIndex[0]);
 						observer.next(word);
 						start = sIndex.shift();

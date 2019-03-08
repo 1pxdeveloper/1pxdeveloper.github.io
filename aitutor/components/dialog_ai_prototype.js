@@ -41,13 +41,9 @@ $module.template("ai-app-prototype")`
 `;
 
 
-$module.component("ai-app-prototype", function(STT, DB) {
+$module.component("ai-app-prototype", function(STT, DB, capitalize) {
 
 	const {Observable} = require("1px");
-
-	function capitalize(str) {
-		return str[0].toUpperCase() + str.slice(1);
-	}
 
 	return class AIApp {
 		init($) {

@@ -14,7 +14,7 @@ class WebComponent extends HTMLElement {
 
 	connectedCallback() {
 
-		console.log("connectedCallback");
+		console.log("connectedCallback", this.tagName);
 
 		if (!this._binded) {
 			$module.component.require(this.tagName.toLowerCase(), (component) => {

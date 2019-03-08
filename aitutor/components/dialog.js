@@ -48,11 +48,7 @@ $module.template("ai-app")`
 `;
 
 
-$module.component("ai-app", function(STT) {
-
-	function capitalize(str) {
-		return str[0].toUpperCase() + str.slice(1);
-	}
+$module.component("ai-app", function(STT, capitalize) {
 
 	let DB = [
 		// ["What can I get for you?", "무엇을 도와드릴까요?"],

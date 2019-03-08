@@ -18,7 +18,7 @@ $module.factory("DB", function(randomPick) {
 	];
 
 	let DB2 = [
-		["Last time, we completed all 'Travel' missions. I prepared missions about 'Sports' and 'Cafe' this time. What's your choice?", ""],
+		["Last time, we completed all 'Travel' stage. I prepared stage about 'Sports' and 'Cafe' this time. What's your choice?", ""],
 
 		["원하는 주제를 알려주세요.", "I would like to talk about _______."],
 		["Really? Then, let's talk about 'Cafe' with me. Are you ready?", ""],
@@ -31,13 +31,13 @@ $module.factory("DB", function(randomPick) {
 		["Anything else besides the drink?", "음료 말고 다른 거 필요하신 거 있으세요?"],
 		["No, thanks. That’s all.", "괜찮아요. 그게 다에요."],
 
-		["We completed all 'Cafe' missions. Hurray", ""],
+		["We completed all 'Cafe' stage. Hurray", ""],
 		["", ""]
 	];
 
 
 	let DB3 = [
-		["When I checked, we were on a 'Cafe' missions. Do you want to keep going?", ""],
+		["When I checked, we were on a 'Cafe' stage. Do you want to keep going?", ""],
 		["", ""],
 		["Great! So. let's talk about 'Cafe' Are you ready?", ""],
 		["", ""],
@@ -49,7 +49,7 @@ $module.factory("DB", function(randomPick) {
 		["Anything else besides the drink?", "음료 말고 다른 거 필요하신 거 있으세요?"],
 		["No, thanks. That’s all.", "괜찮아요. 그게 다에요."],
 
-		["Good Jobs. Perfect missions! If you want to talk about a diffrent topic, take a look!", ""],
+		["Good Jobs. Perfect stage! If you want to talk about a diffrent topic, take a look!", ""],
 		["", ""]
 	];
 
@@ -67,7 +67,7 @@ $module.factory("DB", function(randomPick) {
 		["Anything else besides the drink?", "음료 말고 다른 거 필요하신 거 있으세요?"],
 		["No, thanks. That’s all.", "괜찮아요. 그게 다에요."],
 
-		["Good Jobs. Perfect missions! If you want to talk about a diffrent topic, take a look!", ""],
+		["Good Jobs. Perfect stage! If you want to talk about a diffrent topic, take a look!", ""],
 		["", ""]
 	];
 

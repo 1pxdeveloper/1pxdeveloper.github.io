@@ -11,7 +11,7 @@ $module.component("ui-script-editor", function(parseScript) {
 
 	return class {
 		init($) {
-			this.name = location.search || "?";
+			this.name = "test"; // location.search || "?";
 			this.script = localStorage.getItem(this.name) || "";
 		}
 
@@ -33,72 +33,82 @@ $module.factory("parseScript", function() {
 
 	return function parseScript(script) {
 
-		let ret = {sections: []};
-		let section = {missions: []};
-		let mission = {ask: [], answer: []};
+		let sections = [];
+		let section;
+		let dialog;
 
+		let tag = "";
 		let lastStmt = "";
+		let commentStart = false;
 
-		let lines = script.split(/\n/);
+		let lines = script.split(/\n\n*/);
+		lines.forEach(line => {
+			let start = line.charAt(0);
 
-		lines.forEach((line, lineNo) => {
-			if (!line) return;
+			if (line.startsWith("/*")) {
+				commentStart = true;
+				return;
+			}
 
-			try {
-				let start = line.charAt(0);
+			if (line.startsWith("*/")) {
+				commentStart = false;
+				return;
+			}
 
-				switch (start) {
-					case "#":
-						lastStmt = start;
-						line = line.slice(1).trim();
-						// console.log("[section]", line);
+			if (commentStart) {
+				return;
+			}
 
-						mission = {ask: [], answer: []};
-						section = {missions: [mission]};
-						ret.sections.push(section);
+			switch (start) {
+				case "/":
+					break;
+
+				case "[":
+					tag = line.slice(1, -1).trim();
+					dialog = {speech: [], answer: []};
+					section = {tag, stages: [dialog]};
+					sections.push(section);
+
+					console.log("[" + tag + "]", tag);
+					break;
+
+				case "(":
+					lastStmt = start;
+					line = line.slice(1, -1).trim();
+					console.log("[guide]", line);
+
+					dialog.guide = line;
+					break;
+
+				case "-":
+					lastStmt = start;
+					line = line.slice(1).trim();
+					line = line.replace(/\s*\|\s*/g, "|");
+					line = new RegExp(line, "i");
+
+					dialog.answer.push(line);
+
+					console.log("[answer]", line);
+					break;
+
+				default:
+					if (!line) {
 						break;
+					}
 
-					case "(":
-						lastStmt = start;
-						line = line.slice(1, -1).trim();
-						// console.log("[guide]", line);
+					if (lastStmt !== "" && dialog.speech.length !== 0) {
+						dialog = {speech: [], answer: []};
+						section.stages.push(dialog);
+					}
 
-						mission.guide = line;
-
-						break;
-
-					case "-":
-						lastStmt = start;
-						line = line.slice(1).trim();
-						line = line.replace(/\s*\|\s*/g, "|");
-						line = new RegExp(line, "i");
-
-						mission.answer.push(line);
-
-						// console.log("[answer]", line);
-						break;
-
-					default:
-						if (lastStmt !== "" && mission.ask.length !== 0) {
-							mission = {ask: [], answer: []};
-							section.missions.push(mission);
-						}
-
-						lastStmt = "";
-						mission.ask.push(line);
-						// console.log("[ask]", line);
-						break;
-				}
-
-			} catch (e) {
-				console.error(e);
-				alert("error: " + lineNo + ":" + line);
+					lastStmt = "";
+					dialog.speech.push(line);
+					break;
 			}
 
 		});
 
-
-		return ret;
+		return sections;
 	}
 });
 

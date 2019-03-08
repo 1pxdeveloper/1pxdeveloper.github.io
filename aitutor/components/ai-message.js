@@ -8,7 +8,7 @@ $module.template("ai-message")`
 `;
 
 
-$module.component("ai-message", function(Observable, DB, TTS) {
+$module.component("ai-message", function() {
 
 	return class {
 		init($) {
@@ -20,13 +20,6 @@ $module.component("ai-message", function(Observable, DB, TTS) {
 			});
 
 			// $.on$(document, "click", true).subscribe(_ => {this.test();});
-		}
-
-		test() {
-			this.flag = false;
-			this.ask("You are in the cafe now. Order coffee and make a payment through conversation into with employee.");
-
-			this.stage = 0;
 		}
 
 		update() {

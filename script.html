@@ -6,6 +6,8 @@
 </head>
 <body>
 
+<pre id="pre"></pre>
+
 <script id="script" type="text/plain">
 
 #1
@@ -62,17 +64,44 @@ Okay. Thanks
 
 
 
+
+
+
+
+
+
+
+
+
+
 </script>
 
 
 <script id="script2" type="text/plain">
 
+[speak]
+Hi, my name is Daniel.
+Nice to meet you.
 
-#1
+
+[ask]
+Which do you like? sport or music?
+
+(평소에 즐기는 취미를 말해보세요.)
+
+- sport | music
+
+
+[speak]
+Ok. ___. That's good.
+
+
+
+[mission]
 Hello, What do you do in your free time?
 Sorry, I can hear that. What do you do? in your free time?
 What is your hobby?
-Then.. Which do you like watching a movie, to sing a song? or...
+Then, which do you like watching a movie, to sing a song? or...
 Or ... read books? playing guitar? or listen to music? or...
 
 (평소에 즐기는 취미를 말해보세요.)
@@ -83,11 +112,13 @@ Or ... read books? playing guitar? or listen to music? or...
 
 I like play the game. Do you like game?
 
+(평소에 즐기는 취미를 말해보세요.)
+
 - yes | i like | game | ok | sure
 
 
 
-#2
+[mission]
 Oh, do you? How often do you do it?
 Pardon? How often do you do?
 Sorry. How often?
@@ -99,8 +130,7 @@ every day? once a week? or once a month?
 - (once|twice) a (week|month|year)
 
 
-#3
-
+[mission]
 Oh, ___. I always wanted to do that. Can join with you later?
 Sorry? Can I join?
 Could you play with me?
@@ -111,11 +141,10 @@ Could you play with me?
 - i can
 
 
-#4
-
+[mission]
 Wow! When do you available to do it together?
-Sorry. What day do we together?
-Next saturday? or next sunday?
+What day do we together?
+... Next saturday? or next sunday?
 
 (언제 취미활동을 함께 할수 있는지 알려주세요.)
 
@@ -129,11 +158,12 @@ Do you available on next sunday?
 - ok | okay | yes | sure | why not
 
 
-#5
+[mission]
 Okay. Thank you. See you then.
 
 
-
+[speak]
+Good job.
 </script>
 
 
@@ -143,27 +173,25 @@ let t = document.getElementById("script2");
 let script = t.innerText;
 
 
-let ret = {sections: []};
-let section = {missions: []};
-let mission = {ask: [], answer: []};
+let sections = [];
+let section;
+let dialog;
 
+let tag = "";
 let lastStmt = "";
 
-let lines = script.split(/\n+/);
+let lines = script.split(/\n\n*/);
 lines.forEach(line => {
-	if (!line) return;
-
 	let start = line.charAt(0);
 
 	switch (start) {
-		case "#":
-			lastStmt = start;
-			line = line.slice(1).trim();
-			console.log("[section]", line);
+		case "[":
+			tag = line.slice(1, -1).trim();
+			dialog = {speech: [], answer: []};
+			section = {tag, stages: [dialog]};
+			sections.push(section);
 
-			mission = {ask: [], answer: []};
-			section = {missions: [mission]};
-			ret.sections.push(section);
+			console.log("["+tag+"]", tag);
 			break;
 
 		case "(":
@@ -171,8 +199,7 @@ lines.forEach(line => {
 			line = line.slice(1, -1).trim();
 			console.log("[guide]", line);
 
-			mission.guide = line;
-
+			dialog.guide = line;
 			break;
 
 		case "-":
@@ -181,27 +208,31 @@ lines.forEach(line => {
 			line = line.replace(/\s*\|\s*/g, "|");
 			line = new RegExp(line, "i");
 
-			mission.answer.push(line);
+			dialog.answer.push(line);
 
 			console.log("[answer]", line);
 			break;
 
 		default:
-			if (lastStmt !== "" && mission.ask.length !== 0) {
-				mission = {ask: [], answer: []};
-				section.missions.push(mission);
+			if (!line) {
+				break;
+			}
+
+			if (lastStmt !== "" && dialog.speech.length !== 0) {
+				dialog = {speech: [], answer: []};
+				section.stages.push(dialog);
 			}
 
 			lastStmt = "";
-			mission.ask.push(line);
-			console.log("[ask]", line);
+			dialog.speech.push(line);
 			break;
 	}
 
 });
 
 
-console.log(ret);
+document.getElementById("pre").innerText = JSON.stringify(sections, null, 2);
+console.log(sections);
 
 
 </script>

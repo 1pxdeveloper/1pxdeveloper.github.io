@@ -13,12 +13,7 @@ $module.template("ui-speech-to-text")`
 `;
 
 
-$module.component("ui-speech-to-text", function(Observable, Subject, STT) {
-
-
-	function capitalize(str) {
-		return str[0].toUpperCase() + str.slice(1);
-	}
+$module.component("ui-speech-to-text", function(Observable, STT, capitalize) {
 
 	return class {
 		init($) {

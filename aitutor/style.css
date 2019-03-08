@@ -22,8 +22,8 @@ main {
   display: flex;
   position: relative;
   flex-direction: column;
+  width: 100%;
   height: 100%;
-  max-height: calc(100% - 140px);
   margin: auto;
   background: #fff;
 }
@@ -42,6 +42,7 @@ main content {
   main {
     width: 375px;
     height: 667px;
+    max-height: calc(100% - 140px);
     border-radius: 36px;
     box-shadow: 0 0 32px rgba(0,0,0,0.2), 0 12px 24px rgba(0,0,0,0.5);
     box-sizing: content-box;
@@ -118,6 +119,7 @@ header {
   width: 100%;
   font-size: 32px;
   font-weight: 100;
+  min-height: 32px;
   top: 50%;
   transform-origin: 0 0;
   transform: translate(0, -50%);
@@ -246,8 +248,16 @@ ui-speech-to-text {
   display: flex;
   margin: auto;
   width: 100%;
-  height: 100%;
   overflow: hidden;
+}
+ui-speech-to-text {
+  transition: opacity 1s;
+}
+ui-speech-to-text .transcript {
+  color: #ccc;
+}
+ui-speech-to-text .transcript.isfinal {
+  color: #111;
 }
 .msg {
   color: #000;
@@ -283,7 +293,7 @@ ui-speech-to-text {
 }
 .tts-word {
   display: inline-block;
-  white-space: pre-wrap;
+  white-space: pre;
   transition: all 0.5s;
   opacity: 0;
   transform: translate3d(15px, 0, 0);
@@ -299,6 +309,7 @@ animated-dialog {
 animated-dialog p {
   transition: top 1s, transform 1s;
   opacity: 0;
+  white-space: pre-line;
 }
 animated-dialog p:nth-child(1) {
   top: 0;
@@ -313,15 +324,6 @@ animated-dialog p:nth-child(2) {
 animated-dialog p:nth-child(3) {
   transform: translate(0, -50%) scale(1);
   opacity: 1;
-}
-ui-speech-to-text {
-  transition: opacity 1s;
-}
-ui-speech-to-text .transcript {
-  color: #ccc;
-}
-ui-speech-to-text .transcript.isfinal {
-  color: #111;
 }
 ui-script-editor {
   width: 50%;
@@ -338,6 +340,22 @@ ui-script-editor textarea {
   color: #fff;
   outline: 0;
   border: 0;
+}
+.msg .caption {
+  display: block;
+  font-size: 22px;
+  margin-top: 12px;
+  color: #3434a5;
+  transition: 1s opacity 0.5s;
+  opacity: 0;
+}
+.msg .caption.show {
+  opacity: 1;
+}
+ai-agent {
+  display: flex;
+  width: 100%;
+  height: 100%;
 }
 @-moz-keyframes blink {
   50% {

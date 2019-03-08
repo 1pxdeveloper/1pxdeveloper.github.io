@@ -3,7 +3,8 @@ $module.template("ui-speech-to-text")`
 	<template>
 		<section flex vbox>
 			<h2 class="msg transcript" [class.isfinal]="isFinal" style="text-align: right; width: 100%;" [hidden]="!text || isFinal">{{ text }}</h2>
-			<h2 style="text-align: center; width: 100%; font-size: 24px; color: #555; padding: 16px;" [hidden]="text">{{ guide_text }}</h2>
+			<h2 style="text-align: center; width: 100%; font-size: 34px; color: #3a3aa5; padding: 0 16px;" [hidden]="text">{{ guide_text2 }}</h2>
+			<h2 style="text-align: center; width: 100%; font-size: 20px; color: #555; padding: 0 16px;" [hidden]="text">{{ guide_text }}</h2>
 			<mic-wave $wave style="position: absolute; bottom: 0;"></mic-wave>
 		</section>
 	</template>
@@ -11,26 +12,16 @@ $module.template("ui-speech-to-text")`
 `;
 
 
-$module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeout) {
-
-
-	function capitalize(str) {
-		return str[0].toUpperCase() + str.slice(1);
-	}
+$module.component("ui-speech-to-text", function(STT) {
 
 	return class {
 		init($) {
-			this.isstart = false;
-
 			this.index = -1;
 			this.text1 = "";
 			this.isFinal = false;
-
-			// $.on$(document, ["mousedown", "touchstart", "keydown"], true).take(1).subscribe(() => this.listen());
 		}
 
-
-		listen(keywords) {
+		listen(keywords, has_fallback) {
 
 			this.text = "";
 			this.keyword = "";
@@ -38,13 +29,18 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeo
 
 			return new Promise((resolve, reject) => {
 
+				// return;
+
 				let timer;
 
 				function fallbackPause() {
+					if (!has_fallback) return;
+
 					clearTimeout(timer);
 					timer = setTimeout(function() {
+						s.unsubscribe();
 						reject();
-					}, 5000)
+					}, 6500)
 				}
 
 				this.$wave.start();
@@ -85,84 +81,36 @@ $module.component("ui-speech-to-text", function(Observable, Subject, STT, $timeo
 					}
 
 					if (isFinal) {
-
 						result.forEach(r => r.conf * -levenshteinDistance(this.text, r.transcript));
 						result.sort((a, b) => b.conf - a.conf);
 
 						this.text = result[0].transcript;
-						clearTimeout(timer);
 						this.isFinal = true;
 						this.$wave.state = "final";
-						resolve({query: this.keyword, transcript: this.text});
-						s.unsubscribe();
-					}
-				});
-			});
-		}
+						clearTimeout(timer);
 
 
-		choice(keywords) {
-
-			this.text = "";
-			this.isFinal = false;
-
-			keywords = keywords.map(str => str.toLowerCase());
-
-			return new Promise((resolve, reject) => {
-
-				let isok = "";
-
-				this.$wave.start();
-				this.$wave.state = "listen";
-
-				let s = STT.subscribe(event => {
-					console.log(event);
-
-					if (event.results) {
-						this.$wave.state = "speech";
-
-						let result = event.results[event.resultIndex];
-
-						this.text = result[0].transcript;
-
-
-						Array.from(result).forEach(r => {
-
-							if (!isok) {
-								keywords.forEach(keyword => {
-									if (r.transcript.toLowerCase().indexOf(keyword) >= 0) {
-										isok = keyword;
-									}
-								});
-							}
-						});
-
-						if (isok) {
-							this.isFinal = true;
-							this.$wave.state = "final";
-
-							setTimeout(function() {
-								resolve({query: isok, transcript: result[0].transcript});
+						/// @FIXME: 임시 통과 테스트
+						if (has_fallback) {
+							s.unsubscribe();
+							resolve({query: this.keyword, transcript: this.text});
+						}
+						else {
+							if (this.keyword) {
 								s.unsubscribe();
-								this.isFinal = false;
-								this.text = "";
+								resolve({query: this.keyword, transcript: this.text});
+							}
+							else {
+								this.$wave.state = "nomatch";
 
-							}, 3000);
-
+								setTimeout(_ => {
+									this.$wave.state = "listen";
+									this.isFinal = false;
+									this.text = "";
+								}, 500);
+							}
 						}
 
-						else if (result.isFinal) {
-
-							this.isFinal = true;
-							this.$wave.state = "nomatch";
-
-							setTimeout(_ => {
-								this.$wave.state = "listen";
-								this.isFinal = false;
-								this.text = "";
-
-							}, 3000);
-						}
 
 
 					}

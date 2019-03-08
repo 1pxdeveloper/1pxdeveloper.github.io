@@ -1,7 +1,8 @@
 $module.template("animated-dialog")`
 
 	<template>
-		<p *foreach="messages as msg, index" class="msg" [index]="index" [attr.who]="msg.who">{{ msg.text }}</p>
+		<p *foreach="messages as msg, index" class="msg" [index]="index" [attr.who]="msg.who">{{ msg.text }}<span class="caption" [class.show]="!!msg.caption">{{ msg.caption }}</span>
+		</p>
 		<ui-text-to-speech $tts></ui-text-to-speech>
 	</template>
 
@@ -20,7 +21,7 @@ $module.component("animated-dialog", function($timeout) {
 			this.promise = Promise.resolve();
 		}
 
-		push(text, flag) {
+		push(text, flag, caption) {
 			return this.promise = this.promise.then(_ => {
 
 				let who = flag ? "me" : "ai";
@@ -28,6 +29,7 @@ $module.component("animated-dialog", function($timeout) {
 				let msg = this.messages[this.messages.length - 1];
 				msg.text = text;
 				msg.who = who;
+				msg.caption = caption;
 
 				this.messages.push({});
 				this.messages.shift();
@@ -37,6 +39,12 @@ $module.component("animated-dialog", function($timeout) {
 		}
 
 		/// @TODO: $tts 에니메이션 word와 실제 msg의 경우 word-wrap이 달라지는 경우가 있다. 수정할 것!!
+
+		askWithCaption(text, caption) {
+			return this.$tts.speak(text).then(text => {
+				return this.push(text, false, caption);
+			});
+		}
 
 		ask(text, voiceIndex) {
 			return this.$tts.speak(text, voiceIndex).then(text => {
