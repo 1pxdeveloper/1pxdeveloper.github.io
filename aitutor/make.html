@@ -34,11 +34,12 @@
 
 				<section id="desc" class="desc">
 					<flex></flex>
-					<h1>Hotel check in</h1>
+					<h1 id="desc-title">Hotel check in</h1>
 
-					<p lang="en">You are standing at the front of hotel reception desk. Try to check in.</p>
-
-					<p lang="ko">당신은 지금은 호텔 리셉션 데스크 앞에 있습니다. 체크인을 해보세요.</p>
+					<div id="desc-p">
+						<p lang="en">You are standing at the front of hotel reception desk. Try to check in.</p>
+						<p lang="ko">당신은 지금은 호텔 리셉션 데스크 앞에 있습니다. 체크인을 해보세요.</p>
+					</div>
 
 					<div id="invoke" class="invoke">
 						<h2>호텔 직원을 불러보세요.</h2>
@@ -177,11 +178,14 @@ $module.require(["$timeout"], function($timeout) {
 
 		$timeout(1000).then(_ => {
 
-			document.getElementById("desc").style.opacity = 1;
+			document.getElementById("desc-title").style.opacity = 1;
 
 			agent.speak("Hotel check in").then(_ => {
 
+				document.getElementById("desc-p").style.opacity = 1;
+
 				return agent.speak("You are standing at the front of hotel reception desk. Try to check in.")
+
 			}).then(_ => {
 
 				document.getElementById("invoke").style.opacity = 1;

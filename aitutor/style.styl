@@ -570,6 +570,9 @@ ui-background.overlay
 
     >p
       margin 4px 0
+      &[lang=en]
+        font-size 18px
+
       &[lang=ko]
         color #555
         font-size 15px
@@ -585,7 +588,9 @@ ui-background.overlay
       margin-top 64px
 
       h2
-        margin 16px 0
+        margin 4px 0
+        font-size 18px
+        color #666
 
       >p
         font-size 32px
@@ -594,8 +599,9 @@ ui-background.overlay
 #mission-bg
   transition all 1s
 
-  .desc
-    transition all 1s
+  #desc-title
+  #desc-p
+    transition all 1.5s
     opacity 0
 
   .invoke

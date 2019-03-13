@@ -393,6 +393,9 @@ ui-background.overlay section {
 ui-background.overlay section >p {
   margin: 4px 0;
 }
+ui-background.overlay section >p[lang=en] {
+  font-size: 18px;
+}
 ui-background.overlay section >p[lang=ko] {
   color: #555;
   font-size: 15px;
@@ -408,7 +411,9 @@ ui-background.overlay section div.invoke {
   margin-top: 64px;
 }
 ui-background.overlay section div.invoke h2 {
-  margin: 16px 0;
+  margin: 4px 0;
+  font-size: 18px;
+  color: #666;
 }
 ui-background.overlay section div.invoke >p {
   font-size: 32px;
@@ -416,8 +421,9 @@ ui-background.overlay section div.invoke >p {
 #mission-bg {
   transition: all 1s;
 }
-#mission-bg .desc {
-  transition: all 1s;
+#mission-bg #desc-title,
+#mission-bg #desc-p {
+  transition: all 1.5s;
   opacity: 0;
 }
 #mission-bg .invoke {
