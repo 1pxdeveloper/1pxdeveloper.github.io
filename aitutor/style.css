@@ -416,6 +416,14 @@ ui-background.overlay section div.invoke >p {
 #mission-bg {
   transition: all 1s;
 }
+#mission-bg .desc {
+  transition: all 1s;
+  opacity: 0;
+}
+#mission-bg .invoke {
+  transition: all 1s;
+  opacity: 0;
+}
 @-moz-keyframes blink {
   50% {
     opacity: 0;

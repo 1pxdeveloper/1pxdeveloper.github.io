@@ -32,7 +32,7 @@
 			<ui-background></ui-background>
 			<ui-background class="overlay">
 
-				<section>
+				<section id="desc" class="desc">
 					<flex></flex>
 					<h1>Hotel check in</h1>
 
@@ -40,12 +40,14 @@
 
 					<p lang="ko">당신은 지금은 호텔 리셉션 데스크 앞에 있습니다. 체크인을 해보세요.</p>
 
-					<div class="invoke">
+					<div id="invoke" class="invoke">
 						<h2>호텔 직원을 불러보세요.</h2>
-						<p>"Good evening~"</p>
+						<p style="color:#3a3aa5">"Good evening~"</p>
 					</div>
 
 				</section>
+
+
 			</ui-background>
 		</ui-mission>
 	</content>
@@ -169,13 +171,28 @@ $module.require(["$timeout"], function($timeout) {
 	};
 
 
-
 	execute["mission-start"] = function(stages, index, next, level) {
 
 		mbg.style.opacity = 1;
+
+		$timeout(1000).then(_ => {
+
+			document.getElementById("desc").style.opacity = 1;
+
+			agent.speak("Hotel check in").then(_ => {
+
+				return agent.speak("You are standing at the front of hotel reception desk. Try to check in.")
+			}).then(_ => {
+
+				document.getElementById("invoke").style.opacity = 1;
+
+			})
+
+
+		});
+
+
 	};
-
-
 
 
 });

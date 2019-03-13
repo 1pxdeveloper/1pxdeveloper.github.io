@@ -38,7 +38,7 @@ $module.factory("parseScript", function() {
 
 		script = script.replace(multi_comments, "");
 		script = script.replace(line_comments, "\n");
-
+		script += "\n";
 
 		let lex = [
 			["tag", /\[([^\]]+)]\n\s*/g],
