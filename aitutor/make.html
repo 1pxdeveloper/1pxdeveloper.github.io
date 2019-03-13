@@ -91,14 +91,29 @@ $module.require(["$timeout"], function($timeout) {
 			.finally(next);
 	};
 
-	execute.ask = function(stages, index, next) {
+	execute.ask = function(stages, index, next, level) {
+		level = level || 0;
 		let stage = stages[index];
-		let sentence = stage.speech[0];
+		if (!stage) {
+			return next();
+		}
+
+		let sentence = stage.speech[level];
+
+		if (!sentence) {
+			return next();
+		}
+
 		return agent.speak(sentence)
 			.then(_ => {
-				return agent.listen(stage.answer, stage.guide);
+				if (stage.answer.length) {
+					return agent.listen(stage.answer, stage.guide, stage.speech[level + 1] || stages[index + 1])
+				}
 			})
-			.finally(next)
+			.then(next)
+			.catch(err => {
+				return execute.ask(stages, index, next, level + 1);
+			})
 	};
 
 	execute.mission = function(stages, index, next, level) {

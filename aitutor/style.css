@@ -357,6 +357,9 @@ ai-agent {
   width: 100%;
   height: 100%;
 }
+ui-speech-to-text {
+  white-space: pre-wrap;
+}
 @-moz-keyframes blink {
   50% {
     opacity: 0;

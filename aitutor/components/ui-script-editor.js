@@ -33,80 +33,89 @@ $module.factory("parseScript", function() {
 
 	return function parseScript(script) {
 
+		let multi_comments = /\/\*(\*(?!\/)|[^*])*\*\//g;
+		let line_comments = /\/\/[^\n]*\n/g;
+
+		script = script.replace(multi_comments, "");
+		script = script.replace(line_comments, "\n");
+
+
+		let lex = [
+			["tag", /\[([^\]]+)]\n\s*/g],
+			["text", /`([^`]*)`/g],
+			["guide", /\(([^\)]*)\)/g],
+			["answer", /-([^\n]+)\n/g],
+			["text", /([^\n]+)\n/g],
+			["ws", /\s/g],
+			["unknown", /./g],
+		];
+
+		let re = new RegExp(lex.map(r => r[1].source).join("|"), "g");
+		let types = lex.map(r => r[0]);
+
+
 		let sections = [];
 		let section;
 		let dialog;
 
-		let tag = "";
-		let lastStmt = "";
-		let commentStart = false;
+		let prevType;
 
-		let lines = script.split(/\n\n*/);
-		lines.forEach(line => {
-			let start = line.charAt(0);
+		script.replace(re, function(a) {
 
-			if (line.startsWith("/*")) {
-				commentStart = true;
-				return;
-			}
+			let type = "";
+			let line = "";
 
-			if (line.startsWith("*/")) {
-				commentStart = false;
-				return;
-			}
-
-			if (commentStart) {
-				return;
-			}
-
-			switch (start) {
-				case "/":
+			for (let i = 1; i < arguments.length - 2; i++) {
+				if (arguments[i] !== undefined) {
+					type = types[i - 1];
+					line = arguments[i].trim();
 					break;
+				}
+			}
 
-				case "[":
-					tag = line.slice(1, -1).trim();
+			if (type) {
+				console.log("(" + type + ")", line);
+			}
+
+			switch (type) {
+				case "tag":
+					prevType = type;
+
+					let tag = line;
 					dialog = {speech: [], answer: []};
 					section = {tag, stages: [dialog]};
 					sections.push(section);
-
-					console.log("[" + tag + "]", tag);
 					break;
 
-				case "(":
-					lastStmt = start;
-					line = line.slice(1, -1).trim();
-					console.log("[guide]", line);
-
+				case "guide":
+					prevType = type;
 					dialog.guide = line;
 					break;
 
-				case "-":
-					lastStmt = start;
-					line = line.slice(1).trim();
+				case "answer":
+					prevType = type;
 					line = line.replace(/\s*\|\s*/g, "|");
-					line = new RegExp(line, "i");
-
+					// line = new RegExp(line, "i");
 					dialog.answer.push(line);
 
-					console.log("[answer]", line);
+					// console.log("[answer]", line);
 					break;
 
-				default:
-					if (!line) {
-						break;
-					}
-
-					if (lastStmt !== "" && dialog.speech.length !== 0) {
+				case "text":
+					line = line.trim().replace(/\n+/g, "\n");
+					if (prevType !== "text" && dialog.speech.length !== 0) {
 						dialog = {speech: [], answer: []};
 						section.stages.push(dialog);
 					}
 
-					lastStmt = "";
+					prevType = type;
 					dialog.speech.push(line);
 					break;
 			}
 
+			return a;
 		});
+
 
 		return sections;
 	}
