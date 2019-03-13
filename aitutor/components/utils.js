@@ -1,4 +1,5 @@
 $module.value("capitalize", function capitalize(str) {
+		str = str || "";
 		return str[0].toUpperCase() + str.slice(1);
 	}
 );

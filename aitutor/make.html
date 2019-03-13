@@ -19,19 +19,35 @@
 	<script type="module" src="components/animated-dialog.js"></script>
 
 	<script type="module" src="components/micwave.js"></script>
-
-
 	<script type="module" src="components/ui-script-editor.js"></script>
-
 	<script type="module" src="components/ai-agent.js"></script>
-
-
 </head>
 <body>
 
 <main id="main">
 	<content>
 		<ai-agent id="agent"></ai-agent>
+
+		<ui-mission id="mission-bg" style="opacity: 0">
+			<ui-background></ui-background>
+			<ui-background class="overlay">
+
+				<section>
+					<flex></flex>
+					<h1>Hotel check in</h1>
+
+					<p lang="en">You are standing at the front of hotel reception desk. Try to check in.</p>
+
+					<p lang="ko">당신은 지금은 호텔 리셉션 데스크 앞에 있습니다. 체크인을 해보세요.</p>
+
+					<div class="invoke">
+						<h2>호텔 직원을 불러보세요.</h2>
+						<p>"Good evening~"</p>
+					</div>
+
+				</section>
+			</ui-background>
+		</ui-mission>
 	</content>
 </main>
 
@@ -47,6 +63,9 @@ $module.require(["$timeout"], function($timeout) {
 			editor.hidden = !editor.hidden;
 		}
 	};
+
+
+	let mbg = document.getElementById("mission-bg");
 
 
 	///
@@ -148,6 +167,14 @@ $module.require(["$timeout"], function($timeout) {
 
 		return $timeout(+duration).then(next);
 	};
+
+
+
+	execute["mission-start"] = function(stages, index, next, level) {
+
+		mbg.style.opacity = 1;
+	};
+
 
 
 

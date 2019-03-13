@@ -535,3 +535,61 @@ ai-agent
 
 ui-speech-to-text
   white-space pre-wrap
+
+
+ui-mission
+  display block
+  position absolute
+  top 0
+  left 0
+  right 0
+  bottom 0
+
+ui-background
+  display block
+  position absolute
+  top 0
+  left 0
+  right 0
+  bottom 0
+  background-repeat no-repeat
+  background-position center -190px
+  background-image: url(../imgs/a9139e165a9192dd3935c83091590af0.jpg)
+  background-size cover
+
+
+ui-background.overlay
+  background-image: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,1))
+
+  section
+    display flex
+    flex-direction column
+    padding 32px
+    height 100%
+    text-align left
+
+    >p
+      margin 4px 0
+      &[lang=ko]
+        color #555
+        font-size 15px
+
+    h1
+      margin 14px 0
+      text-align left
+      font-weight 400
+
+    div.invoke
+      text-align center
+      padding 32px
+      margin-top 64px
+
+      h2
+        margin 16px 0
+
+      >p
+        font-size 32px
+
+
+#mission-bg
+  transition all 1s

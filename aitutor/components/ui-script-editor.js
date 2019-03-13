@@ -95,7 +95,7 @@ $module.factory("parseScript", function() {
 				case "answer":
 					prevType = type;
 					line = line.replace(/\s*\|\s*/g, "|");
-					// line = new RegExp(line, "i");
+					line = new RegExp(line, "i");
 					dialog.answer.push(line);
 
 					// console.log("[answer]", line);
