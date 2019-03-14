@@ -176,26 +176,41 @@ $module.require(["$timeout"], function($timeout) {
 
 		mbg.style.opacity = 1;
 
-		$timeout(1000).then(_ => {
+		return $timeout(1000)
 
-			document.getElementById("desc-title").style.opacity = 1;
+			.then(_ => {
+				document.getElementById("desc-title").style.opacity = 1;
+				return $timeout(1000)
+			})
 
-			agent.speak("Hotel check in").then(_ => {
+			.then(_ => {
 
 				document.getElementById("desc-p").style.opacity = 1;
 
 				return agent.speak("You are standing at the front of hotel reception desk. Try to check in.")
 
-			}).then(_ => {
-
-				document.getElementById("invoke").style.opacity = 1;
-
 			})
 
+			.then(_ => {
 
-		});
+				agent.clear();
+				agent.style.zIndex = 9999;
+				agent.$dialog.style.opacity = 0;
+				document.getElementById("invoke").style.opacity = 1;
+				document.querySelectorAll("ui-speech-to-text .msg").forEach(el => el.style.opacity = 0);
+				return agent.listen([/good|evening/i], "", false)
+			})
 
+			.then(_ => {
+				mbg.style.opacity = 0;
+				return $timeout(1000);
+			})
 
+			.then(_ => {
+				agent.$dialog.style.opacity = 1;
+				agent.clear();
+				return next();
+			})
 	};
 
 

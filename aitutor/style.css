@@ -390,13 +390,13 @@ ui-background.overlay section {
   height: 100%;
   text-align: left;
 }
-ui-background.overlay section >p {
+ui-background.overlay section #desc-p p {
   margin: 4px 0;
 }
-ui-background.overlay section >p[lang=en] {
+ui-background.overlay section #desc-p p[lang=en] {
   font-size: 18px;
 }
-ui-background.overlay section >p[lang=ko] {
+ui-background.overlay section #desc-p p[lang=ko] {
   color: #555;
   font-size: 15px;
 }
@@ -409,6 +409,7 @@ ui-background.overlay section div.invoke {
   text-align: center;
   padding: 32px;
   margin-top: 64px;
+  margin-bottom: 16px;
 }
 ui-background.overlay section div.invoke h2 {
   margin: 4px 0;
@@ -429,6 +430,9 @@ ui-background.overlay section div.invoke >p {
 #mission-bg .invoke {
   transition: all 1s;
   opacity: 0;
+}
+ai-agent {
+  position: relative;
 }
 @-moz-keyframes blink {
   50% {
