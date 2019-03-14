@@ -612,3 +612,35 @@ ui-background.overlay
 
 ai-agent
   position relative
+  transition opacity 1s
+
+
+ui-feedback
+  transition all 1s
+  opacity 0
+
+  display flex
+  position absolute
+  top 0
+  left 0
+  right 0
+  bottom 0
+
+  >section
+    margin auto 32px
+    padding 16px
+    //box-shadow 0 0 10px rgba(0,0,0,.1)
+    //border-radius 8px
+    text-align center
+
+  img
+    display block
+    width 80%
+    margin 32px auto
+
+  p
+    margin 16px 0
+
+    &[lang="ko"]
+      color #666
+      font-size 14px

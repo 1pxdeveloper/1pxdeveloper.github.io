@@ -51,6 +51,20 @@
 
 			</ui-background>
 		</ui-mission>
+
+
+		<ui-feedback id="feedback">
+
+			<section>
+				<img src="../imgs/awesome.jpg">
+
+				<p lang="en">Is it enough to not be inconvenient to live in a foreign country? Challenge other missions right away.</p>
+
+				<p lang="ko">외국에서 살아도 불편하지 않을 정도의 실력인데요? 다른 미션도 바로 도전해보세요.</p>
+			</section>
+		</ui-feedback>
+
+
 	</content>
 </main>
 
@@ -69,6 +83,7 @@ $module.require(["$timeout"], function($timeout) {
 
 
 	let mbg = document.getElementById("mission-bg");
+	let feedback = document.getElementById("feedback");
 
 
 	///
@@ -84,12 +99,16 @@ $module.require(["$timeout"], function($timeout) {
 			return;
 		}
 
+		console.log(sections);
+
+
 		agent.clear();
 
 		execute.voiceIndex = parseInt(Math.random() * 17);
-		if (execute.voiceIndex === 1) {
-			execute.voiceIndex = 2;
-		}
+		execute.voiceIndex = 4;
+		// if (execute.voiceIndex === 1) {
+		// 	execute.voiceIndex = 2;
+		// }
 
 		execute(sections, 0);
 	};
@@ -208,6 +227,40 @@ $module.require(["$timeout"], function($timeout) {
 
 			.then(_ => {
 				agent.$dialog.style.opacity = 1;
+				document.querySelectorAll("ui-speech-to-text .msg").forEach(el => el.style.opacity = 1);
+				agent.clear();
+				return next();
+			})
+	};
+
+
+	execute["feedback"] = function(stages, index, next, level) {
+
+
+		return $timeout(500)
+
+			.then(_ => {
+				agent.style.opacity = 0;
+				feedback.style.opacity = 1;
+				return $timeout(1000)
+			})
+
+			.then(_ => {
+				return agent.speak("Nice work! You are super great!")
+			})
+
+			.then(_ => {
+
+				return agent.speak("Is it enough to not be inconvenient to live in a foreign country? Challenge other missions right away.")
+			})
+
+			.then(_ => {
+				feedback.style.opacity = 0;
+				return $timeout(1000);
+			})
+
+			.then(_ => {
+				agent.style.opacity = 1;
 				agent.clear();
 				return next();
 			})

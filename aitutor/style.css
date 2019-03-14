@@ -433,6 +433,34 @@ ui-background.overlay section div.invoke >p {
 }
 ai-agent {
   position: relative;
+  transition: opacity 1s;
+}
+ui-feedback {
+  transition: all 1s;
+  opacity: 0;
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+ui-feedback >section {
+  margin: auto 32px;
+  padding: 16px;
+  text-align: center;
+}
+ui-feedback img {
+  display: block;
+  width: 80%;
+  margin: 32px auto;
+}
+ui-feedback p {
+  margin: 16px 0;
+}
+ui-feedback p[lang="ko"] {
+  color: #666;
+  font-size: 14px;
 }
 @-moz-keyframes blink {
   50% {
