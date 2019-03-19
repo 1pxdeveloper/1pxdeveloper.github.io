@@ -244,19 +244,20 @@ mic-wave .d3 {
 ai-message {
   display: block;
 }
-ui-speech-to-text {
+ui-speech-to-text,
+ui-speech-shadowing {
   display: flex;
   margin: auto;
   width: 100%;
   overflow: hidden;
-}
-ui-speech-to-text {
   transition: opacity 1s;
 }
-ui-speech-to-text .transcript {
+ui-speech-to-text .transcript,
+ui-speech-shadowing .transcript {
   color: #ccc;
 }
-ui-speech-to-text .transcript.isfinal {
+ui-speech-to-text .transcript.isfinal,
+ui-speech-shadowing .transcript.isfinal {
   color: #111;
 }
 .msg {
@@ -461,6 +462,9 @@ ui-feedback p {
 ui-feedback p[lang="ko"] {
   color: #666;
   font-size: 14px;
+}
+span.ok {
+  color: #000;
 }
 @-moz-keyframes blink {
   50% {

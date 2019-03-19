@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>mic</title>
+	<link rel="stylesheet" href="style.css"/>
+	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/web-animations/2.3.1/web-animations.min.js"></script>-->
+	<script src="../src/js/1px.js"></script>
+
+	<script type="module" src="components/utils.js"></script>
+
+	<!--<script type="module" src="./components/dialog.js"></script>-->
+	<script type="module" src="components/testdb.js"></script>
+
+	<script type="module" src="components/ui-speech-to-text4.js"></script>
+	<script type="module" src="components/ui-speech-shadowing.js"></script>
+
+	<script type="module" src="components/ui-text-to-speech2.js?v=2"></script>
+
+	<script type="module" src="components/animated-dialog.js"></script>
+
+	<script type="module" src="components/micwave.js"></script>
+	<script type="module" src="components/ui-script-editor.js"></script>
+	<script type="module" src="components/ai-agent.js"></script>
+</head>
+<body>
+
+<main id="main">
+	<content>
+		<ui-text-to-speech id="tts"></ui-text-to-speech>
+		<ui-speech-shadowing id="shadow"></ui-speech-shadowing>
+	</content>
+</main>
+
+
+<script type="module">
+$module.require(["$timeout"], function($timeout) {
+
+
+	window.tts = document.getElementById("tts");
+	window.shadow = document.getElementById("shadow");
+
+
+	let test = [
+		"What kind of coffee would you like?",
+		"I'd like to have\n a ocean view.",
+		"What kind of coffee would you like?",
+		"I'd like to have\na cup of americano.",
+		"What kind of shirts would you like?",
+		"I'd like to have a white shirts.",
+		"What kind of pizza would you like?",
+		"I'd like to have a cheese pizza.",
+	];
+
+
+	let total = 0;
+
+	function testQA(index) {
+		total++;
+		if (total >= 10) {
+			return;
+		}
+
+		return Promise.resolve()
+			.then(_ => {
+				return tts.speak(test[index], index);
+			})
+
+			.then(_ => {
+				return shadow.shadowing(test[index + 1], false);
+			})
+
+			.then(ok => {
+				return testQA(ok ? index + 2 : index);
+			})
+	}
+
+	document.onclick = function() {
+
+		tts.speak("Okay. Let's learn today expression.")
+			// .then(_ => {
+			// 	return tts.speak(`"I'd like to have (     )`);
+			// })
+			//
+			// .then(_ => {
+			// 	return $timeout(2000);
+			// })
+			// .then(_ => {
+			// 	return tts.speak(`What kind of views would you like?`, 4);
+			// })
+			// .then(_ => {
+			// 	return tts.speak(`I'd like to have a ocean view.`);
+			// })
+
+			.then(_ => {
+				return testQA(0);
+			})
+
+	}
+
+});
+
+
+</script>
+
+</body>
+</html>

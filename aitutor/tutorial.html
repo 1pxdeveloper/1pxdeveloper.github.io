@@ -29,21 +29,21 @@
 		<ai-agent id="agent"></ai-agent>
 
 		<ui-mission id="mission-bg" style="opacity: 0">
-			<ui-background></ui-background>
+			<ui-background style="background-color: white; background-image: url('../imgs/turo.jpeg'); background-size: contain; background-position: 0 0"></ui-background>
 			<ui-background class="overlay">
 
 				<section id="desc" class="desc">
 					<flex></flex>
-					<h1 id="desc-title">Hotel check in</h1>
+					<h1 id="desc-title">Get Stared</h1>
 
 					<div id="desc-p">
-						<p lang="en">You are standing at the front of hotel reception desk. Try to check in.</p>
-						<p lang="ko">당신은 지금은 호텔 리셉션 데스크 앞에 있습니다. 체크인을 해보세요.</p>
+						<p lang="en">I will check your level through this tutorial. Do your best.</p>
+						<p lang="ko">당신은 앞으로 튜로리얼과 같은 방식으로 미션을 진행하게 됩니다. 이 튜토리얼은 레벨테스트에 반영이 되니, 최대한 문장형태로 말을 해 보세요.</p>
 					</div>
 
 					<div id="invoke" class="invoke">
-						<h2>호텔 직원을 불러보세요.</h2>
-						<p style="color:#3a3aa5">"Good evening~"</p>
+						<h2>준비되면 시작하세요.</h2>
+						<p style="color:#3a3aa5">"Come on baby~"</p>
 					</div>
 
 				</section>
@@ -57,19 +57,22 @@
 
 			<section>
 				<img src="../imgs/awesome.jpg">
+
 				<p lang="en">Is it enough to not be inconvenient to live in a foreign country? Challenge other missions right away.</p>
+
 				<p lang="ko">외국에서 살아도 불편하지 않을 정도의 실력인데요? 다른 미션도 바로 도전해보세요.</p>
 			</section>
 		</ui-feedback>
 
+
 	</content>
 </main>
 
-<ui-script-editor id="editor" hidden></ui-script-editor>
+<ui-script-editor id="editor"></ui-script-editor>
 
 
 <script type="module">
-$module.require(["$timeout", "TTS"], function($timeout, TTS) {
+$module.require(["$timeout"], function($timeout) {
 
 	let editor = document.getElementById("editor");
 	document.onkeydown = function(e) {
@@ -84,12 +87,9 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 
 
 	///
-	let lastAnswer;
 	let sections;
 
 	window.agent = document.getElementById("agent");
-	window.agent.rate = 1;
-
 
 	let main = document.getElementById("main");
 	main.onclick = function() {
@@ -117,8 +117,7 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 	function execute(sections, section_index) {
 		let section = sections[section_index];
 
-		function next(res) {
-			lastAnswer = res;
+		function next() {
 			return execute(sections, section_index + 1);
 		}
 
@@ -129,32 +128,21 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 	execute.speak = function(stages, index, next) {
 		let stage = stages[index];
 		let sentence = stage.speech.join("\n");
-		return agent.speak(sentence).finally(next);
+		return agent.speak(sentence)
+			.finally(next);
 	};
 
-	execute["case"] = function(stages, index, next) {
-		let stage = stages[index];
-		let sentence = stage.speech[lastAnswer.index] || stage.speech[stage.speech.length - 1];
-		return agent.speak(sentence).finally(next);
-	};
-
-	execute.ask = function(stages, index, next, level, prefix) {
+	execute.ask = function(stages, index, next, level) {
 		level = level || 0;
-		prefix = prefix || "";
-
 		let stage = stages[index];
 		if (!stage) {
 			return next();
 		}
 
 		let sentence = stage.speech[level];
+
 		if (!sentence) {
 			return next();
-		}
-
-		if (prefix) {
-			let s = sentence.split(/[,.]/);
-			sentence = prefix + s.pop();
 		}
 
 		return agent.speak(sentence)
@@ -163,32 +151,14 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 					return agent.listen(stage.answer, stage.guide, stage.speech[level + 1] || stages[index + 1])
 				}
 			})
-			.then(res => {
-
-				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
-				if (res.transcript.indexOf("slowly") >= 0) {
-					throw res;
-				}
-
-				return _;
-			})
 			.then(next)
-			.catch(res => {
-
-				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
-				if (res.transcript && res.transcript.indexOf("slowly") >= 0) {
-					TTS.rate = 0.8;
-					return execute.ask(stages, index, next, level, "Okay.\n");
-				}
-
+			.catch(err => {
 				return execute.ask(stages, index, next, level + 1);
 			})
 	};
 
-	execute.mission = function(stages, index, next, level, prefix) {
+	execute.mission = function(stages, index, next, level) {
 		level = level || 0;
-		prefix = prefix || "";
-
 		let stage = stages[index];
 		if (!stage) {
 			return next();
@@ -200,34 +170,14 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 			return execute.mission(stages, index + 1, next, 0);
 		}
 
-		if (prefix) {
-			let s = sentence.split(/[,.]/);
-			sentence = prefix + s.pop();
-		}
-
 		return agent.speak(sentence, execute.voiceIndex)
 			.then(_ => {
 				if (stage.answer.length) {
 					return agent.listen(stage.answer, stage.guide, stage.speech[level + 1] || stages[index + 1])
 				}
 			})
-			.then(res => {
-
-				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
-				if (res.transcript.indexOf("slowly") >= 0) {
-					throw res;
-				}
-
-			})
 			.then(next)
-			.catch(res => {
-
-				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
-				if (res.transcript && res.transcript.indexOf("slowly") >= 0) {
-					TTS.rate = 0.8;
-					return execute.mission(stages, index, next, level, "Okay.\n");
-				}
-
+			.catch(err => {
 				return execute.mission(stages, index, next, level + 1);
 			})
 	};
@@ -241,36 +191,33 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 	};
 
 
-	execute.fadeout = function(stages, index, next) {
-		agent.style.opacity = 0;
-		return $timeout(+duration).then(next);
-	};
-
-
 	execute["mission-start"] = function(stages, index, next, level) {
 
 		mbg.style.opacity = 1;
-		TTS.rate = 1;
 
 		return $timeout(1000)
 
 			.then(_ => {
 				document.getElementById("desc-title").style.opacity = 1;
-				return $timeout(1000)
+				return agent.speak("Get started")
 			})
 
 			.then(_ => {
+
 				document.getElementById("desc-p").style.opacity = 1;
-				return agent.speak("You are standing at the front of hotel reception desk. Try to check in.")
+
+				return agent.speak("I will check your level through this tutorial. Do your best.")
+
 			})
 
 			.then(_ => {
+
 				agent.clear();
 				agent.style.zIndex = 9999;
 				agent.$dialog.style.opacity = 0;
 				document.getElementById("invoke").style.opacity = 1;
 				document.querySelectorAll("ui-speech-to-text .msg").forEach(el => el.style.opacity = 0);
-				return agent.listen([/good|evening/i], "", false)
+				return agent.listen([/come|on/i], "", false)
 			})
 
 			.then(_ => {
@@ -289,7 +236,6 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 
 	execute["feedback"] = function(stages, index, next, level) {
 
-		TTS.rate = 1;
 
 		return $timeout(500)
 

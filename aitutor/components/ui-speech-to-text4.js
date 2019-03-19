@@ -2,9 +2,9 @@ $module.template("ui-speech-to-text")`
 
 	<template>
 		<section flex vbox>
-			<h2 class="msg transcript" [class.isfinal]="isFinal" style="text-align: right; width: 100%;" [hidden]="!text || isFinal">{{ text }}</h2>
-			<h2 style="text-align: center; width: 100%; font-size: 34px; color: #3a3aa5; padding: 0 16px;" [hidden]="text">{{ guide_text2 }}</h2>
+			<h2 class="msg transcript" [class.isfinal]="isFinal" style="text-align: right; width: 100%;" [hidden]="!text">{{ text }}</h2>
 			<h2 [style.font-size.px]="(guide_text && guide_text2) ? 14 : 20" style="text-align: center; width: 100%; font-size: 20px; color: #555; padding: 8px 16px;" [hidden]="text">{{ guide_text }}</h2>
+			<h2 style="text-align: center; width: 100%; font-size: 30px; line-height: 48px; color: #3a3aa5; padding: 0 16px;" [hidden]="text">{{ guide_text2 }}</h2>
 			<mic-wave $wave style="position: absolute; bottom: 0;"></mic-wave>
 		</section>
 	</template>
@@ -47,7 +47,7 @@ $module.component("ui-speech-to-text", function(STT) {
 				this.$wave.state = "listen";
 
 				let s = STT.subscribe(event => {
-					console.log(event);
+					// console.log(event);
 
 					fallbackPause();
 					if (!event.results) {
@@ -65,11 +65,12 @@ $module.component("ui-speech-to-text", function(STT) {
 						r.conf = r.confidence;
 						console.log(r.transcript, r.confidence);
 
-						keywords.forEach(keyword => {
+						keywords.forEach((keyword, index) => {
 							let ret = r.transcript.match(keyword);
 							if (ret) {
 								r.conf *= 10;
 								this.keyword = ret[0];
+								this.keyword_index = index;
 							}
 						});
 					});
@@ -93,12 +94,12 @@ $module.component("ui-speech-to-text", function(STT) {
 						/// @FIXME: 임시 통과 테스트
 						if (has_fallback) {
 							s.unsubscribe();
-							resolve({query: this.keyword, transcript: this.text});
+							resolve({query: this.keyword, index: this.keyword_index, transcript: this.text});
 						}
 						else {
 							if (this.keyword) {
 								s.unsubscribe();
-								resolve({query: this.keyword, transcript: this.text});
+								resolve({query: this.keyword, index: this.keyword_index, transcript: this.text});
 							}
 							else {
 								this.$wave.state = "nomatch";
@@ -110,7 +111,6 @@ $module.component("ui-speech-to-text", function(STT) {
 								}, 500);
 							}
 						}
-
 
 
 					}
@@ -166,6 +166,7 @@ $module.factory("STT", function(Observable) {
 		recognition.continuous = true;
 		recognition.interimResults = true;
 		recognition.lang = 'en-US';
+		// recognition.lang = 'ko';
 
 		console.log(recognition);
 
