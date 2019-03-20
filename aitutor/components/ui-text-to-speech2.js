@@ -80,7 +80,7 @@ $module.factory("TTS", function(Observable) {
 				let EN = voices.filter(v => v.lang.startsWith("en"));
 
 				if (!index) {
-					index = 1 ? EN[1].voiceURI === "Daniel" ? 1 : 3;
+					index = EN[1].voiceURI === "Daniel" ? 1 : 3;
 				}
 				index = index % EN.length;
 
