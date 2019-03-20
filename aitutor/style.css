@@ -14,7 +14,7 @@ body {
 }
 body {
   display: flex;
-  font-family: "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", 'dotum', sans-serif;
+  font-family: "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
   font-weight: 200;
   overflow: hidden;
 }
@@ -417,7 +417,7 @@ ui-background.overlay section div.invoke h2 {
   font-size: 18px;
   color: #666;
 }
-ui-background.overlay section div.invoke >p {
+ui-background.overlay section div.invoke > p {
   font-size: 32px;
 }
 #mission-bg {
@@ -446,7 +446,7 @@ ui-feedback {
   right: 0;
   bottom: 0;
 }
-ui-feedback >section {
+ui-feedback > section {
   margin: auto 32px;
   padding: 16px;
   text-align: center;
