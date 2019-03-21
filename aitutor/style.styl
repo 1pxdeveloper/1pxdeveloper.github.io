@@ -16,10 +16,10 @@ html, body
 
 body
   display: flex
-  font-family "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", 'dotum', sans-serif;
+  font-family "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
   font-weight 200
   overflow hidden
-
+  
 
 main
   display: flex;
@@ -382,12 +382,12 @@ ai-message
 
 
 ui-speech-to-text
+ui-speech-shadowing
   display flex
   margin auto
   width 100%
   overflow hidden
 
-ui-speech-to-text
   transition opacity 1s
 
   .transcript
@@ -643,3 +643,7 @@ ui-feedback
     &[lang="ko"]
       color #666
       font-size 14px
+
+
+span.ok
+  color #000

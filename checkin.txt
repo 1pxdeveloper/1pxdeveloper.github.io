@@ -1,7 +1,8 @@
 //미션 시나리오 -----------------------
 
 [speak]
-Hello! Nice to meet you. My name is Daniel.
+Hi! My name is Daniel.
+Nice to meet you.
 I am your A.I tutor.
 
 [pause]
@@ -24,7 +25,9 @@ Today, I prepared two type of missions.
 Which mission should we start?
 
 ("Hotel check-in"
-"In the Cafe" / 원하는 미션을 말씀해주세요)
+"In the Cafe"
+or
+"Anything else?" / 원하는 미션을 말씀해주세요)
 
 - Hotel check-in | hotel | check
 
@@ -81,8 +84,6 @@ Excuse me. How many nights?
 Okay. ___. What kind of views would you like?
 `Sorry,
 What kind of views would you like?`
-`Well...
-Tell me a view type of room you prefer.`
 
 (원하시는 뷰 타입을 알려주세요.)
 

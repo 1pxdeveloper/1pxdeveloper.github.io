@@ -12,10 +12,6 @@ $module.component("ai-agent", function(capitalize) {
 
 	return class {
 		init($) {
-
-			console.log(this);
-
-
 			this.lastQuery = "";
 		}
 

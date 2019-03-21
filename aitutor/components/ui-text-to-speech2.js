@@ -68,7 +68,9 @@ $module.factory("TTS", function(Observable) {
 	// 	});
 	// }
 
-	return {
+	let self = {
+		rate: 1,
+
 		speak$(text, index) {
 			text = text.trim() + " ";
 
@@ -76,6 +78,7 @@ $module.factory("TTS", function(Observable) {
 
 				let voices = synth.getVoices();
 				let EN = voices.filter(v => v.lang.startsWith("en"));
+
 				if (!index) {
 					index = EN[1].voiceURI === "Daniel" ? 1 : 3;
 				}
@@ -84,10 +87,14 @@ $module.factory("TTS", function(Observable) {
 				let voice = EN[index];
 
 
+				console.log("TTS.rate", self.rate);
+
+
+
 				/// create voice utter
 				let utterThis = new SpeechSynthesisUtterance(text);
 				utterThis.voice = voice;
-				utterThis.rate = 1 + ((Math.random() - 0.5) * 0.1);
+				utterThis.rate = self.rate + ((Math.random() - 0.5) * 0.1);
 				utterThis.pitch = 1 + ((Math.random() - 0.5) * 0.1);
 
 
@@ -146,7 +153,10 @@ $module.factory("TTS", function(Observable) {
 				setTimeout(_ => nextWord(start), 500);
 			});
 		}
-	}
+	};
+
+
+	return self;
 });
 
 
