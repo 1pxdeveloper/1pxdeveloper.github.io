@@ -9,7 +9,6 @@
 }
 html,
 body {
-  background: #f1f1f1;
   height: 100%;
 }
 body {
@@ -34,11 +33,10 @@ main content {
   height: 100%;
   overflow: hidden;
   transform: translate3d(0, 0, 0);
-  background-image: linear-gradient(#308b94, #70b34d);
 }
 @media (min-width: 768px) {
   body {
-    background: #fafafa;
+    background-image: linear-gradient(#fff, #aaa);
   }
   main {
     width: 375px;
@@ -170,7 +168,7 @@ mic-wave section {
 }
 mic-wave section div {
   transition: background-color 0.5s;
-  background: #999;
+  background: #000;
   width: 10px;
   height: 10px;
   border-radius: 10px;
@@ -262,7 +260,7 @@ ui-speech-shadowing .transcript.isfinal {
   color: #111;
 }
 .msg {
-  color: #fff;
+  color: #000;
   top: 50%;
   transform-origin: 0 0;
   transform: translate(0, -50%);

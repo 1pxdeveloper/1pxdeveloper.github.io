@@ -41,13 +41,22 @@
 			width: 100%;
 		}
 
+		h1 {
+			margin: auto;
+			font-weight: 200;
+			text-align: right;
+			width: 100%;
+			padding: 16px;
+		}
 
 	</style>
 </head>
 <body>
 
 <main>
-	<div flex></div>
+	<div flex style="display: flex">
+		<h1 id="text"></h1>
+	</div>
 	<canvas id="canvas"></canvas>
 </main>
 
@@ -67,43 +76,55 @@ let a = 30;
 let offset = 4;
 
 
-navigator.getUserMedia({audio: true}, (stream) => {
-		start_microphone(stream);
-	},
-	function(e) {
-		alert('Error capturing audio.');
-	}
-);
+document.onclick = function(e) {
 
-document.onkeydown = function(e) {
+	window.SpeechRecognition = webkitSpeechRecognition;
 
-	let x = Math.random() * 10 + 5;
-	a += x;
-}
+	let recognition = new SpeechRecognition();
+	recognition.continuous = true;
+	recognition.interimResults = true;
+	recognition.lang = 'en-US';
 
-function start_microphone(stream) {
+	recognition.onresult = function(e) {
+		document.getElementById("text").innerText = e.results[e.resultIndex][0].transcript;
+
+	};
+
+	recognition.start();
+
+
+	document.onclick = null;
+
+
 	let audioContext = new AudioContext();
-	let microphone_stream = audioContext.createMediaStreamSource(stream);
 
 	let analyser_node = audioContext.createAnalyser();
 	analyser_node.smoothingTimeConstant = 0;
 	analyser_node.fftSize = 2048;
 
-	microphone_stream.connect(analyser_node);
-
 
 	let array_freq_domain = new Uint8Array(2048);
+
+	navigator.getUserMedia({audio: true}, (stream) => {
+			let microphone_stream = audioContext.createMediaStreamSource(stream);
+			microphone_stream.connect(analyser_node);
+		},
+		function(e) {
+			alert('Error capturing audio.');
+		}
+	);
 
 
 	function draw() {
 		requestAnimationFrame(draw);
 
 
-		// analyser_node.getByteFrequencyData(array_freq_domain);
-		// let v = array_freq_domain[3];
-		// a = Math.round(v / 128 * 10);
-		// a = Math.min(v, a);
-		// a = Math.max(5, a);
+		analyser_node.getByteFrequencyData(array_freq_domain);
+		let smoothing = 0.8;
+		let v = array_freq_domain[5];
+		v = Math.round(v / 128 * 7 / 10) * 10;
+		a = (a * smoothing) + (v * (1 - smoothing));
+		a = Math.max(5, a);
 
 
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -181,6 +202,7 @@ function start_microphone(stream) {
 	draw();
 
 }
+
 
 </script>
 </body>

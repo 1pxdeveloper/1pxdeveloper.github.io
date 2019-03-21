@@ -1,5 +1,9 @@
 @import core
 
+
+$text-color = #000
+
+
 [hidden] {
   display none !important
 }
@@ -11,7 +15,6 @@
   padding: 0;
 
 html, body
-  background: #f1f1f1;
   height 100%
 
 body
@@ -19,7 +22,7 @@ body
   font-family "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
   font-weight 200
   overflow hidden
-  
+
 
 main
   display: flex;
@@ -37,12 +40,13 @@ main
     height 100%
     overflow hidden
     transform translate3d(0, 0, 0)
-    background-image linear-gradient(#308b94, #70b34d)
+    //background-image linear-gradient(#17ead9, #6078ea)
 
 
 +tablet-and-desktop()
   body
-    background #fafafa
+    background-image linear-gradient(#fff, #aaa)
+
 
   main
     width: 375px;
@@ -200,7 +204,7 @@ mic-wave
 
     div
       transition background-color 0.5s
-      background #999
+      background $text-color
       width 10px
       height 10px
       border-radius 10px
@@ -398,7 +402,7 @@ ui-speech-shadowing
 
 
 .msg
-  color #fff
+  color $text-color
   top 50%
   transform-origin 0 0
   transform translate(0, -50%)

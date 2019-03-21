@@ -29,7 +29,7 @@
 		<ai-agent id="agent"></ai-agent>
 
 		<ui-mission id="mission-bg" style="opacity: 0">
-			<ui-background></ui-background>
+			<ui-background style="background-color:#fff"></ui-background>
 			<ui-background class="overlay">
 
 				<section id="desc" class="desc">
@@ -45,16 +45,12 @@
 						<h2>호텔 직원을 불러보세요.</h2>
 						<p style="color:#3a3aa5">"Good evening~"</p>
 					</div>
-
 				</section>
-
-
 			</ui-background>
 		</ui-mission>
 
 
 		<ui-feedback id="feedback">
-
 			<section>
 				<img src="../imgs/awesome.jpg">
 				<p lang="en">Is it enough to not be inconvenient to live in a foreign country? Challenge other missions right away.</p>
@@ -166,7 +162,7 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 			.then(res => {
 
 				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
-				if (res.transcript.indexOf("slowly") >= 0) {
+				if (res && res.transcript && res.transcript.indexOf("slowly") >= 0) {
 					throw res;
 				}
 
@@ -176,7 +172,7 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 			.catch(res => {
 
 				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
-				if (res.transcript && res.transcript.indexOf("slowly") >= 0) {
+				if (res && res.transcript && res.transcript.indexOf("slowly") >= 0) {
 					TTS.rate = 0.8;
 					return execute.ask(stages, index, next, level, "Okay.\n");
 				}
