@@ -27,7 +27,8 @@
 		main {
 			display: flex;
 			flex-flow: column;
-			max-width: 480px;
+			max-width: 400px;
+			width: 100%;
 			height: 100%;
 			margin: auto;
 			background: #fff;
@@ -72,7 +73,7 @@ let ctx = canvas.getContext("2d");
 let t = 1;
 let c = 10;
 let L = 300;
-let a = 30;
+let a = 5;
 
 let offset = 4;
 
@@ -81,6 +82,7 @@ document.onclick = document.ontouchstart = function(e) {
 	document.onclick = document.ontouchstart = null;
 
 	window.SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+	window.AudioContext = window.webkitAudioContext || window.AudioContext;
 
 	if (SpeechRecognition) {
 		let recognition = new SpeechRecognition();
@@ -193,7 +195,7 @@ document.onclick = document.ontouchstart = function(e) {
 
 		t -= 1;
 		a *= 0.95;
-		a = Math.max(5, a);
+		a = Math.max(3, a);
 
 		// offset *= 0.99;
 		// offset = Math.max(10, offset);
