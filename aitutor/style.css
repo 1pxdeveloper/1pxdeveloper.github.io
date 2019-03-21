@@ -34,6 +34,7 @@ main content {
   height: 100%;
   overflow: hidden;
   transform: translate3d(0, 0, 0);
+  background-image: linear-gradient(#308b94, #70b34d);
 }
 @media (min-width: 768px) {
   body {
@@ -134,7 +135,7 @@ header {
   color: #ccc;
 }
 .msg.me.isfinal {
-  color: #000;
+  color: #fff;
 }
 cursor {
   display: inline-block;
@@ -260,7 +261,7 @@ ui-speech-to-text .transcript.isfinal {
   color: #111;
 }
 .msg {
-  color: #000;
+  color: #fff;
   top: 50%;
   transform-origin: 0 0;
   transform: translate(0, -50%);
@@ -416,7 +417,7 @@ ui-background.overlay section div.invoke h2 {
   font-size: 18px;
   color: #666;
 }
-ui-background.overlay section div.invoke >p {
+ui-background.overlay section div.invoke > p {
   font-size: 32px;
 }
 #mission-bg {
@@ -445,7 +446,7 @@ ui-feedback {
   right: 0;
   bottom: 0;
 }
-ui-feedback >section {
+ui-feedback > section {
   margin: auto 32px;
   padding: 16px;
   text-align: center;

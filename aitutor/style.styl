@@ -37,9 +37,7 @@ main
     height 100%
     overflow hidden
     transform translate3d(0, 0, 0)
-
-//background url("../imgs/bg1.png") no-repeat center 100%
-//background-size contain
+    background-image linear-gradient(#308b94, #70b34d)
 
 
 +tablet-and-desktop()
@@ -151,7 +149,7 @@ header
     color #ccc
 
     &.isfinal
-      color #000
+      color #fff
 
 
 cursor
@@ -400,7 +398,7 @@ ui-speech-to-text
 
 
 .msg
-  color #000
+  color #fff
   top 50%
   transform-origin 0 0
   transform translate(0, -50%)
@@ -559,7 +557,7 @@ ui-background
 
 
 ui-background.overlay
-  background-image: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,1))
+  background-image: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 1))
 
   section
     display flex
@@ -570,6 +568,7 @@ ui-background.overlay
 
     #desc-p p
       margin 4px 0
+
       &[lang=en]
         font-size 18px
 
@@ -593,7 +592,7 @@ ui-background.overlay
         font-size 18px
         color #666
 
-      >p
+      > p
         font-size 32px
 
 
@@ -626,7 +625,7 @@ ui-feedback
   right 0
   bottom 0
 
-  >section
+  > section
     margin auto 32px
     padding 16px
     //box-shadow 0 0 10px rgba(0,0,0,.1)

@@ -41,9 +41,6 @@ $module.component("mic-wave", function() {
 		}
 
 
-
-
-
 		start_microphone(stream) {
 			this.playing = true;
 
@@ -76,18 +73,16 @@ $module.component("mic-wave", function() {
 				ctx.lineWidth = 1;
 				ctx.strokeStyle = "#111";
 
-				for (let i = 0; i < canvas.width/2; i += 2) {
+				for (let i = 0; i < canvas.width; i++) {
 
-					let v = array_freq_domain[i] / 128.0;
+					let v = array_freq_domain[parseInt(array_freq_domain.length  / canvas.width* i)] / 128.0;
 					let y = v * HEIGHT / 2;
-
-					let v2 = array_freq_domain[i+1] / 128.0;
-					let y2 = v2 * HEIGHT / 2;
 
 					if (i === 0) {
 						ctx.moveTo(x, y);
-					} else {
-						ctx.quadraticCurveTo(x, y, x+1, y2);
+					}
+					else {
+						ctx.lineTo(x, y);
 					}
 
 					x += sliceWidth;
