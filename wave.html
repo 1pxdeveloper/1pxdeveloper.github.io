@@ -60,7 +60,7 @@ let ctx = canvas.getContext("2d");
 
 
 let t = 1;
-let c = 10;
+let c = 5;
 let L = 300;
 let a = 5;
 
@@ -127,7 +127,7 @@ function start_microphone(stream) {
 		ctx.closePath();
 
 		ctx.fill();
-		// ctx.stroke();
+		ctx.stroke();
 
 
 		// ctx.beginPath();
@@ -148,7 +148,7 @@ function start_microphone(stream) {
 		t -= (offset/10);
 
 		a *= 0.99;
-		a = Math.max(3, a);
+		a = Math.max(1, a);
 
 		offset *= 0.99;
 		offset = Math.max(10, offset);

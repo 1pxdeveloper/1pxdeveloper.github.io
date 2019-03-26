@@ -66,7 +66,7 @@ $module.component("mic-wave", function() {
 					prev = dots.map((dot, i) => {
 
 						let v = array_freq_domain[i + 5] / 128.0;
-						v = Math.max(SIZE, v * 18);
+						v = Math.max(SIZE, v * 24);
 						v = (prev[i] * smoothing) + (v * (1 - smoothing));
 
 						dot.style.height = v + "px";

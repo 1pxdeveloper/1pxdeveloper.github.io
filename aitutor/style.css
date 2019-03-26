@@ -33,10 +33,11 @@ main content {
   height: 100%;
   overflow: hidden;
   transform: translate3d(0, 0, 0);
+  background: #000;
 }
 @media (min-width: 768px) {
   body {
-    background-image: linear-gradient(#fff, #aaa);
+    background: #fafafa;
   }
   main {
     width: 375px;
@@ -45,7 +46,7 @@ main content {
     border-radius: 36px;
     box-shadow: 0 0 32px rgba(0,0,0,0.2), 0 12px 24px rgba(0,0,0,0.5);
     box-sizing: content-box;
-    border: 16px solid #111;
+    border: 16px solid #fff;
     border-top-width: 60px;
     border-bottom-width: 60px;
   }
@@ -58,7 +59,7 @@ main content {
     top: -30px;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(255,255,255,0.2);
+    background: rgba(128,128,128,0.5);
     border-radius: 10px;
   }
 }
@@ -168,7 +169,7 @@ mic-wave section {
 }
 mic-wave section div {
   transition: background-color 0.5s;
-  background: #000;
+  background: #ff821e;
   width: 10px;
   height: 10px;
   border-radius: 10px;
@@ -260,7 +261,7 @@ ui-speech-shadowing .transcript.isfinal {
   color: #111;
 }
 .msg {
-  color: #000;
+  color: #fff;
   top: 50%;
   transform-origin: 0 0;
   transform: translate(0, -50%);
@@ -464,6 +465,21 @@ ui-feedback p[lang="ko"] {
 }
 span.ok {
   color: #000;
+}
+.guide-text {
+  text-align: center;
+  width: 100%;
+  font-size: 20px;
+  color: #fff;
+  padding: 8px 16px;
+}
+.hint-text {
+  text-align: center;
+  width: 100%;
+  font-size: 30px;
+  line-height: 48px;
+  color: rgba(255,255,255,0.5);
+  padding: 0 16px;
 }
 @-moz-keyframes blink {
   50% {

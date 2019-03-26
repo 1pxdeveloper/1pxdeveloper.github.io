@@ -3,8 +3,8 @@ $module.template("ui-speech-to-text")`
 	<template>
 		<section flex vbox>
 			<h2 class="msg transcript" [class.isfinal]="isFinal" style="text-align: right; width: 100%;" [hidden]="!text || isFinal">{{ text }}</h2>
-			<h2 [style.font-size.px]="(guide_text && guide_text2) ? 14 : 20" style="text-align: center; width: 100%; font-size: 20px; color: #555; padding: 8px 16px;" [hidden]="text">{{ guide_text }}</h2>
-			<h2 style="text-align: center; width: 100%; font-size: 30px; line-height: 48px; color: #3a3aa5; padding: 0 16px;" [hidden]="text">{{ guide_text2 }}</h2>
+			<h2 class="guide-text" [style.font-size.px]="(guide_text && guide_text2) ? 14 : 20" [hidden]="text">{{ guide_text }}</h2>
+			<h2 class="hint-text" [hidden]="text">{{ guide_text2 }}</h2>
 			<mic-wave $wave style="position: absolute; bottom: 0;"></mic-wave>
 		</section>
 	</template>

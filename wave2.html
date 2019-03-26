@@ -3,8 +3,8 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no">
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="apple-mobile-web-app-capable" content="yes"/>
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 
 	<title>Voice Wave</title>
 
@@ -29,6 +29,7 @@
 		}
 
 		main {
+			position: relative;
 			display: flex;
 			flex-flow: column;
 			max-width: 400px;
@@ -55,14 +56,21 @@
 			padding: 16px;
 		}
 
+		[layer] {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			display: flex;
+		}
 	</style>
 </head>
 <body>
 
 <main>
-	<div flex style="display: flex">
-		<h1 id="text"></h1>
-	</div>
+	<div layer><h1 id="text"></h1></div>
+	<div flex style="display: flex"></div>
 	<canvas id="canvas"></canvas>
 </main>
 
@@ -75,7 +83,7 @@ let ctx = canvas.getContext("2d");
 
 
 let t = 1;
-let c = 10;
+let c = 2;
 let L = 300;
 let a = 5;
 
@@ -89,20 +97,27 @@ document.onclick = document.ontouchstart = function(e) {
 	window.AudioContext = window.webkitAudioContext || window.AudioContext;
 
 	if (SpeechRecognition) {
+
+		console.log("!");
+
+
 		let recognition = new SpeechRecognition();
 		recognition.continuous = true;
 		recognition.interimResults = true;
-		recognition.lang = 'en-US';
+		// recognition.lang = 'en-US';
+		recognition.lang = 'ko';
 
 		recognition.onresult = function(e) {
+
+			console.log(e);
+
+
 			document.getElementById("text").innerText = e.results[e.resultIndex][0].transcript;
 
 		};
 
 		recognition.start();
 	}
-
-
 
 
 	let audioContext = new AudioContext();
@@ -129,14 +144,19 @@ document.onclick = document.ontouchstart = function(e) {
 
 
 		analyser_node.getByteFrequencyData(array_freq_domain);
-		let smoothing = 0.8;
+		let smoothing = 0.9;
 		let v = array_freq_domain[5];
-		v = Math.round(v / 128 * 7 / 10) * 10;
+		v = Math.round(v / 128 * 10 / 10) * 10;
 		a = (a * smoothing) + (v * (1 - smoothing));
-		a = Math.max(5, a);
+
+
+		offset = (offset * smoothing) + (v * (1 - smoothing));
+		offset = Math.max(10, offset);
 
 
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		// 38cfba
 
 		ctx.fillStyle = "rgba(200,200,0,.6)";
 		ctx.strokeStyle = "#000";
@@ -158,6 +178,13 @@ document.onclick = document.ontouchstart = function(e) {
 		// ctx.stroke();
 
 
+		// b2ff70
+
+		// var grd = ctx.createLinearGradient(0, 0, 0, 100);
+		// grd.addColorStop(0, "#38cfba");
+		// grd.addColorStop(1, "#b2ff70");
+
+
 		ctx.fillStyle = "rgba(200,200,0,.2)";
 
 		ctx.beginPath();
@@ -173,6 +200,7 @@ document.onclick = document.ontouchstart = function(e) {
 		ctx.closePath();
 
 		ctx.fill();
+		// ctx.stroke();
 
 
 		ctx.fillStyle = "rgba(200,200,0,.4)";
@@ -191,18 +219,16 @@ document.onclick = document.ontouchstart = function(e) {
 		ctx.closePath();
 
 		ctx.fill();
-
-
 		// ctx.stroke();
 
-		// t -= (offset/10);
+		t -= (offset / 5);
 
-		t -= 1;
+		// t -= 1;
 		a *= 0.95;
 		a = Math.max(3, a);
 
-		// offset *= 0.99;
-		// offset = Math.max(10, offset);
+		offset *= 0.99;
+		offset = Math.max(10, offset);
 
 		// console.log(c);
 
