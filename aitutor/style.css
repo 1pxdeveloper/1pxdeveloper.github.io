@@ -1,6 +1,20 @@
 [hidden] {
   display: none !important;
 }
+flex,
+[flex] {
+  flex: 1;
+}
+[hbox] {
+  display: flex;
+}
+[vbox] {
+  display: flex;
+  flex-direction: column;
+}
+flex {
+  display: flex;
+}
 * {
   font: inherit;
   box-sizing: border-box;
@@ -15,6 +29,7 @@ body {
   display: flex;
   font-family: "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
   font-weight: 200;
+  line-height: 1.55;
   overflow: hidden;
 }
 main {
@@ -40,8 +55,8 @@ main content {
     background: #fafafa;
   }
   main {
-    width: 375px;
-    height: 667px;
+    width: 480px;
+    height: 960px;
     max-height: calc(100% - 140px);
     border-radius: 36px;
     box-shadow: 0 0 32px rgba(0,0,0,0.2), 0 12px 24px rgba(0,0,0,0.5);
@@ -63,63 +78,18 @@ main content {
     border-radius: 10px;
   }
 }
-flex,
-[flex] {
-  flex: 1;
-}
-[hbox] {
-  display: flex;
-}
-[vbox] {
-  display: flex;
-  flex-direction: column;
-}
-flex {
-  display: flex;
-}
-ai-app {
-  display: flex;
-  margin: auto;
-  width: 100%;
-  height: 100%;
-  background: #fff;
-  overflow: hidden;
+ai-agent {
   position: relative;
-}
-ai-app > section {
-  display: flex;
-  width: 100%;
-  height: 100%;
-}
-h1 {
-  text-align: center;
-  font-size: 32px;
-}
-divider {
-  display: block;
-  height: 0;
-  border-top: 1px solid #ccc;
-}
-header {
-  padding: 0 16px;
-}
-.prev-msg {
-  padding: 16px;
-  font-size: 16px;
-  position: absolute;
-  top: 0;
-  font-style: italic;
-  width: 100%;
 }
 .msg {
   position: absolute;
   text-align: left;
-  padding: 16px;
-  color: #ccc;
+  padding: 40px 30px;
   width: 100%;
-  font-size: 32px;
-  font-weight: 100;
-  min-height: 32px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: 200;
+  min-height: 40px;
   top: 50%;
   transform-origin: 0 0;
   transform: translate(0, -50%);
@@ -136,91 +106,43 @@ header {
 .msg.me.isfinal {
   color: #fff;
 }
-cursor {
-  display: inline-block;
-  height: 1em;
-  border-right: 2px solid #000;
-}
-@-webkit-keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-.blink {
-  animation: blink 1s step-start 0s infinite;
-  -webkit-animation: blink 1s step-start 0s infinite;
-}
-.hint {
-  width: 100%;
-  display: block;
-  text-align: center;
-  font-size: 18px;
-  color: #ccc;
-}
 mic-wave {
   display: flex;
   width: 100%;
-  height: 78px;
+  height: 50%;
   z-index: 0;
 }
 mic-wave section {
   display: flex;
   margin: auto;
+  position: relative;
 }
 mic-wave section div {
-  transition: background-color 0.5s;
-  background: #ff821e;
+  opacity: 1;
+  transition: opacity 0.5s;
+  background: #e84991;
   width: 10px;
   height: 10px;
   border-radius: 10px;
-  margin: auto 5px;
-}
-mic-wave section div[selected] {
-  height: 30px;
+  margin: auto 7px;
 }
 mic-wave [state="final"] div {
-  background: #333;
+  opacity: 0;
 }
 mic-wave [state="nomatch"] div {
   animation: shake 0.5s;
 }
 [state="listen"] .c1 {
-  animation: updown linear 0.75s infinite alternate;
+  animation: updown ease-out 0.65s infinite alternate;
 }
 [state="listen"] .c2 {
-  animation: updown linear 0.75s infinite alternate-reverse;
+  animation: updown ease-out 0.65s 0.2s infinite alternate;
 }
-wait-dots {
-  display: inline-block;
-  vertical-align: middle;
-  line-height: 1;
+[state="listen"] .c3 {
+  animation: updown ease-out 0.65s 0.4s infinite alternate;
 }
-wait-dots > section {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background: #eee;
-  padding: 8px;
-  height: 30px;
-  border-radius: 15px;
-}
-wait-dots > section > div {
-  display: flex;
-  vertical-align: middle;
-  width: 8px;
-  height: 8px;
-  border-radius: 8px;
-  background: #999;
-  margin: 0 2px;
-}
-wait-dots .wd1 {
-  animation: wait-dots linear 1s infinite;
-}
-wait-dots .wd2 {
-  animation: wait-dots2 linear 1s infinite;
-}
-wait-dots .wd3 {
-  animation: wait-dots3 linear 1s infinite;
+[state="listen"] .c4 {
+  animation: updown ease-out 0.65s 0.6s infinite alternate;
 }
 mic-wave .d1,
 mic-wave .d2,
@@ -250,7 +172,12 @@ ui-speech-shadowing {
   margin: auto;
   width: 100%;
   overflow: hidden;
-  transition: opacity 1s;
+  transition: opacity 1s 0.15s;
+  opacity: 0;
+}
+ui-speech-to-text.listen,
+ui-speech-shadowing.listen {
+  opacity: 1;
 }
 ui-speech-to-text .transcript,
 ui-speech-shadowing .transcript {
@@ -280,18 +207,6 @@ ui-speech-shadowing .transcript.isfinal {
   top: 0;
   transform: translate(0, -100%) scale(0.6);
 }
-.hints {
-  position: relative;
-  overflow: hidden;
-  margin-top: 16px;
-}
-.hints .hint {
-  background: #fff;
-}
-.hints .hint2 {
-  position: absolute;
-  top: 0;
-}
 .tts-word {
   display: inline-block;
   white-space: pre;
@@ -308,7 +223,7 @@ animated-dialog {
   display: block;
 }
 animated-dialog p {
-  transition: top 1s, transform 1s;
+  transition: opacity 1s, top 1s, transform 1s;
   opacity: 0;
   white-space: pre-line;
 }
@@ -320,27 +235,11 @@ animated-dialog p:nth-child(1) {
 animated-dialog p:nth-child(2) {
   top: 0;
   transform: translate(0, 0) scale(0.6);
-  opacity: 1;
+  opacity: 0.5;
 }
 animated-dialog p:nth-child(3) {
   transform: translate(0, -50%) scale(1);
-  opacity: 1;
-}
-ui-script-editor {
-  width: 50%;
-  height: 100%;
-}
-ui-script-editor textarea {
-  display: block;
-  width: 100%;
-  height: 100%;
-  padding: 8px;
-  font-size: 16px;
-  line-height: 1.5;
-  background: #000;
-  color: #fff;
-  outline: 0;
-  border: 0;
+  opacity: 0.5;
 }
 .msg .caption {
   display: block;
@@ -353,13 +252,35 @@ ui-script-editor textarea {
 .msg .caption.show {
   opacity: 1;
 }
+ui-speech-to-text {
+  white-space: pre-wrap;
+}
+.guide-text {
+  text-align: center;
+  width: 100%;
+  font-size: 28px;
+  color: #fff;
+  padding: 0 30px;
+}
+.hint-text {
+  text-align: center;
+  width: 100%;
+  font-size: 40px;
+  color: #aaa;
+  padding: 0 30px;
+  margin: 14px auto;
+}
+.hint-text[type="option"],
+.hint-text.option {
+  margin: 40px auto;
+  font-size: 28px;
+  color: #aaa;
+  line-height: 2;
+}
 ai-agent {
   display: flex;
   width: 100%;
   height: 100%;
-}
-ui-speech-to-text {
-  white-space: pre-wrap;
 }
 ui-mission {
   display: block;
@@ -432,10 +353,6 @@ ui-background.overlay section div.invoke > p {
   transition: all 1s;
   opacity: 0;
 }
-ai-agent {
-  position: relative;
-  transition: opacity 1s;
-}
 ui-feedback {
   transition: all 1s;
   opacity: 0;
@@ -466,40 +383,25 @@ ui-feedback p[lang="ko"] {
 span.ok {
   color: #000;
 }
-.guide-text {
-  text-align: center;
+ui-mission,
+ui-feedback {
+  display: none;
+}
+ui-script-editor {
+  width: 50%;
+  height: 100%;
+}
+ui-script-editor textarea {
+  display: block;
   width: 100%;
-  font-size: 20px;
+  height: 100%;
+  padding: 8px;
+  font-size: 16px;
+  line-height: 1.5;
+  background: #000;
   color: #fff;
-  padding: 8px 16px;
-}
-.hint-text {
-  text-align: center;
-  width: 100%;
-  font-size: 30px;
-  line-height: 48px;
-  color: rgba(255,255,255,0.5);
-  padding: 0 16px;
-}
-@-moz-keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-@-webkit-keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-@-o-keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
+  outline: 0;
+  border: 0;
 }
 @-moz-keyframes shake {
   0% {
@@ -558,282 +460,46 @@ span.ok {
   }
 }
 @-moz-keyframes updown {
-  from {
-    transform: translate(0, -6px);
+  0% {
+    transform: translate(0, 0px);
   }
-  to {
-    transform: translate(0, 6px);
+  90% {
+    transform: translate(0, -10px);
+  }
+  100% {
+    transform: translate(0, -10px);
   }
 }
 @-webkit-keyframes updown {
-  from {
-    transform: translate(0, -6px);
+  0% {
+    transform: translate(0, 0px);
   }
-  to {
-    transform: translate(0, 6px);
+  90% {
+    transform: translate(0, -10px);
+  }
+  100% {
+    transform: translate(0, -10px);
   }
 }
 @-o-keyframes updown {
-  from {
-    transform: translate(0, -6px);
+  0% {
+    transform: translate(0, 0px);
   }
-  to {
-    transform: translate(0, 6px);
+  90% {
+    transform: translate(0, -10px);
+  }
+  100% {
+    transform: translate(0, -10px);
   }
 }
 @keyframes updown {
-  from {
-    transform: translate(0, -6px);
-  }
-  to {
-    transform: translate(0, 6px);
-  }
-}
-@-moz-keyframes wait-dots {
   0% {
-    transform: translate(0, 0);
-    opacity: 1;
+    transform: translate(0, 0px);
   }
-  25% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  75%, 100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@-webkit-keyframes wait-dots {
-  0% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  25% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  75%, 100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@-o-keyframes wait-dots {
-  0% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  25% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  75%, 100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@keyframes wait-dots {
-  0% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  25% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  75%, 100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@-moz-keyframes wait-dots2 {
-  0%, 25% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  50% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  75%, 100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@-webkit-keyframes wait-dots2 {
-  0%, 25% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  50% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  75%, 100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@-o-keyframes wait-dots2 {
-  0%, 25% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  50% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  75%, 100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@keyframes wait-dots2 {
-  0%, 25% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  50% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  75%, 100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@-moz-keyframes wait-dots3 {
-  0%, 50% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  75% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
+  90% {
+    transform: translate(0, -10px);
   }
   100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@-webkit-keyframes wait-dots3 {
-  0%, 50% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  75% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@-o-keyframes wait-dots3 {
-  0%, 50% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  75% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@keyframes wait-dots3 {
-  0%, 50% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  75% {
-    transform: translate(0, -4px);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-@-moz-keyframes fade {
-  from {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
-  }
-  to {
-    transform: translate3d(0, -100%, 0);
-    opacity: 0;
-  }
-}
-@-webkit-keyframes fade {
-  from {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
-  }
-  to {
-    transform: translate3d(0, -100%, 0);
-    opacity: 0;
-  }
-}
-@-o-keyframes fade {
-  from {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
-  }
-  to {
-    transform: translate3d(0, -100%, 0);
-    opacity: 0;
-  }
-}
-@keyframes fade {
-  from {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
-  }
-  to {
-    transform: translate3d(0, -100%, 0);
-    opacity: 0;
-  }
-}
-@-moz-keyframes fade2 {
-  from {
-    transform: translate3d(0, 100%, 0);
-    opacity: 0;
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
-  }
-}
-@-webkit-keyframes fade2 {
-  from {
-    transform: translate3d(0, 100%, 0);
-    opacity: 0;
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
-  }
-}
-@-o-keyframes fade2 {
-  from {
-    transform: translate3d(0, 100%, 0);
-    opacity: 0;
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
-  }
-}
-@keyframes fade2 {
-  from {
-    transform: translate3d(0, 100%, 0);
-    opacity: 0;
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
+    transform: translate(0, -10px);
   }
 }

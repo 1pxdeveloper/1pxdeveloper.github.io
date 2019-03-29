@@ -2,7 +2,7 @@ $module.template("ai-agent")`
 
 	<template>
 		<animated-dialog $dialog></animated-dialog>
-		<ui-speech-to-text $stt style="opacity: 0"></ui-speech-to-text>
+		<ui-speech-to-text $stt></ui-speech-to-text>
 	</template>
 
 `;
@@ -18,23 +18,24 @@ $module.component("ai-agent", function(capitalize) {
 		clear() {
 			this.$dialog.clear();
 			this.$stt.guide_text = "";
-			this.$stt.style.opacity = 0;
+			this.$stt.classList.remove("listen");
 		}
 
-		speak(msg, voiceIndex) {
+		speak(msg, voiceIndex, callback) {
 
 			if (this.lastQuery) {
 				msg = msg.replace(/__+/g, this.lastQuery);
 				msg = capitalize(msg);
 			}
-			return this.$dialog.ask(msg, voiceIndex);
+			return this.$dialog.ask(msg, voiceIndex, callback);
 		}
 
 		listen(answer, guide, has_fallback) {
 
 			let [guide1, guide2] = guide.split(/\s*\/\s*/);
 
-			this.$stt.style.opacity = 1;
+			this.$stt.classList.add("listen");
+
 			this.$stt.guide_text2 = "";
 			this.$stt.guide_text = "";
 
@@ -48,7 +49,8 @@ $module.component("ai-agent", function(capitalize) {
 
 			return this.$stt.listen(answer, has_fallback)
 				.then(res => {
-					this.$stt.style.opacity = 0;
+					this.$stt.classList.remove("listen");
+
 					return this.$dialog.speak(res.transcript).then(_ => {
 
 						if (res.query) {
@@ -61,7 +63,7 @@ $module.component("ai-agent", function(capitalize) {
 				})
 
 				.catch(err => {
-					this.$stt.style.opacity = 0;
+					this.$stt.classList.remove("listen");
 					throw err;
 				})
 		}

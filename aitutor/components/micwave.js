@@ -2,8 +2,10 @@ $module.template("mic-wave")`
 	<template>
 		<section [attr.state]="state">
 			<div $c1 [attr.selected]="index === 0" class="c1"></div>
-			<div $c2 [attr.selected]="index === 1"></div>
-			<div $c3 [attr.selected]="index === 2" class="c2"></div>
+			<div $c2 [attr.selected]="index === 0" class="c2"></div>
+			<!--<div $c3 [attr.selected]="index === 1"></div>-->
+			<div $c4 [attr.selected]="index === 2" class="c3"></div>
+			<div $c5 [attr.selected]="index === 2" class="c4"></div>
 		</section>
 	</template>
 `;
@@ -16,7 +18,7 @@ $module.component("mic-wave", function() {
 	return class MicWave {
 
 		init($) {
-			this.dots = [this.$c1, this.$c2, this.$c3];
+			this.dots = [this.$c1, this.$c2, this.$c4, this.$c5];
 			this.state = "stop";
 		}
 
@@ -50,8 +52,8 @@ $module.component("mic-wave", function() {
 			let array_freq_domain = new Uint8Array(2048);
 
 			let dots = this.dots;
-			let prev = [SIZE, SIZE, SIZE, SIZE];
-			let smoothing = 0.9;
+			let prev = [SIZE, SIZE, SIZE, SIZE, SIZE];
+			let smoothing = 0.7;
 
 			let loop = 0;
 
@@ -65,8 +67,9 @@ $module.component("mic-wave", function() {
 
 					prev = dots.map((dot, i) => {
 
-						let v = array_freq_domain[i + 5] / 128.0;
-						v = Math.max(SIZE, v * 24);
+						let v = array_freq_domain[i + 7] / 128.0;
+						v = Math.min(v, SIZE * 2);
+						v = Math.max(SIZE, v * 32);
 						v = (prev[i] * smoothing) + (v * (1 - smoothing));
 
 						dot.style.height = v + "px";

@@ -1,26 +1,63 @@
 @import core
 
+$width = 480px
+$height = 960px
+
+$msg-font-size = 40px
+$msg-font-weight = 200
+$msg-script-opacity = 0.7
+
+$guide-font-size = 28px
+$hint-text-font-size = 40px
+$hint-option-text-font-size = 28px
+
+$feedback-font-size = 55px
+
+$feedback-ko-font-size = 22px
+$feedback-ko-line-height = 1.35
+
+
+/// Black Theme
 $mobile_edge = #fff
-
-//$bg = linear-gradient(#fc7d7d, #8e78ff)
-//$bg = linear-gradient(#ff821e, #fbd035)
-//$bg = linear-gradient(#9305ff, #000000)
 $bg = #000
-
 $text-color = #fff
-$dot-color = #ff821e
+$dot-color = #e84991
 $guide-text-color = #fff
-$hint-text-color = rgba(255, 255, 255, .5)
+$hint-text-color = #aaa
+$hint-option-text-color = #aaa
 
-//$bg = #000
-//$text-color = #fff
-//$dot-color = #fc7d7d
+//$mobile_edge = #000
+//$bg = #fff
+//$text-color = #181818
+//$dot-color = #e84991
+//$guide-text-color = #181818
+//$hint-text-color = #aaa
+//$hint-option-text-color = #aaa
 
 
+/// UTIL
 [hidden] {
   display none !important
 }
 
+///
+flex, [flex] {
+  flex: 1;
+}
+
+[hbox]
+  display flex
+
+[vbox] {
+  display flex
+  flex-direction column
+}
+
+flex
+  display flex
+
+
+/// COMMON
 *
   font inherit
   box-sizing border-box
@@ -34,6 +71,7 @@ body
   display: flex
   font-family "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
   font-weight 200
+  line-height 1.55
   overflow hidden
 
 
@@ -61,8 +99,8 @@ main
     background #fafafa
 
   main
-    width: 375px;
-    height: 667px;
+    width: $width
+    height: $height
     max-height: calc(100% - 140px)
     border-radius: 36px;
     box-shadow: 0 0 32px rgba(0, 0, 0, .2), 0 12px 24px rgba(0, 0, 0, .5)
@@ -85,72 +123,18 @@ main
     }
 
 
-///
-flex, [flex] {
-  flex: 1;
-}
-
-[hbox] {
-  display flex
-}
-
-[vbox] {
-  display flex
-  flex-direction column
-}
-
-
-flex
-  display flex
-
-
-ai-app
-  display flex
-  margin: auto;
-  width 100%
-  height 100%
-  background: #fff
-  overflow hidden
+ai-agent
   position relative
-
-  > section
-    display flex
-    width 100%
-    height 100%
-
-h1 {
-  text-align: center;
-  font-size 32px
-
-}
-
-divider
-  display block
-  height 0
-  border-top 1px solid #ccc
-
-
-header
-  padding 0 16px
-
-
-.prev-msg
-  padding 16px
-  font-size 16px
-  position absolute
-  top 0
-  font-style italic
-  width 100%
 
 .msg
   position absolute
   text-align left;
-  padding 16px
-  color #ccc
+  padding 40px 30px
   width 100%
-  font-size 32px
-  font-weight 100
-  min-height 32px
+  color $text-color
+  font-size $msg-font-size
+  font-weight $msg-font-weight
+  min-height @font-size
   top 50%
   transform-origin 0 0
   transform translate(0, -50%)
@@ -167,74 +151,39 @@ header
     &.isfinal
       color #fff
 
-
-cursor
-  display inline-block
-  height 1em
-  border-right 2px solid #000
-
-
-@keyframes blink {
-  50% {
-    opacity: 0.0;
-  }
-}
-
-@-webkit-keyframes blink {
-  50% {
-    opacity: 0.0;
-  }
-}
-
-.blink {
-  animation: blink 1s step-start 0s infinite;
-  -webkit-animation: blink 1s step-start 0s infinite;
-}
-
-
-.hint
-  width 100%
-  display block
-  text-align center
-  font-size 18px
-  color #ccc
-
-
 mic-wave
   display flex
   //position absolute
   //bottom 0px
   width 100%
-  height 78px;
-  //height 50%
+  //height 78px;
+  height 50%
   //margin-top -75px
   z-index 0
 
   section
     display flex
     margin auto
+    position relative
 
     div
-      transition background-color 0.5s
+      opacity 1
+      transition opacity 0.5s
       background $dot-color
       width 10px
       height 10px
       border-radius 10px
-      margin auto 5px
-
-      &[selected]
-        //background #555
-        height 30px
+      margin auto 7px
 
 
-mic-wave [state="final"]
-  div
-    background #333
+mic-wave
+  [state="final"]
+    div
+      opacity 0
 
-
-mic-wave [state="nomatch"]
-  div
-    animation shake 0.5s
+  [state="nomatch"]
+    div
+      animation shake 0.5s
 
 
 @keyframes shake {
@@ -257,121 +206,39 @@ mic-wave [state="nomatch"]
 
 
 @keyframes updown {
-  from {
-    transform translate(0, -6px)
-  }
-
-  to {
-    transform translate(0, 6px)
-  }
-}
-
-
-[state="listen"]
-  .c1 {
-    animation updown linear 0.75s infinite alternate
-  }
-
-  .c2 {
-    animation updown linear 0.75s infinite alternate-reverse
-  }
-
-
-wait-dots
-  display inline-block
-  vertical-align middle
-  line-height 1
-
-  > section
-    hbox()
-    background #eee
-    padding 8px
-    height 30px
-    border-radius 15px
-
-    > div
-      display flex
-      vertical-align middle
-      width 8px;
-      height 8px;
-      border-radius 8px
-      background #999
-      margin 0 2px;
-
-  .wd1
-    animation wait-dots linear 1s infinite
-
-  .wd2
-    animation wait-dots2 linear 1s infinite
-
-  .wd3
-    animation wait-dots3 linear 1s infinite
-
-
-@keyframes wait-dots {
   0% {
-    transform translate(0, 0)
-    opacity 1
+    transform translate(0, 0px)
   }
 
-  25% {
-    transform translate(0, -4px)
-    opacity 0.5
-  }
-
-  75%, 100% {
-    transform translate(0, 0)
-    opacity 1
-  }
-}
-
-@keyframes wait-dots2 {
-  0%, 25% {
-    transform translate(0, 0)
-    opacity 1
-  }
-
-  50% {
-    transform translate(0, -4px)
-    opacity 0.5
-  }
-
-  75%, 100% {
-    transform translate(0, 0)
-    opacity 1
-  }
-}
-
-@keyframes wait-dots3 {
-  0%, 50% {
-    transform translate(0, 0)
-    opacity 1
-  }
-
-  75% {
-    transform translate(0, -4px)
-    opacity 0.5
+  90% {
+    transform translate(0, -10px)
   }
 
   100% {
-    transform translate(0, 0)
-    opacity 1
+    transform translate(0, -10px)
   }
 }
 
 
-//[state="listen"]
-//.d1 {
-//  animation updown linear 0.5s infinite alternate
-//}
-//
-//.d2 {
-//  animation updown linear 0.5s infinite alternate-reverse
-//}
-//
-//.d3 {
-//  animation updown linear 0.5s infinite alternate-reverse
-//}
+$s = 0.65s
+$d = 0.2s
+
+[state="listen"]
+  .c1 {
+    animation updown ease-out $s infinite alternate
+  }
+
+  .c2 {
+    animation updown ease-out $s ($d* 1) infinite alternate
+  }
+
+  .c3 {
+    animation updown ease-out $s ($d* 2) infinite alternate
+  }
+
+  .c4 {
+    animation updown ease-out $s ($d* 3) infinite alternate
+  }
 
 
 mic-wave
@@ -404,7 +271,11 @@ ui-speech-shadowing
   width 100%
   overflow hidden
 
-  transition opacity 1s
+  transition opacity 1s 0.15s
+  opacity 0
+
+  &.listen
+    opacity 1
 
   .transcript
     color #ccc
@@ -434,48 +305,7 @@ ui-speech-shadowing
     transform translate(0, -100%) scale(0.6)
 
 
-.hints
-  position relative
-  overflow hidden
-  margin-top 16px
-
-  .hint
-    background #fff
-
-  //animation fade 1s infinite
-
-  .hint2
-    position absolute
-    top 0
-
-//animation fade2 1s infinite
-
-
-@keyframes fade {
-  from {
-    transform translate3d(0, 0, 0)
-    opacity 1
-  }
-
-  to {
-    transform translate3d(0, -100%, 0)
-    opacity 0
-  }
-}
-
-
-@keyframes fade2 {
-  from {
-    transform translate3d(0, 100%, 0)
-    opacity 0
-  }
-
-  to {
-    transform translate3d(0, 0, 0)
-    opacity 1
-  }
-}
-
+/// TTS
 .tts-word
   display inline-block
   white-space pre
@@ -489,11 +319,12 @@ ui-speech-shadowing
   transform translate3d(0, 0, 0)
 
 
+/// DIALOG
 animated-dialog
   display block
 
   p
-    transition top 1s, transform 1s
+    transition opacity 1s, top 1s, transform 1s
     opacity 0
     white-space pre-line
 
@@ -505,28 +336,12 @@ animated-dialog
   p:nth-child(2)
     top 0
     transform translate(0, 0) scale(0.6)
-    opacity 1
+    opacity 0.5
 
   p:nth-child(3)
     transform translate(0, -50%) scale(1)
-    opacity 1
+    opacity 0.5
 
-
-ui-script-editor
-  width 50%
-  height 100%
-
-  textarea
-    display block
-    width 100%
-    height 100%
-    padding 8px
-    font-size 16px
-    line-height 1.5
-    background #000
-    color #fff
-    outline 0
-    border 0
 
 .msg
   .caption
@@ -541,16 +356,41 @@ ui-script-editor
       opacity 1
 
 
+/// STT
+ui-speech-to-text
+  white-space pre-wrap
+
+.guide-text
+  text-align: center;
+  width: 100%;
+  font-size: $guide-font-size
+  color: $guide-text-color
+  padding: 0 30px;
+
+
+.hint-text
+  text-align: center;
+  width: 100%;
+  font-size: $hint-text-font-size
+  color: $hint-text-color;
+  padding: 0 30px;
+  margin 14px auto
+
+  &[type="option"]
+  &.option
+    margin 40px auto
+    font-size $hint-option-text-font-size
+    color $hint-option-text-color
+    line-height 2
+
+
 ai-agent
   display flex
   width 100%
   height 100%
 
 
-ui-speech-to-text
-  white-space pre-wrap
-
-
+/// MISSION
 ui-mission
   display block
   position absolute
@@ -625,11 +465,6 @@ ui-background.overlay
     opacity 0
 
 
-ai-agent
-  position relative
-  transition opacity 1s
-
-
 ui-feedback
   transition all 1s
   opacity 0
@@ -665,18 +500,24 @@ span.ok
   color #000
 
 
-.guide-text
-  text-align: center;
-  width: 100%;
-  font-size: 20px;
-  color: $guide-text-color;
-  padding: 8px 16px;
+ui-mission
+ui-feedback
+  display none
 
 
-.hint-text
-  text-align: center;
-  width: 100%;
-  font-size: 30px;
-  line-height: 48px;
-  color: $hint-text-color;
-  padding: 0 16px;
+ui-script-editor
+  width 50%
+  height 100%
+
+  textarea
+    display block
+    width 100%
+    height 100%
+    padding 8px
+    font-size 16px
+    line-height 1.5
+    background #000
+    color #fff
+    outline 0
+    border 0
+

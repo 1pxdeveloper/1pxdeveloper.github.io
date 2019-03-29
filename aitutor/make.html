@@ -58,6 +58,7 @@
 			</section>
 		</ui-feedback>
 
+		<!--<div id="test"></div>-->
 	</content>
 </main>
 
@@ -153,12 +154,20 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 			sentence = prefix + s.pop();
 		}
 
-		return agent.speak(sentence)
-			.then(_ => {
+		return agent.speak(sentence, null, _ => {
+
+				console.log("!");
+
 				if (stage.answer.length) {
 					return agent.listen(stage.answer, stage.guide, stage.speech[level + 1] || stages[index + 1])
 				}
+
 			})
+			// .then(_ => {
+			// 	if (stage.answer.length) {
+			// 		return agent.listen(stage.answer, stage.guide, stage.speech[level + 1] || stages[index + 1])
+			// 	}
+			// })
 			.then(res => {
 
 				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
