@@ -355,6 +355,7 @@ ui-background.overlay section div.invoke > p {
   opacity: 0;
 }
 ui-feedback {
+  background: #fff;
   transition: all 1s;
   opacity: 0;
   display: flex;
@@ -363,6 +364,7 @@ ui-feedback {
   left: 0;
   right: 0;
   bottom: 0;
+  font-size: 28px;
 }
 ui-feedback > section {
   margin: auto 32px;
@@ -379,7 +381,7 @@ ui-feedback p {
 }
 ui-feedback p[lang="ko"] {
   color: #666;
-  font-size: 14px;
+  font-size: 20px;
 }
 span.ok {
   color: #000;
