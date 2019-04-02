@@ -58,15 +58,21 @@ $module.component("ui-text-to-speech", function(Observable, TTS) {
 $module.factory("TTS", function(Observable) {
 
 	let synth = window.speechSynthesis;
+	let EN;
 
-	/// @TODO: voice가 로딩이 되었는지 확인하고 speck를 lazyloading 할 수 있도록 할것!!!
-	/// @TODO: lazyloading을 pipe로 만들면 좋을 듯..
+	function getEnglishVoices(index) {
+		if (!EN) {
+			let voices = synth.getVoices();
+			EN = voices.filter(v => v.lang.startsWith("en"));
+		}
 
-	// if (voices.length === 0) {
-	// 	synth.addEventListener("voiceschanged", function() {
-	//
-	// 	});
-	// }
+		if (!index) {
+			index = EN[1].voiceURI === "Daniel" ? 1 : 3;
+		}
+
+		index = index % EN.length;
+		return EN[index];
+	}
 
 	let self = {
 		rate: 1,
@@ -76,22 +82,8 @@ $module.factory("TTS", function(Observable) {
 
 			return new Observable(observer => {
 
-				let voices = synth.getVoices();
-				let EN = voices.filter(v => v.lang.startsWith("en"));
-
-				if (!index) {
-					index = EN[1].voiceURI === "Daniel" ? 1 : 3;
-				}
-				index = index % EN.length;
-
-				let voice = EN[index];
-
-
-				console.log("TTS.rate", self.rate);
-
-
-
-				/// create voice utter
+				/// create voice and utter
+				let voice = getEnglishVoices(index);
 				let utterThis = new SpeechSynthesisUtterance(text);
 				utterThis.voice = voice;
 				utterThis.rate = self.rate + ((Math.random() - 0.5) * 0.1);
@@ -137,7 +129,6 @@ $module.factory("TTS", function(Observable) {
 
 				utterThis.onboundary = function(event) {
 					if (event.name === "word") {
-						console.log(start, event.charIndex);
 						nextWord(event.charIndex);
 					}
 				};
@@ -146,7 +137,6 @@ $module.factory("TTS", function(Observable) {
 					nextWord(start);
 					observer.complete();
 				};
-
 
 				/// Speak utter
 				synth.speak(utterThis);

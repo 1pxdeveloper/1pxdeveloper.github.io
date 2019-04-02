@@ -1,0 +1,78 @@
+[speak]
+Hi. My name is Aiden.
+Nice to meet you.
+I am your A.I tutor.
+
+[pause]
+1000
+
+[speak]
+From now on,
+you will speak english in various situations.
+
+[ask]
+Did you often speak English?
+
+(영어로는 자주 말해보셨나요?)
+
+- .
+
+
+[speak]
+`That's okay.
+If you try missions with me everyday,
+Your English will soon be better.`
+
+[pause]
+1500
+
+
+[speak]
+`Now, let's get started.
+I prepared two type of missions.`
+
+
+/*
+/// --- 1일 1회 안부 묻기 샘플 (특이사항, 아침이면 Good Morning. How are you?, 저녁이면 Good evening. How was your day? 등등 자연스럽게)
+
+
+[ask]
+`Good Evening.
+How was your day?`
+
+(오늘 하루가 어땠나요?)
+
+- .
+
+
+[speak]
+`That sounds nice.
+Tomorrow will be better.`
+
+*/
+
+
+
+
+
+
+[speak]
+Good Evening.
+It's getting colder.
+Take care of yourself!
+
+[pause]
+2000
+
+[speak]
+In this time, I prepared two type of missions.
+
+[ask]
+Which mission should we start?
+
+("Hotel check-in"
+"In the Cafe"
+or
+"Anything else?" / 원하는 미션을 말씀해주세요)
+
+- Hotel check-in | hotel | check

@@ -135,12 +135,8 @@ ai-agent
   font-size $msg-font-size
   font-weight $msg-font-weight
   min-height @font-size
-  top 50%
-  transform-origin 0 0
-  transform translate(0, -50%)
 
   &.me
-    top 50%
     width 100%
     margin auto
     text-align right
@@ -150,6 +146,33 @@ ai-agent
 
     &.isfinal
       color #fff
+
+
+.msg
+  color $text-color
+  top 40%
+  transform-origin 0 0
+  transform translate(0, -50%)
+
+  &[who="me"]
+    transform-origin 100% 0
+    text-align right
+
+  &[state="done"]
+    transition top 1s, transform 1s
+    top 0
+    transform translate(0, 0) scale(0.6)
+
+  &[state="prev"]
+    transition top 1s, transform 1s
+    top 0
+    transform translate(0, -100%) scale(0.6)
+
+
+
+ui-speech-to-text
+  .msg
+    top 55%
 
 mic-wave
   display flex
@@ -279,30 +302,12 @@ ui-speech-shadowing
 
   .transcript
     color #ccc
+    font-style italic
 
     &.isfinal
-      color #111
+      color $text-color
 
 
-.msg
-  color $text-color
-  top 50%
-  transform-origin 0 0
-  transform translate(0, -50%)
-
-  &[who="me"]
-    transform-origin 100% 0
-    text-align right
-
-  &[state="done"]
-    transition top 1s, transform 1s
-    top 0
-    transform translate(0, 0) scale(0.6)
-
-  &[state="prev"]
-    transition top 1s, transform 1s
-    top 0
-    transform translate(0, -100%) scale(0.6)
 
 
 /// TTS

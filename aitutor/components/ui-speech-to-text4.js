@@ -2,7 +2,7 @@ $module.template("ui-speech-to-text")`
 
 	<template>
 		<section flex vbox>
-			<h2 class="msg transcript" [class.isfinal]="isFinal" style="text-align: right; width: 100%;" [hidden]="!text || isFinal">{{ text }}</h2>
+			<h2 class="msg transcript" [class.isfinal]="isFinal" style="text-align: right; width: 100%;" [hidden]="!text">{{ text }}</h2>
 			<h2 class="guide-text" [hidden]="text">{{ guide_text }}</h2>
 			<h2 class="hint-text" [hidden]="text" [class.option]="guide_text2.indexOf('#')>=0">{{ guide_text2 }}</h2>
 			<mic-wave $wave style="position: absolute; bottom: 0;"></mic-wave>
@@ -166,7 +166,7 @@ $module.factory("STT", function(Observable) {
 		recognition.continuous = true;
 		recognition.interimResults = true;
 		recognition.lang = 'en-US';
-		recognition.lang = 'ko';
+		// recognition.lang = 'ko';
 
 		console.log(recognition);
 

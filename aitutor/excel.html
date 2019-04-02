@@ -27,37 +27,12 @@
 <main id="main">
 	<content>
 		<ai-agent id="agent"></ai-agent>
-
-		<ui-feedback id="feedback">
-			<section>
-				<img src="../imgs/awesome.jpg">
-				<p lang="en">Is it enough to not be inconvenient to live in a foreign country? Challenge other missions right away.</p>
-				<p lang="ko">외국에서 살아도 불편하지 않을 정도의 실력인데요? 다른 미션도 바로 도전해보세요.</p>
-			</section>
-		</ui-feedback>
-
-		<!--<div id="test"></div>-->
 	</content>
 </main>
-
-<ui-script-editor id="editor" hidden></ui-script-editor>
-
 
 <script type="module">
 $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 
-	let editor = document.getElementById("editor");
-	document.onkeydown = function(e) {
-		if (e.key === "Escape") {
-			editor.hidden = !editor.hidden;
-		}
-	};
-
-
-	let feedback = document.getElementById("feedback");
-
-
-	///
 	let lastAnswer;
 	let sections;
 

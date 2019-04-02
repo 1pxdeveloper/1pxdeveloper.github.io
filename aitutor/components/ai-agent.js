@@ -22,7 +22,6 @@ $module.component("ai-agent", function(capitalize) {
 		}
 
 		speak(msg, voiceIndex, callback) {
-
 			if (this.lastQuery) {
 				msg = msg.replace(/__+/g, this.lastQuery);
 				msg = capitalize(msg);
@@ -51,7 +50,8 @@ $module.component("ai-agent", function(capitalize) {
 				.then(res => {
 					this.$stt.classList.remove("listen");
 
-					return this.$dialog.speak(res.transcript).then(_ => {
+					// return this.$dialog.speak(res.transcript).then(_ => {
+					return $timeout(500).then(_ => {
 
 						if (res.query) {
 							this.lastQuery = res.query;

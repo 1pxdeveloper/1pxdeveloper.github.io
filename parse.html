@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="src/js/1px.js"></script>
+
+</head>
+<body>
+
+<script>
+
+
+fetch("test.json").then(res => res.json()).then(res => {
+
+	let ret = [];
+	let r = {};
+
+
+	let section = res["Mission Start"];
+	r = {};
+	r.tag = "speak";
+	r.stages = "speak";
+
+	r.speak = `"${section["Title"].value}"\n${section["Description_영"].value}`;
+	r.guide = `${section["Description_한"].value}\n\n`;
+	r.guide2 = `${section["Guide"].value}`;
+	r.test = r.guide2.toLowerCase().replace(/[^a-z\s]/g, "");
+	ret.push(r);
+
+
+	section = res["Task 1"];
+	r = {};
+	// r.speak = `"${section["Title"].value}"\n${section["Description_영"].value}`;
+	// r.guide = `${section["Description_한"].value}\n\n`;
+	// r.guide2 = `${section["Guide"].value}`;
+	// r.test = r.guide2.toLowerCase().replace(/[^a-z\s]/g, "");
+	ret.push(r);
+
+
+	console.log(section);
+
+
+
+
+
+
+
+})
+</script>
+</body>
+</html>

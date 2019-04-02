@@ -47,6 +47,13 @@ $module.component("animated-dialog", function($timeout) {
 		}
 
 		ask(text, voiceIndex, callback) {
+
+			// let speech = text;
+			// if (text.speech) {
+			// 	speech = text.speech;
+			// 	text = text.text;
+			// }
+
 			return this.$tts.speak(text, voiceIndex).then(text => {
 				if (callback) {
 					let ret = callback();

@@ -90,12 +90,8 @@ ai-agent {
   font-size: 40px;
   font-weight: 200;
   min-height: 40px;
-  top: 50%;
-  transform-origin: 0 0;
-  transform: translate(0, -50%);
 }
 .msg.me {
-  top: 50%;
   width: 100%;
   margin: auto;
   text-align: right;
@@ -105,6 +101,29 @@ ai-agent {
 }
 .msg.me.isfinal {
   color: #fff;
+}
+.msg {
+  color: #fff;
+  top: 40%;
+  transform-origin: 0 0;
+  transform: translate(0, -50%);
+}
+.msg[who="me"] {
+  transform-origin: 100% 0;
+  text-align: right;
+}
+.msg[state="done"] {
+  transition: top 1s, transform 1s;
+  top: 0;
+  transform: translate(0, 0) scale(0.6);
+}
+.msg[state="prev"] {
+  transition: top 1s, transform 1s;
+  top: 0;
+  transform: translate(0, -100%) scale(0.6);
+}
+ui-speech-to-text .msg {
+  top: 55%;
 }
 mic-wave {
   display: flex;
@@ -182,30 +201,11 @@ ui-speech-shadowing.listen {
 ui-speech-to-text .transcript,
 ui-speech-shadowing .transcript {
   color: #ccc;
+  font-style: italic;
 }
 ui-speech-to-text .transcript.isfinal,
 ui-speech-shadowing .transcript.isfinal {
-  color: #111;
-}
-.msg {
   color: #fff;
-  top: 50%;
-  transform-origin: 0 0;
-  transform: translate(0, -50%);
-}
-.msg[who="me"] {
-  transform-origin: 100% 0;
-  text-align: right;
-}
-.msg[state="done"] {
-  transition: top 1s, transform 1s;
-  top: 0;
-  transform: translate(0, 0) scale(0.6);
-}
-.msg[state="prev"] {
-  transition: top 1s, transform 1s;
-  top: 0;
-  transform: translate(0, -100%) scale(0.6);
 }
 .tts-word {
   display: inline-block;

@@ -452,3 +452,4 @@ $module.value("Observable", Observable);
 $module.value("Subject", Observable.subject);
 
 exports.Observable = Observable;
+window.Observable = Observable;
