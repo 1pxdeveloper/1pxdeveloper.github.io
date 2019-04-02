@@ -1,0 +1,664 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf8">
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<title>mic</title>
+	<link rel="stylesheet" href="aitutor/style.css"/>
+	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/web-animations/2.3.1/web-animations.min.js"></script>-->
+	<script src="src/js/1px.js"></script>
+
+	<script type="module" src="aitutor/components/utils.js"></script>
+
+	<!--<script type="module" src="./components/dialog.js"></script>-->
+	<script type="module" src="aitutor/components/testdb.js"></script>
+
+	<script type="module" src="aitutor/components/ui-speech-to-text4.js"></script>
+	<script type="module" src="aitutor/components/ui-text-to-speech2.js?v=2"></script>
+
+	<script type="module" src="aitutor/components/animated-dialog.js"></script>
+
+	<script type="module" src="aitutor/components/micwave.js"></script>
+	<script type="module" src="aitutor/components/ui-script-editor.js"></script>
+	<script type="module" src="aitutor/components/ai-agent.js"></script>
+</head>
+<body>
+
+<main id="main">
+	<content>
+		<ai-agent id="agent"></ai-agent>
+
+		<ui-mission id="mission-bg" style="opacity: 0">
+			<ui-background style="background-color:#fff"></ui-background>
+			<ui-background class="overlay">
+
+				<section id="desc" class="desc">
+					<flex></flex>
+					<h1 id="desc-title">Hotel check in</h1>
+
+					<div id="desc-p">
+						<p lang="en">You are standing at the front of hotel reception desk. Try to check in.</p>
+						<p lang="ko">당신은 지금은 호텔 리셉션 데스크 앞에 있습니다. 체크인을 해보세요.</p>
+					</div>
+
+					<div id="invoke" class="invoke">
+						<h2>호텔 직원을 불러보세요.</h2>
+						<p style="color:#3a3aa5">"Good evening~"</p>
+					</div>
+				</section>
+			</ui-background>
+		</ui-mission>
+
+
+		<ui-feedback id="feedback">
+			<section>
+				<img src="../imgs/awesome.jpg">
+				<p lang="en">Is it enough to not be inconvenient to live in a foreign country? Challenge other missions right away.</p>
+				<p lang="ko">외국에서 살아도 불편하지 않을 정도의 실력인데요? 다른 미션도 바로 도전해보세요.</p>
+			</section>
+		</ui-feedback>
+
+	</content>
+</main>
+
+
+<script type="text/plain" id="sample">
+//미션 시나리오 -----------------------
+
+[speak]
+Hi! My name is Daniel.
+Nice to meet you.
+I am your A.I tutor.
+
+[pause]
+1500
+
+[speak]
+Today, I prepared two type of missions.
+
+[ask]
+Which mission should we start?
+
+("Hotel check-in"
+"In the Cafe"
+or
+"Anything else?" / 원하는 미션을 말씀해주세요)
+
+- Hotel check-in | hotel | check
+
+[speak]
+Okay! Let's start with mission, 'Hotel check-in'.
+
+//상황설명
+[mission-start]
+
+[mission]
+Good evening, welcome to the 'Science park Hotel'.
+
+[mission]
+How can I help you?
+`Sorry,
+How can I help you?`
+`Umm...
+Do you need to check in or check out?`
+
+(체크인을 하겠다고 말해보세요)
+
+- check in
+
+Excuse me. Check in or check out?
+
+("I’d like to ~" / 체크인을 하겠다고 말해보세요)
+
+- check in
+
+[mission]
+Oh, ___. Let me check your passport.
+
+[pause]
+2000
+
+[mission]
+Okay, How long will you be staying?
+`Pardon?
+How long will you be staying?`
+`Well...
+How many nights are you going to stay?`
+
+(얼마나 숙박할 예정인지 말해주세요)
+
+- (one | two | three | four | five | six | seven | eight | nine | ten | [0-9]) (days | day | nights | night)
+
+Excuse me. How many nights?
+
+("I’ll be staying for ~ nights" / 얼마나 숙박할 예정인지 말해주세요)
+
+- (one | two | three | four | five | six | seven | eight | nine | ten | [0-9]) (days | day | nights | night)
+
+[mission]
+Okay. ___. What kind of views would you like?
+`Sorry,
+What kind of views would you like?`
+
+(원하시는 뷰 타입을 알려주세요.)
+
+- ocean | garden | mountain | city | park | high
+
+We have ocean view, garden view and mountain view.
+
+("I'd like to have a room with the ~ " / 원하시는 뷰 타입을 알려주세요)
+
+- ocean | garden | mountain | city | park | high
+
+[mission]
+___ view? One moment, please...
+
+[pause]
+2000
+
+[mission]
+I'm sorry, but we don't have any ______ view left.
+
+
+[mission]
+Could you tell me the other view type you want?
+
+("______ view will be fine." / 문장으로도 한번 말해보세요.)
+
+- ocean | garden | mountain | city | park | high
+
+
+[mission]
+Good. Let me check.
+
+[pause]
+1500
+
+[mission]
+`Okay. Your room is ready. You’ll be in room 610.
+Thank you.`
+
+[pause]
+1500
+
+
+[speak]
+Good job. You finished this mission.
+
+[pause]
+1000
+
+[feedback]
+
+[pause]
+1000
+
+[speak]
+You can talk again or talk about other topics.
+
+[ask]
+Which do you want to talk again or try another mission?
+
+("talk again"
+"try another mission" / 재도전 여부를 말씀해주세요)
+
+- another | mission
+
+[speak]
+Yes. Talking about various subjects is a good way to learn English.
+
+[speak]
+I prepared a mission to talk more comfortably.
+
+[ask]
+Which mission would you like to start, 'In the cafe' or 'Asking hobby'?
+
+("In the cafe"
+"Asking hobby" / 원하는 미션을 말씀해주세요)
+
+- cafe | hobby
+
+[speak]
+Okay. ____. That's good.
+
+[pause]
+1000
+
+[speak]
+This is the end of the demonstration. Thank you for practice.
+
+[pause]
+1000
+
+[speak]
+The next demonstration is Welcoming message.
+
+[ask]
+If you say "okay", I will show the "Welcoming message demonstration".
+
+("okay" / okay라고 말하면 데모를 시작합니다.)
+
+- okay
+
+
+[speak]
+Okay. Let's start.
+
+[pause]
+1000
+
+
+
+//웰컴 예시 -----------------------
+
+
+[speak]
+Hello! Nice to meet you. My name is Daniel.
+I am your A.I tutor.
+
+[ask]
+You will study English through conversation with various situation.
+
+("next" / next라고 말해 다른 환영인사를 확인하세요.)
+
+- next
+
+
+[speak]
+Hi! Good to see you again.
+
+[ask]
+If you talk every day, your English will improve very quickly.
+
+("next" / next라고 말해 다른 환영인사를 확인하세요.)
+
+- next
+
+
+[speak]
+Good morning! Long time no see.
+
+[ask]
+It's a tiring Monday, but let's have a pleasant conversation together!
+
+("next" / next라고 말해 다른 환영인사를 확인하세요.)
+
+- next
+
+
+[speak]
+Good afternoon!
+
+[ask]
+Now that we've met a lot, I think we've become closer.
+
+("next" / next라고 말해 다른 환영인사를 확인하세요.)
+
+- next
+
+
+[speak]
+Good evening!
+
+[ask]
+How was your week? Good or bad, I hope you have the best weekend.
+
+("next" / next라고 말해 다른 환영인사를 확인하세요.)
+
+- next
+
+
+[speak]
+Okay. This is the end of the demonstration.
+
+
+[speak]
+Thank you.
+
+</script>
+
+
+<script>
+function parseScript(script) {
+
+	let multi_comments = /\/\*(\*(?!\/)|[^*])*\*\//g;
+	let line_comments = /\/\/[^\n]*\n/g;
+
+	script = script.replace(multi_comments, "");
+	script = script.replace(line_comments, "\n");
+	script += "\n";
+
+	let lex = [
+		["tag", /\[([^\]]+)]\n\s*/g],
+		["text", /`([^`]*)`/g],
+		["guide", /\(([^\)]*)\)/g],
+		["answer", /-([^\n]+)\n/g],
+		["text", /([^\n]+)\n/g],
+		["ws", /\s/g],
+		["unknown", /./g],
+	];
+
+	let re = new RegExp(lex.map(r => r[1].source).join("|"), "g");
+	let types = lex.map(r => r[0]);
+
+
+	let sections = [];
+	let section;
+	let dialog;
+
+	let prevType;
+
+	script.replace(re, function(a) {
+
+		let type = "";
+		let line = "";
+
+		for (let i = 1; i < arguments.length - 2; i++) {
+			if (arguments[i] !== undefined) {
+				type = types[i - 1];
+				line = arguments[i].trim();
+				break;
+			}
+		}
+
+		if (type) {
+			console.log("(" + type + ")", line);
+		}
+
+		switch (type) {
+			case "tag":
+				prevType = type;
+
+				let tag = line;
+				dialog = {speech: [], answer: []};
+				section = {tag, stages: [dialog]};
+				sections.push(section);
+				break;
+
+			case "guide":
+				prevType = type;
+				dialog.guide = line;
+				break;
+
+			case "answer":
+				prevType = type;
+				line = line.replace(/\s*\|\s*/g, "|");
+				line = new RegExp(line, "i");
+				dialog.answer.push(line);
+
+				// console.log("[answer]", line);
+				break;
+
+			case "text":
+				line = line.trim().replace(/\n+/g, "\n");
+				if (prevType !== "text" && dialog.speech.length !== 0) {
+					dialog = {speech: [], answer: []};
+					section.stages.push(dialog);
+				}
+
+				prevType = type;
+				dialog.speech.push(line);
+				break;
+		}
+
+		return a;
+	});
+
+
+	return sections;
+}
+</script>
+
+
+<script type="module">
+$module.require(["$timeout", "TTS"], function($timeout, TTS) {
+
+	let mbg = document.getElementById("mission-bg");
+	let feedback = document.getElementById("feedback");
+
+
+	///
+	let lastAnswer;
+	let sections;
+
+	window.agent = document.getElementById("agent");
+	window.agent.rate = 1;
+
+
+	let main = document.getElementById("main");
+	main.onclick = function() {
+		sections = parseScript(document.getElementById("sample").innerText);
+		if (!sections) {
+			alert("미션 스크립트가 없습니다.");
+			return;
+		}
+
+		console.log(sections);
+
+
+		agent.clear();
+
+		execute.voiceIndex = parseInt(Math.random() * 17);
+		execute.voiceIndex = 4;
+		// if (execute.voiceIndex === 1) {
+		// 	execute.voiceIndex = 2;
+		// }
+
+		execute(sections, 0);
+	};
+
+
+	function execute(sections, section_index) {
+		let section = sections[section_index];
+
+		function next(res) {
+			lastAnswer = res;
+			return execute(sections, section_index + 1);
+		}
+
+		execute.lastTag = section.tag;
+		execute[section.tag](section.stages, 0, next);
+	}
+
+	execute.speak = function(stages, index, next) {
+		let stage = stages[index];
+		let sentence = stage.speech.join("\n");
+		return agent.speak(sentence).finally(next);
+	};
+
+	execute["case"] = function(stages, index, next) {
+		let stage = stages[index];
+		let sentence = stage.speech[lastAnswer.index] || stage.speech[stage.speech.length - 1];
+		return agent.speak(sentence).finally(next);
+	};
+
+	execute.ask = function(stages, index, next, level, prefix) {
+		level = level || 0;
+		prefix = prefix || "";
+
+		let stage = stages[index];
+		if (!stage) {
+			return next();
+		}
+
+		let sentence = stage.speech[level];
+		if (!sentence) {
+			return next();
+		}
+
+		if (prefix) {
+			let s = sentence.split(/[,.]/);
+			sentence = prefix + s.pop();
+		}
+
+		return agent.speak(sentence)
+			.then(_ => {
+				if (stage.answer.length) {
+					return agent.listen(stage.answer, stage.guide, stage.speech[level + 1] || stages[index + 1])
+				}
+			})
+			.then(res => {
+
+				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
+				if (res && res.transcript && res.transcript.indexOf("slowly") >= 0) {
+					throw res;
+				}
+
+				return _;
+			})
+			.then(next)
+			.catch(res => {
+
+				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
+				if (res && res.transcript && res.transcript.indexOf("slowly") >= 0) {
+					TTS.rate = 0.8;
+					return execute.ask(stages, index, next, level, "Okay.\n");
+				}
+
+				return execute.ask(stages, index, next, level + 1);
+			})
+	};
+
+	execute.mission = function(stages, index, next, level, prefix) {
+		level = level || 0;
+		prefix = prefix || "";
+
+		let stage = stages[index];
+		if (!stage) {
+			return next();
+		}
+
+		let sentence = stage.speech[level];
+
+		if (!sentence) {
+			return execute.mission(stages, index + 1, next, 0);
+		}
+
+		if (prefix) {
+			let s = sentence.split(/[,.]/);
+			sentence = prefix + s.pop();
+		}
+
+		return agent.speak(sentence, execute.voiceIndex)
+			.then(_ => {
+				if (stage.answer.length) {
+					return agent.listen(stage.answer, stage.guide, stage.speech[level + 1] || stages[index + 1])
+				}
+			})
+			.then(res => {
+
+				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
+				if (res && res.transcript.indexOf("slowly") >= 0) {
+					throw res;
+				}
+
+			})
+			.then(next)
+			.catch(res => {
+
+				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
+				if (res && res.transcript && res.transcript.indexOf("slowly") >= 0) {
+					TTS.rate = 0.8;
+					return execute.mission(stages, index, next, level, "Okay.\n");
+				}
+
+				return execute.mission(stages, index, next, level + 1);
+			})
+	};
+
+
+	execute.pause = function(stages, index, next) {
+		let stage = stages[index];
+		let duration = stage.speech.join("");
+
+		return $timeout(+duration).then(next);
+	};
+
+
+	execute.fadeout = function(stages, index, next) {
+		agent.style.opacity = 0;
+		return $timeout(+duration).then(next);
+	};
+
+
+	execute["mission-start"] = function(stages, index, next, level) {
+
+		mbg.style.opacity = 1;
+		TTS.rate = 1;
+
+		return $timeout(1000)
+
+			.then(_ => {
+				document.getElementById("desc-title").style.opacity = 1;
+				return $timeout(1000)
+			})
+
+			.then(_ => {
+				document.getElementById("desc-p").style.opacity = 1;
+				return agent.speak("You are standing at the front of hotel reception desk. Try to check in.")
+			})
+
+			.then(_ => {
+				agent.clear();
+				agent.style.zIndex = 9999;
+				agent.$dialog.style.opacity = 0;
+				document.getElementById("invoke").style.opacity = 1;
+				document.querySelectorAll("ui-speech-to-text .msg").forEach(el => el.style.opacity = 0);
+				return agent.listen([/good|evening/i], "", false)
+			})
+
+			.then(_ => {
+				mbg.style.opacity = 0;
+				return $timeout(1000);
+			})
+
+			.then(_ => {
+				agent.$dialog.style.opacity = 1;
+				document.querySelectorAll("ui-speech-to-text .msg").forEach(el => el.style.opacity = 1);
+				agent.clear();
+				return next();
+			})
+	};
+
+
+	execute["feedback"] = function(stages, index, next, level) {
+
+		TTS.rate = 1;
+
+		return $timeout(500)
+
+			.then(_ => {
+				agent.style.opacity = 0;
+				feedback.style.opacity = 1;
+				return $timeout(1000)
+			})
+
+			.then(_ => {
+				return agent.speak("Nice work! You are super great!")
+			})
+
+			.then(_ => {
+
+				return agent.speak("Is it enough to not be inconvenient to live in a foreign country? Challenge other missions right away.")
+			})
+
+			.then(_ => {
+				feedback.style.opacity = 0;
+				return $timeout(1000);
+			})
+
+			.then(_ => {
+				agent.style.opacity = 1;
+				agent.clear();
+				return next();
+			})
+	};
+
+
+});
+
+
+</script>
+
+</body>
+</html>
