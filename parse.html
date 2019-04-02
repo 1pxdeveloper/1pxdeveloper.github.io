@@ -13,39 +13,43 @@
 
 fetch("test.json").then(res => res.json()).then(res => {
 
-	let ret = [];
-	let r = {};
+
+	let sections = [];
+	let section;
+	let dialog;
+	let tag;
 
 
-	let section = res["Mission Start"];
-	r = {};
-	r.tag = "speak";
-	r.stages = "speak";
+	let task = res["Mission Start"];
+	// tag = "speak";
+	// dialog = {speech: [], answer: []};
+	// section = {tag, stages: [dialog]};
+	// sections.push(section);
+	//
+	// dialog.speech.push(`"${task["Title"].value}"\n${task["Description_영"].value}`);
+	// dialog.answer.push(task["Guide"].value.toLowerCase().replace(/[^a-z\s]/g, ""));
+	// dialog.guide = `${task["Guide"].value} / ${task["Description_한"].value}\n\n`;
+	// dialog.hint = "";
 
-	r.speak = `"${section["Title"].value}"\n${section["Description_영"].value}`;
-	r.guide = `${section["Description_한"].value}\n\n`;
-	r.guide2 = `${section["Guide"].value}`;
-	r.test = r.guide2.toLowerCase().replace(/[^a-z\s]/g, "");
-	ret.push(r);
+	task = res["Task 1"];
 
+	tag = "mission";
+	dialog = {speech: [], answer: []};
+	section = {tag, stages: [dialog]};
+	sections.push(section);
 
-	section = res["Task 1"];
-	r = {};
-	// r.speak = `"${section["Title"].value}"\n${section["Description_영"].value}`;
-	// r.guide = `${section["Description_한"].value}\n\n`;
-	// r.guide2 = `${section["Guide"].value}`;
-	// r.test = r.guide2.toLowerCase().replace(/[^a-z\s]/g, "");
-	ret.push(r);
-
-
-	console.log(section);
-
-
-
-
+	dialog.speech.push(task["Basic Task"]["Q1"].value);
+	dialog.speech.push(task["Basic Task"]["Q2"].value);
+	dialog.speech.push(task["Basic Task"]["Q3"].value);
+	dialog.guide = task["Basic Task"]["Guide"].value;
+	dialog.hint = task["Basic Task"]["Hint"].value;
+	dialog.answer.push(".");
 
 
+	console.log(task);
+	console.log(sections);
 
+	console.log(JSON.stringify(sections));
 })
 </script>
 </body>
