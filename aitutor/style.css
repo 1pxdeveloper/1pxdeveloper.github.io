@@ -316,16 +316,17 @@ ui-background.overlay section #desc-p p {
   margin: 4px 0;
 }
 ui-background.overlay section #desc-p p[lang=en] {
-  font-size: 18px;
+  font-size: 28px;
 }
 ui-background.overlay section #desc-p p[lang=ko] {
   color: #555;
-  font-size: 15px;
+  font-size: 20px;
 }
 ui-background.overlay section h1 {
   margin: 14px 0;
   text-align: left;
   font-weight: 400;
+  font-size: 40px;
 }
 ui-background.overlay section div.invoke {
   text-align: center;
@@ -382,10 +383,6 @@ ui-feedback p[lang="ko"] {
 }
 span.ok {
   color: #000;
-}
-ui-mission,
-ui-feedback {
-  display: none;
 }
 ui-script-editor {
   width: 50%;

@@ -8,7 +8,7 @@ $module.template("ai-agent")`
 `;
 
 
-$module.component("ai-agent", function(capitalize) {
+$module.component("ai-agent", function(capitalize, $timeout) {
 
 	return class {
 		init($) {
