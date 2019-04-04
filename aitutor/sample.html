@@ -3,24 +3,21 @@
 <head>
 	<meta charset="utf8">
 	<meta name="viewport" content="width=device-width, user-scalable=no">
-	<title>mic</title>
-	<link rel="stylesheet" href="style.css"/>
-	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/web-animations/2.3.1/web-animations.min.js"></script>-->
-	<script src="../src/js/1px.js"></script>
+	<title>AI Tutor</title>
+	<link rel="stylesheet" href="css/style.css"/>
+	<!--<script libs="https://cdnjs.cloudflare.com/ajax/libs/web-animations/2.3.1/web-animations.min.js"></script>-->
+	<script src="js/libs/1px.js"></script>
 
-	<script type="module" src="components/utils.js"></script>
+	<script type="module" src="js/components/utils.js"></script>
 
-	<!--<script type="module" src="./components/dialog.js"></script>-->
-	<script type="module" src="components/testdb.js"></script>
+	<script type="module" src="js/components/ui-speech-to-text4.js"></script>
+	<script type="module" src="js/components/ui-text-to-speech2.js?v=2"></script>
 
-	<script type="module" src="components/ui-speech-to-text4.js"></script>
-	<script type="module" src="components/ui-text-to-speech2.js?v=2"></script>
+	<script type="module" src="js/components/animated-dialog.js"></script>
 
-	<script type="module" src="components/animated-dialog.js"></script>
-
-	<script type="module" src="components/micwave.js"></script>
-	<script type="module" src="components/ui-script-editor.js"></script>
-	<script type="module" src="components/ai-agent.js"></script>
+	<script type="module" src="js/components/micwave.js"></script>
+	<script type="module" src="js/components/ui-script-editor.js"></script>
+	<script type="module" src="js/components/ai-agent.js"></script>
 </head>
 <body>
 
@@ -52,7 +49,7 @@
 
 		<ui-feedback id="feedback">
 			<section>
-				<img src="../imgs/awesome.jpg">
+				<img src="imgs/awesome.jpg">
 				<p lang="en">Is it enough to not be inconvenient to live in a foreign country? Challenge other missions right away.</p>
 				<p lang="ko">외국에서 살아도 불편하지 않을 정도의 실력인데요? 다른 미션도 바로 도전해보세요.</p>
 			</section>

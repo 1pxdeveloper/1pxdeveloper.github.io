@@ -3,24 +3,18 @@
 <head>
 	<meta charset="utf8">
 	<meta name="viewport" content="width=device-width, user-scalable=no">
-	<title>mic</title>
-	<link rel="stylesheet" href="style.css"/>
-	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/web-animations/2.3.1/web-animations.min.js"></script>-->
-	<script src="../src/js/1px.js"></script>
+	<title>AI Tutor</title>
+	<link rel="stylesheet" href="css/style.css"/>
 
-	<script type="module" src="components/utils.js"></script>
+	<script src="js/libs/1px.js"></script>
 
-	<!--<script type="module" src="./components/dialog.js"></script>-->
-	<script type="module" src="components/testdb.js"></script>
-
-	<script type="module" src="components/ui-speech-to-text4.js"></script>
-	<script type="module" src="components/ui-text-to-speech2.js?v=2"></script>
-
-	<script type="module" src="components/animated-dialog.js"></script>
-
-	<script type="module" src="components/micwave.js"></script>
-	<script type="module" src="components/ui-script-editor.js"></script>
-	<script type="module" src="components/ai-agent.js"></script>
+	<script type="module" src="js/components/utils.js"></script>
+	<script type="module" src="js/components/ui-speech-to-text5.js"></script>
+	<script type="module" src="js/components/ui-text-to-speech2.js?v=2"></script>
+	<script type="module" src="js/components/animated-dialog.js"></script>
+	<script type="module" src="js/components/micwave.js"></script>
+	<script type="module" src="js/components/ui-script-editor.js"></script>
+	<script type="module" src="js/components/ai-agent-ai-server.js"></script>
 </head>
 <body>
 
@@ -31,35 +25,103 @@
 </main>
 
 <script type="module">
+
+function getData() {
+	return fetch("../test.json").then(res => res.json()).then(res => {
+
+		let sections = [];
+		let section;
+		let dialog;
+
+		console.log(res);
+
+
+		let task = res["Mission Start"];
+
+		section = {tag: "ask", stages: []};
+
+		dialog = {speech: [], answer: [], keywords: []};
+		dialog.speech.push(`"${task["Title"].value}"\n${task["Description_영"].value}`);
+		dialog.guide = `${task["Description_한"].value}\n\n`;
+		dialog.hint = `"${task["Guide"].value}"`;
+		dialog.keywords.push(task["Guide"].value.toLowerCase().replace(/[^a-z\s]/g, ""));
+
+		section.stages.push(dialog);
+		sections.push(section);
+
+		function createMission(task) {
+			section = {tag: "mission", stages: []};
+			dialog = {speech: [], answer: []};
+			dialog.speech.push(task["Basic Task"]["Reaction"].value);
+			section.stages.push(dialog);
+			sections.push(section);
+
+			section = {tag: "mission", stages: []};
+			dialog = {speech: [], answer: []};
+			dialog.speech.push(task["Basic Task"]["Q1"].value);
+			dialog.speech.push(task["Basic Task"]["Q2"].value);
+			dialog.speech.push(task["Basic Task"]["Q3"].value);
+			dialog.guide = task["Basic Task"]["Guide"].value.trim();
+			dialog.hint = task["Basic Task"]["Hint"].value.trim();
+			dialog.answer = (task["Basic Task"]["Answer Set"].value).split(/\n+/);
+			dialog.keywords = [];
+
+			section.stages.push(dialog);
+			sections.push(section);
+		}
+
+		createMission(res["Task 1"]);
+		createMission(res["Task 2"]);
+		createMission(res["Task 3"]);
+		createMission(res["Task 4"]);
+
+
+		section = {tag: "mission", stages: []};
+
+		dialog = {speech: [], answer: []};
+		dialog.speech.push(`Okay. Thank you.`);
+		section.stages.push(dialog);
+		sections.push(section);
+
+
+		section = {tag: "ask", stages: []};
+		dialog = {speech: [], answer: []};
+		dialog.speech.push(`Good job. You finished this mission.`);
+		section.stages.push(dialog);
+		sections.push(section);
+
+		return sections;
+	});
+}
+
+
 $module.require(["$timeout", "TTS"], function($timeout, TTS) {
-
 	let lastAnswer;
-	let sections;
-
 	window.agent = document.getElementById("agent");
 	window.agent.rate = 1;
 
-
 	let main = document.getElementById("main");
 	main.onclick = function() {
-		sections = editor.getData();
-		if (!sections) {
-			alert("미션 스크립트가 없습니다.");
-			return;
-		}
+		getData().then(sections => {
 
-		console.log(sections);
+			if (!sections) {
+				alert("미션 스크립트가 없습니다.");
+				return;
+			}
+
+			console.log(sections);
 
 
-		agent.clear();
+			agent.clear();
 
-		execute.voiceIndex = parseInt(Math.random() * 17);
-		execute.voiceIndex = 4;
-		// if (execute.voiceIndex === 1) {
-		// 	execute.voiceIndex = 2;
-		// }
+			execute.voiceIndex = parseInt(Math.random() * 17);
+			execute.voiceIndex = 4;
+			// if (execute.voiceIndex === 1) {
+			// 	execute.voiceIndex = 2;
+			// }
 
-		execute(sections, 0);
+			execute(sections, 0);
+		})
 	};
 
 
@@ -107,86 +169,36 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 		}
 
 		return agent.speak(sentence, null, _ => {
-
-				console.log("!");
-
-				if (stage.answer.length) {
-					return agent.listen(stage.answer, stage.guide, stage.speech[level + 1] || stages[index + 1])
+				if (stage.answer.length || stage.keywords.length) {
+					let hasNext = stage.speech[level + 1] || stages[index + 1];
+					return agent.listen(stage.keywords, stage.answer, stage.guide, hasNext ? "" : stage.hint, hasNext);
 				}
-
 			})
-			// .then(_ => {
-			// 	if (stage.answer.length) {
-			// 		return agent.listen(stage.answer, stage.guide, stage.speech[level + 1] || stages[index + 1])
+			// .then(res => {
+			//
+			// 	/// @TODO: 너무 중복코드.. 나중에 수정합니다.
+			// 	if (res && res.transcript && res.transcript.indexOf("slowly") >= 0) {
+			// 		throw res;
 			// 	}
+			//
+			// 	return _;
 			// })
-			.then(res => {
-
-				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
-				if (res && res.transcript && res.transcript.indexOf("slowly") >= 0) {
-					throw res;
-				}
-
-				return _;
-			})
 			.then(next)
 			.catch(res => {
 
-				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
-				if (res && res.transcript && res.transcript.indexOf("slowly") >= 0) {
-					TTS.rate = 0.8;
-					return execute.ask(stages, index, next, level, "Okay.\n");
-				}
+				// /// @TODO: 너무 중복코드.. 나중에 수정합니다.
+				// if (res && res.transcript && res.transcript.indexOf("slowly") >= 0) {
+				// 	TTS.rate = 0.8;
+				// 	return execute.ask(stages, index, next, level, "Okay.\n");
+				// }
 
 				return execute.ask(stages, index, next, level + 1);
 			})
 	};
 
 	execute.mission = function(stages, index, next, level, prefix) {
-		level = level || 0;
-		prefix = prefix || "";
-
-		let stage = stages[index];
-		if (!stage) {
-			return next();
-		}
-
-		let sentence = stage.speech[level];
-
-		if (!sentence) {
-			return execute.mission(stages, index + 1, next, 0);
-		}
-
-		if (prefix) {
-			let s = sentence.split(/[,.]/);
-			sentence = prefix + s.pop();
-		}
-
-		return agent.speak(sentence, execute.voiceIndex)
-			.then(_ => {
-				if (stage.answer.length) {
-					return agent.listen(stage.answer, stage.guide, stage.speech[level + 1] || stages[index + 1])
-				}
-			})
-			.then(res => {
-
-				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
-				if (res && res.transcript.indexOf("slowly") >= 0) {
-					throw res;
-				}
-
-			})
-			.then(next)
-			.catch(res => {
-
-				/// @TODO: 너무 중복코드.. 나중에 수정합니다.
-				if (res && res.transcript && res.transcript.indexOf("slowly") >= 0) {
-					TTS.rate = 0.8;
-					return execute.mission(stages, index, next, level, "Okay.\n");
-				}
-
-				return execute.mission(stages, index, next, level + 1);
-			})
+		agent.voiceIndex = 4;
+		return execute.ask(...arguments);
 	};
 
 
@@ -197,57 +209,10 @@ $module.require(["$timeout", "TTS"], function($timeout, TTS) {
 		return $timeout(+duration).then(next);
 	};
 
-
 	execute.fadeout = function(stages, index, next) {
 		agent.style.opacity = 0;
 		return $timeout(+duration).then(next);
 	};
-
-
-	execute["mission-start"] = function(stages, index, next, level) {
-		TTS.rate = 1;
-
-		return $timeout(1500)
-			.then(_ => {
-				return execute.ask(...arguments);
-			})
-	};
-
-
-	// execute["feedback"] = function(stages, index, next, level) {
-	//
-	// 	TTS.rate = 1;
-	//
-	// 	return $timeout(500)
-	//
-	// 		.then(_ => {
-	// 			agent.style.opacity = 0;
-	// 			feedback.style.opacity = 1;
-	// 			return $timeout(1000)
-	// 		})
-	//
-	// 		.then(_ => {
-	// 			return agent.speak("Nice work! You are super great!")
-	// 		})
-	//
-	// 		.then(_ => {
-	//
-	// 			return agent.speak("Is it enough to not be inconvenient to live in a foreign country? Challenge other missions right away.")
-	// 		})
-	//
-	// 		.then(_ => {
-	// 			feedback.style.opacity = 0;
-	// 			return $timeout(1000);
-	// 		})
-	//
-	// 		.then(_ => {
-	// 			agent.style.opacity = 1;
-	// 			agent.clear();
-	// 			return next();
-	// 		})
-	// };
-
-
 
 	execute["feedback"] = function(stages, index, next, level) {
 

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Title</title>
-	<script src="../src/js/1px.js"></script>
+	<script src="../aitutor/js/libs/1px.js"></script>
 
 </head>
 <body>
@@ -33,24 +33,29 @@ fetch("test.json").then(res => res.json()).then(res => {
 
 	task = res["Task 1"];
 
-	tag = "mission";
-	dialog = {speech: [], answer: []};
-	section = {tag, stages: [dialog]};
-	sections.push(section);
+	function createMission(task) {
+		tag = "mission";
+		dialog = {speech: [], answer: []};
+		section = {tag, stages: [dialog]};
+		sections.push(section);
 
-	dialog.speech.push(task["Basic Task"]["Q1"].value);
-	dialog.speech.push(task["Basic Task"]["Q2"].value);
-	dialog.speech.push(task["Basic Task"]["Q3"].value);
-	dialog.guide = task["Basic Task"]["Guide"].value;
-	dialog.hint = task["Basic Task"]["Hint"].value;
-	dialog.answer.push(".");
+		dialog.speech.push(task["Basic Task"]["Q1"].value);
+		dialog.speech.push(task["Basic Task"]["Q2"].value);
+		dialog.speech.push(task["Basic Task"]["Q3"].value);
+		dialog.guide = task["Basic Task"]["Guide"].value;
+		dialog.hint = task["Basic Task"]["Hint"].value;
+		dialog.answer.push(".");
+	}
+
+	createMission(res["Task 1"]);
+	createMission(res["Task 2"]);
+	createMission(res["Task 3"]);
 
 
-	console.log(task);
-	console.log(sections);
 
-	console.log(JSON.stringify(sections));
 })
+
+
 </script>
 </body>
 </html>

@@ -1,0 +1,532 @@
+@import core
+
+$width = 480px
+$height = 960px
+
+$msg-font-size = 40px
+$msg-font-weight = 200
+$msg-script-opacity = 0.7
+
+$guide-font-size = 28px
+$hint-text-font-size = 40px
+$hint-option-text-font-size = 28px
+
+$feedback-font-size = 55px
+
+$feedback-ko-font-size = 22px
+$feedback-ko-line-height = 1.35
+
+
+/// Black Theme
+$mobile_edge = #fff
+$bg = #000
+$text-color = #fff
+$dot-color = #e84991
+$guide-text-color = #fff
+$hint-text-color = #aaa
+$hint-option-text-color = #aaa
+
+//$mobile_edge = #000
+//$bg = #fff
+//$text-color = #181818
+//$dot-color = #e84991
+//$guide-text-color = #181818
+//$hint-text-color = #aaa
+//$hint-option-text-color = #aaa
+
+
+/// UTIL
+[hidden] {
+  display none !important
+}
+
+///
+flex, [flex] {
+  flex: 1;
+}
+
+[hbox]
+  display flex
+
+[vbox] {
+  display flex
+  flex-direction column
+}
+
+flex
+  display flex
+
+
+/// COMMON
+*
+  font inherit
+  box-sizing border-box
+  margin: 0;
+  padding: 0;
+
+html, body
+  height 100%
+
+body
+  display: flex
+  font-family "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
+  font-weight 200
+  line-height 1.55
+  overflow hidden
+
+
+main
+  display: flex;
+  position relative
+  flex-direction: column;
+  width 100%
+  height: 100%;
+  margin auto
+  background #fff
+
+  content
+    display flex
+    flex-direction column
+    width 100%
+    height 100%
+    overflow hidden
+    transform translate3d(0, 0, 0)
+    background $bg
+
+
++tablet-and-desktop()
+  body
+    background #fafafa
+
+  main
+    width: $width
+    height: $height
+    max-height: calc(100% - 140px)
+    border-radius: 36px;
+    box-shadow: 0 0 32px rgba(0, 0, 0, .2), 0 12px 24px rgba(0, 0, 0, .5)
+    box-sizing content-box
+    border 16px solid $mobile_edge
+    border-top-width 60px
+    border-bottom-width 60px
+
+    &:before {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 5px;
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(128, 128, 128, 0.5)
+      border-radius: 10px;
+    }
+
+
+ai-agent
+  position relative
+
+.msg
+  position absolute
+  text-align left;
+  padding 40px 30px
+  width 100%
+  color $text-color
+  font-size $msg-font-size
+  font-weight $msg-font-weight
+  min-height @font-size
+
+  &.me
+    width 100%
+    margin auto
+    text-align right
+    transform-origin 100% 50%
+    transform translate(0, -50%)
+    color #ccc
+
+    &.isfinal
+      color #fff
+
+
+.msg
+  color $text-color
+  top 40%
+  transform-origin 0 0
+  transform translate(0, -50%)
+
+  &[who="me"]
+    transform-origin 100% 0
+    text-align right
+
+  &[state="done"]
+    transition top 1s, transform 1s
+    top 0
+    transform translate(0, 0) scale(0.6)
+
+  &[state="prev"]
+    transition top 1s, transform 1s
+    top 0
+    transform translate(0, -100%) scale(0.6)
+
+
+
+ui-speech-to-text
+  .msg
+    top 55%
+
+mic-wave
+  display flex
+  //position absolute
+  //bottom 0px
+  width 100%
+  //height 78px;
+  height 50%
+  //margin-top -75px
+  z-index 0
+
+  section
+    display flex
+    margin auto
+    position relative
+
+    div
+      opacity 1
+      transition opacity 0.5s
+      background $dot-color
+      width 10px
+      height 10px
+      border-radius 10px
+      margin auto 7px
+
+
+mic-wave
+  [state="final"]
+    div
+      opacity 0
+
+  [state="nomatch"]
+    div
+      animation shake 0.5s
+
+
+@keyframes shake {
+  0% {
+    transform translate(-3px, 0)
+  }
+
+  25% {
+    transform translate(3px, 0)
+  }
+
+  50% {
+    transform translate(-3px, 0)
+  }
+
+  100% {
+    transform translate(0px, 0)
+  }
+}
+
+
+@keyframes updown {
+  0% {
+    transform translate(0, 0px)
+  }
+
+  90% {
+    transform translate(0, -10px)
+  }
+
+  100% {
+    transform translate(0, -10px)
+  }
+}
+
+
+$s = 0.65s
+$d = 0.2s
+
+[state="listen"]
+  .c1 {
+    animation updown ease-out $s infinite alternate
+  }
+
+  .c2 {
+    animation updown ease-out $s ($d* 1) infinite alternate
+  }
+
+  .c3 {
+    animation updown ease-out $s ($d* 2) infinite alternate
+  }
+
+  .c4 {
+    animation updown ease-out $s ($d* 3) infinite alternate
+  }
+
+
+mic-wave
+  .d1, .d2, .d3
+    display flex
+    border-radius 50%
+    width 64px
+    height 64px
+    background rgba(0, 0, 0, .05)
+    box-shadow 0 0 10px rgba(0, 0, 0, .05)
+    margin auto
+
+  .d2
+    width 90%
+    height 90%
+
+  .d3
+    width 90%
+    height 90%
+
+
+ai-message
+  display block
+
+
+ui-speech-to-text
+ui-speech-shadowing
+  display flex
+  margin auto
+  width 100%
+  overflow hidden
+
+  transition opacity 1s 0.15s
+  opacity 0
+
+  &.listen
+    opacity 1
+
+  .transcript
+    color #ccc
+    font-style italic
+
+    &.isfinal
+      color $text-color
+
+
+
+
+/// TTS
+.tts-word
+  display inline-block
+  white-space pre
+  transition all 0.5s
+  opacity 0
+  transform translate3d(15px, 0, 0)
+
+.tts-word-animation
+  transition all 0.5s
+  opacity 1
+  transform translate3d(0, 0, 0)
+
+
+/// DIALOG
+animated-dialog
+  display block
+
+  p
+    transition opacity 1s, top 1s, transform 1s
+    opacity 0
+    white-space pre-line
+
+  p:nth-child(1)
+    top 0
+    transform translate(0, -100%) scale(0.6)
+    opacity 1
+
+  p:nth-child(2)
+    top 0
+    transform translate(0, 0) scale(0.6)
+    opacity 0.5
+
+  p:nth-child(3)
+    transform translate(0, -50%) scale(1)
+    opacity 0.5
+
+
+.msg
+  .caption
+    display block
+    font-size 22px
+    margin-top 12px
+    color #3434a5
+    transition 1s opacity 0.5s
+    opacity 0
+
+    &.show
+      opacity 1
+
+
+/// STT
+ui-speech-to-text
+  white-space pre-wrap
+
+.guide-text
+  text-align: center;
+  width: 100%;
+  font-size: $guide-font-size
+  color: $guide-text-color
+  padding: 0 30px;
+
+
+.hint-text
+  text-align: center;
+  width: 100%;
+  font-size: $hint-text-font-size
+  color: $hint-text-color;
+  padding: 0 30px;
+  margin 14px auto
+
+  &[type="option"]
+  &.option
+    margin 40px auto
+    font-size $hint-option-text-font-size
+    color $hint-option-text-color
+    line-height 2
+
+
+ai-agent
+  display flex
+  width 100%
+  height 100%
+
+
+/// MISSION
+ui-mission
+  display block
+  position absolute
+  top 0
+  left 0
+  right 0
+  bottom 0
+
+ui-background
+  display block
+  position absolute
+  top 0
+  left 0
+  right 0
+  bottom 0
+  background-repeat no-repeat
+  background-position center -190px
+  background-image: url(../imgs/a9139e165a9192dd3935c83091590af0.jpg)
+  background-size cover
+
+
+ui-background.overlay
+  background-image: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 1))
+
+  section
+    display flex
+    flex-direction column
+    padding 32px
+    height 100%
+    text-align left
+
+    #desc-p p
+      margin 4px 0
+
+      &[lang=en]
+        font-size 28px
+
+      &[lang=ko]
+        color #555
+        font-size 20px
+
+    h1
+      margin 14px 0
+      text-align left
+      font-weight 400
+      font-size 40px
+
+    div.invoke
+      text-align center
+      padding 32px
+      margin-top 64px
+      margin-bottom 16px
+
+      h2
+        margin 4px 0
+        font-size 18px
+        color #666
+
+      > p
+        font-size 32px
+
+
+#mission-bg
+  transition all 1s
+
+  #desc-title
+  #desc-p
+    transition all 1.5s
+    opacity 0
+
+  .invoke
+    transition all 1s
+    opacity 0
+
+
+ui-feedback
+  background #fff
+  transition all 1s
+  opacity 0
+
+  display flex
+  position absolute
+  top 0
+  left 0
+  right 0
+  bottom 0
+  font-size 28px
+
+
+  > section
+    margin auto 32px
+    padding 16px
+    //box-shadow 0 0 10px rgba(0,0,0,.1)
+    //border-radius 8px
+    text-align center
+
+  img
+    display block
+    width 80%
+    margin 32px auto
+
+  p
+    margin 16px 0
+
+    &[lang="ko"]
+      color #666
+      font-size 20px
+
+
+span.ok
+  color #000
+
+
+//ui-mission
+//ui-feedback
+//  display none
+
+
+ui-script-editor
+  width 50%
+  height 100%
+
+  textarea
+    display block
+    width 100%
+    height 100%
+    padding 8px
+    font-size 16px
+    line-height 1.5
+    background #000
+    color #fff
+    outline 0
+    border 0
+
