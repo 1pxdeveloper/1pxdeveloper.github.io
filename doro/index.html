@@ -1,10 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Title</title>
+	<meta charset="utf8">
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+
+	<title>Doro</title>
+	<link rel="stylesheet" href="css/style.css"/>
+	<script src="../libs/1px.js"></script>
 </head>
 <body>
+
+<main id="main">
+	<ui-scrollview>
+		<section class="line">
+		</section>
+
+		<section class="kms">
+			<h1 *foreach="kms as row, index" class="todo" [style.bottom.%]="((kms.length-index) / kms.length * 100)">{{ (kms.length-index) * 1000 }} km</h1>
+		</section>
+
+		<section class="todos">
+			<section *foreach="todos as todo, index" class="todo" [style.bottom.%]="+todo[1] / 500">
+				<div class="icon">
+					<div></div>
+				</div>
+				<p class="date"></p>
+				<p class="km">{{ todo[1] }} km</p>
+				<div class="box">
+					<h1>{{ todo[0] }}</h1>
+				</div>
+			</section>
+		</section>
+
+
+		<section class="current-line">
+			<div class="km">{{ km }} km</div>
+		</section>
+
+
+		<section class="current">
+			<section class="todo">
+				<div class="icon">
+					<div>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+							<path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+							<path d="M0 0h24v24H0z" fill="none"/>
+						</svg>
+					</div>
+				</div>
+				<div class="box">
+					<h1>현재 주행거리 12,34 km</h1>
+				</div>
+			</section>
+		</section>
+
+
+	</ui-scrollview>
+</main>
+
+
+<footer>
+	<!--<h1>Doro</h1>-->
+	<!--<div></div>-->
+	<!--<div>cam</div>-->
+</footer>
+
+
+<script type="module">
+const {$compile} = require("$compile");
+
+
+let main = document.getElementById("main");
+
+let a = [];
+for (let i = 0; i < 50; i++) {
+	a[i] = i;
+}
+main.kms = a;
+
+
+let todos = [
+	["엔진오일", "10000"],
+	["엔진 플러싱(세정)", "20000"],
+	["점화플러그 & 코일,케이블", "30000"],
+	["리스톤링 및 연소실 세척작업", "30000"],
+	["가열(예열)플러그", "40000"],
+	["흡기라인세척 작업", "30000"],
+	["타이밍밸트", "80000"],
+	["타이밍체인", "200000"],
+	["구동벨트", "40000"],
+	["엔진/밋션 마운팅 ", "100000"],
+	["변속기(미션)오일", "40000"],
+	["디프렌션오일", "40000"],
+	["연료휠터", "30000"],
+	["연료라인/인젝터세정", "30000"],
+	["연료탱크 에어필터", "40000"],
+	["브레이크패드", "30000"],
+	["브레이크오일", "40000"],
+	["브레이크 디스크 연마", "80000"],
+	["부동액", "40000"],
+	["냉각라인 세정", "40000"],
+	["히터&에어컨휠터", "12000"],
+	["에어컨필터", "5000"],
+	["히터클리닉", "5000"],
+	["와이퍼", "8000"],
+	["에어컨 냉매 보충", "10000"],
+	["에어컨 가스 및 냉동유 교환", "40000"],
+	["통풍씨트 휠터", "40000"],
+	["파워스티어링오일", "40000"],
+	["타이어위치교환", "10000"],
+	["휠얼라이먼트", "20000"],
+	["배터리", "60000"],
+];
+
+main.todos = todos;
+main.km = 0;
+
+$compile(main);
+
+window.onscroll = function() {
+	main.km = Math.round((1 - (window.pageYOffset-150) / (document.body.scrollHeight - document.body.offsetHeight)) * 50000);
+};
+
+
+setTimeout(function() {
+	window.scroll(0, 9999999);
+})
+
+</script>
+
 
 </body>
 </html>
