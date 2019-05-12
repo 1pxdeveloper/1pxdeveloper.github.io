@@ -21,13 +21,13 @@
 		</section>
 
 		<section class="todos">
-			<section *foreach="todos as todo, index" class="todo" [style.bottom.%]="+todo[2] / 500">
+			<section *foreach="todos as todo, index" class="todo" [style.bottom.%]="+todo[2] / 1000">
 				<div class="icon">
 					<div></div>
 				</div>
+				<!--<p class="km">매 {{ todo[1] }} km</p>-->
 				<div class="box">
 					<h1>{{ todo[0] }}</h1>
-					<!--<p class="km">{{ todo[1] }} km</p>-->
 				</div>
 			</section>
 		</section>
@@ -126,12 +126,15 @@ todos.forEach(todo => {
 
 todos = t;
 
+console.log(todos)
+
+
 
 let pos = {};
 todos.forEach(todo => {
 	let km = +todo[1];
 	while (pos[km]) {
-		km += 80;
+		km += 75;
 	}
 	pos[km] = km;
 	todo[2] = km;
