@@ -155,6 +155,9 @@ section.todo .box p {
   font-size: 10px;
   color: #999;
 }
+section.todo[new] h1 {
+  color: #ffa500;
+}
 section.current-line {
   position: fixed;
   bottom: 100px;
