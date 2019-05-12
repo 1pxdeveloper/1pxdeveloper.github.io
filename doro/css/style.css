@@ -72,12 +72,13 @@ section.kms h1 {
   right: 0;
   margin-bottom: -70px;
   text-align: right;
+  letter-spacing: -0.05em;
 }
 section.line {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 46px;
+  left: 42px;
   width: 6px;
   background-image: linear-gradient(rgba(255,255,255,0.2) 60%, rgba(255,255,255,0) 0%);
   background-position: right;
@@ -212,6 +213,10 @@ section.current section.todo .box .tri {
   border-color: transparent #fff transparent transparent;
 }
 @media (max-width: 767px) {
+  html,
+  body {
+    background: #20242a;
+  }
   body,
   section.current,
   section.current-line,

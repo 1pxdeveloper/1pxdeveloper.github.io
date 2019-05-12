@@ -75,13 +75,14 @@ section.kms
     right 0
     margin-bottom -70px
     text-align right
+    letter-spacing -0.05em
 
 
 section.line
   position absolute
   top 0
   bottom 0
-  left 46px
+  left 42px
   width 6px
   background-image: linear-gradient(rgba(255,255,255,.2) 60%, rgba(255,255,255,0) 0%);
   background-position: right;
@@ -208,6 +209,9 @@ section.current
   border-color: transparent #ffffff transparent transparent;
 
 +mobile()
+  html,body
+    background $background
+
   body
   section.current
   section.current-line
