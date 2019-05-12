@@ -23,10 +23,13 @@ body
   position relative
   vbox()
   background $background
-  width 400px
   margin auto
   color #fff
   font-size 14px
+  width 400px
+
+
+
 
 
 
@@ -86,7 +89,7 @@ section.todo
   position absolute
   display grid
   grid-template-columns repeat(4, 24px 1fr 24px)
-  grid-template-rows minmax(24px,auto) auto
+  grid-template-rows minmax(0, 24px) auto
   left 0
   right 0
 
@@ -155,6 +158,8 @@ section.current
   background $background
 
   section.todo
+    grid-template-rows auto
+
     .icon>div
     .box
       background-color #fff
@@ -162,3 +167,13 @@ section.current
 
     .box
       border-radius 24px 0 0 24px
+
+
+
+
++mobile()
+  body
+  section.current
+  section.current-line
+  footer
+    width 100%

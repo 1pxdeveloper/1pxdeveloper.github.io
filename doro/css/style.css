@@ -20,10 +20,10 @@ body {
   flex-flow: column;
   align-items: stretch;
   background: #20242a;
-  width: 400px;
   margin: auto;
   color: #fff;
   font-size: 14px;
+  width: 400px;
 }
 main {
   flex: 1;
@@ -83,7 +83,7 @@ section.todo {
   position: absolute;
   display: grid;
   grid-template-columns: repeat(4, 24px 1fr 24px);
-  grid-template-rows: minmax(24px, auto) auto;
+  grid-template-rows: minmax(0, 24px) auto;
   left: 0;
   right: 0;
 }
@@ -156,6 +156,9 @@ section.current {
   transform: translateX(-50%);
   background: #20242a;
 }
+section.current section.todo {
+  grid-template-rows: auto;
+}
 section.current section.todo .icon>div,
 section.current section.todo .box {
   background-color: #fff;
@@ -163,4 +166,12 @@ section.current section.todo .box {
 }
 section.current section.todo .box {
   border-radius: 24px 0 0 24px;
+}
+@media (max-width: 767px) {
+  body,
+  section.current,
+  section.current-line,
+  footer {
+    width: 100%;
+  }
 }

@@ -20,7 +20,7 @@
 		</section>
 
 		<section class="todos">
-			<section *foreach="todos as todo, index" class="todo" [style.bottom.%]="+todo[1] / 500">
+			<section *foreach="todos as todo, index" class="todo" [style.bottom.%]="+todo[2] / 500">
 				<div class="icon">
 					<div></div>
 				</div>
@@ -113,13 +113,25 @@ let todos = [
 	["배터리", "60000"],
 ];
 
+let pos = {};
+todos.forEach(todo => {
+	let km = +todo[1];
+	while (pos[km]) {
+		km += 150;
+	}
+	pos[km] = km;
+
+	todo[2] = km;
+});
+
+
 main.todos = todos;
 main.km = 0;
 
 $compile(main);
 
 window.onscroll = function() {
-	main.km = Math.round((1 - (window.pageYOffset-150) / (document.body.scrollHeight - document.body.offsetHeight)) * 50000);
+	main.km = Math.round((1 - (window.pageYOffset - 150) / (document.body.scrollHeight - document.body.offsetHeight)) * 50000);
 };
 
 
