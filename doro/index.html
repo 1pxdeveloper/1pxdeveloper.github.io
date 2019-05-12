@@ -137,7 +137,7 @@ let pos = {};
 todos.forEach(todo => {
 	let km = +todo[1];
 	while (pos[km]) {
-		km += 75;
+		km += 50;
 	}
 	pos[km] = km;
 	todo[2] = km;
