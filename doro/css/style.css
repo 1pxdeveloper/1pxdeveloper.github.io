@@ -77,7 +77,7 @@ section.line {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 42px;
+  left: 46px;
   width: 6px;
   background-image: linear-gradient(rgba(255,255,255,0.2) 60%, rgba(255,255,255,0) 0%);
   background-position: right;
@@ -196,7 +196,8 @@ section.current section.todo .box {
   position: relative;
   background-color: #fff;
   color: #000;
-  grid-column-end: -2;
+  grid-column-start: 3;
+  grid-column-end: -3;
   border-radius: 8px;
 }
 section.current section.todo .box .tri {
@@ -207,7 +208,7 @@ section.current section.todo .box .tri {
   width: 0;
   height: 0;
   border-style: solid;
-  border-width: 6px 12px 6px 0;
+  border-width: 4px 8px 4px 0;
   border-color: transparent #fff transparent transparent;
 }
 @media (max-width: 767px) {
