@@ -113,6 +113,20 @@ let todos = [
 	["배터리", "60000"],
 ];
 
+let t = [];
+todos.forEach(todo => {
+
+	for (let i = 0; i < 10; i++) {
+		let _todo = todo.slice();
+		_todo[1] = +_todo[1];
+		_todo[1] = +_todo[1] * i;
+		t.push(_todo);
+	}
+})
+
+todos = t;
+
+
 let pos = {};
 todos.forEach(todo => {
 	let km = +todo[1];
@@ -120,7 +134,6 @@ todos.forEach(todo => {
 		km += 150;
 	}
 	pos[km] = km;
-
 	todo[2] = km;
 });
 
