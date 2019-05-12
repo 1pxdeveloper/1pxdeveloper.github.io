@@ -47,6 +47,7 @@ footer {
   height: 96px;
   background: #20242a url("../imgs/footer.png") no-repeat;
   background-size: contain;
+  border-top: 1px solid #ffa500;
 }
 ui-scrollview {
   display: flex;
@@ -73,6 +74,7 @@ section.kms h1 {
   margin-bottom: -70px;
   text-align: right;
   letter-spacing: -0.05em;
+  margin-right: 8px;
 }
 section.line {
   position: absolute;
