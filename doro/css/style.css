@@ -78,7 +78,7 @@ section.line {
   width: 6px;
   background-image: linear-gradient(rgba(255,255,255,0.2) 60%, rgba(255,255,255,0) 0%);
   background-position: right;
-  background-size: 6px 120px;
+  background-size: 6px 72px;
   background-repeat: repeat-y;
 }
 section.todo {
@@ -96,14 +96,24 @@ section.todo .icon {
 section.todo .icon >div {
   width: 40px;
   margin: auto;
-  background: #ffa500;
-  border-radius: 50%;
   position: relative;
+  white-space: nowrap;
+  text-align: center;
 }
 section.todo .icon >div:before {
   content: " ";
   display: block;
   padding-top: 100%;
+}
+section.todo .icon >div >div {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 section.todo .icon >div >svg {
   position: absolute;
@@ -121,6 +131,9 @@ section.todo .km {
   text-align: right;
 }
 section.todo .box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   grid-column-start: 4;
   grid-column-end: -1;
   padding: 12px 24px;
