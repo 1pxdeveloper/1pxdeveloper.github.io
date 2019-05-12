@@ -28,6 +28,8 @@ body
   font-size 14px
   width 400px
 
+[flex]
+  flex 1
 
 
 
@@ -131,15 +133,21 @@ section.todo
     hbox()
     grid-column-start 4
     grid-column-end -1
-    padding 12px 24px
-    background orange
+    padding 12px 24px 12px 12px
+    background #555
     border-radius 8px 0 0 8px
-    color #000
+    color #fff
+    font-size 12px
 
     h1
       grid-column-start 4
       grid-column-end -2
+      margin-left 12px
 
+    p
+      text-align right
+      font-size 10px
+      color #999
 
 section.current-line
   position fixed
