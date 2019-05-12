@@ -36,7 +36,7 @@
 
 
 		<section class="current-line">
-			<div class="km">{{ km }} km</div>
+			<!--<div class="km">{{ km }} km</div>-->
 		</section>
 
 
@@ -52,7 +52,7 @@
 				</div>
 				<div class="box">
 					<div class="tri"></div>
-					<h1>현재 주행거리는 <span style="font-size: 16px">{{ km }}</span> km 입니다.</h1>
+					<h1>현재 주행거리는 <span style="font-size: 16px; color : orange">{{ km }} km</span> 입니다.</h1>
 				</div>
 			</section>
 		</section>
@@ -119,7 +119,7 @@ let todos = [
 todos.forEach(todo => {
 	todo[1] = +todo[1];
 });
-todos.sort((a,b) => (a[1] - b[1]));
+todos.sort((a,b) => (b[1] - a[1]));
 
 
 
