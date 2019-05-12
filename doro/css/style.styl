@@ -68,9 +68,10 @@ section.kms
     font-size 40px
     font-weight 600
     color #ccc
-    opacity 0.1
+    opacity 0.2
     left 0
     right 0
+    margin-bottom -70px
 
 
 section.line
@@ -79,7 +80,7 @@ section.line
   bottom 0
   left 44px
   width 8px
-  background-image: linear-gradient(rgba(255,255,255,.1) 50%, rgba(255,255,255,0) 0%);
+  background-image: linear-gradient(rgba(255,255,255,.2) 50%, rgba(255,255,255,0) 0%);
   background-position: right;
   background-size: 4px 48px;
   background-repeat: repeat-y;
@@ -89,7 +90,7 @@ section.todo
   position absolute
   display grid
   grid-template-columns repeat(4, 24px 1fr 24px)
-  grid-template-rows minmax(0, 24px) auto
+  grid-template-rows auto
   left 0
   right 0
 
@@ -97,7 +98,7 @@ section.todo
     grid-column-start 2
     grid-column-end 3
     >div
-      width 80%;
+      width 24px
       ratio(1,1)
       margin auto
       background #333
@@ -122,7 +123,7 @@ section.todo
     //display contents
     grid-column-start 4
     grid-column-end -1
-    padding 16px 24px
+    padding 8spx 24px
     background #333
     border-radius 8px 0 0 8px
 

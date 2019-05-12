@@ -24,10 +24,9 @@
 				<div class="icon">
 					<div></div>
 				</div>
-				<p class="date"></p>
-				<p class="km">{{ todo[1] }} km</p>
 				<div class="box">
 					<h1>{{ todo[0] }}</h1>
+					<!--<p class="km">{{ todo[1] }} km</p>-->
 				</div>
 			</section>
 		</section>
@@ -131,7 +130,7 @@ let pos = {};
 todos.forEach(todo => {
 	let km = +todo[1];
 	while (pos[km]) {
-		km += 150;
+		km += 80;
 	}
 	pos[km] = km;
 	todo[2] = km;
