@@ -187,12 +187,24 @@ section.current
   section.todo
     grid-template-rows auto
 
-    .icon>div
     .box
+      position relative
       background-color #fff
       color #000
+      grid-column-end -2
+      border-radius 8px
+
+      & .tri
+        position absolute
+        right 100%
 
 
+.tri
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 6px 12px 6px 0;
+  border-color: transparent #ffffff transparent transparent;
 
 +mobile()
   body
