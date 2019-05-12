@@ -37,7 +37,7 @@ main
   flex 1
 
   ui-scrollview
-    height 4000%;
+    height 8000%;
     background $background
 
 
@@ -65,13 +65,14 @@ section.kms
 
   h1
     position absolute
-    font-size 40px
+    font-size 64px
     font-weight 600
     color #ccc
     opacity 0.2
     left 0
     right 0
     margin-bottom -70px
+    text-align right
 
 
 section.line
@@ -80,9 +81,9 @@ section.line
   bottom 0
   left 44px
   width 8px
-  background-image: linear-gradient(rgba(255,255,255,.2) 50%, rgba(255,255,255,0) 0%);
+  background-image: linear-gradient(rgba(255,255,255,.2) 60%, rgba(255,255,255,0) 0%);
   background-position: right;
-  background-size: 4px 48px;
+  background-size: 6px 120px;
   background-repeat: repeat-y;
 
 
@@ -98,7 +99,7 @@ section.todo
     grid-column-start 2
     grid-column-end 3
     >div
-      width 32px
+      width 40px
       ratio(1,1)
       margin auto
       background #333
@@ -123,7 +124,7 @@ section.todo
     //display contents
     grid-column-start 4
     grid-column-end -1
-    padding 8px 24px
+    padding 12px 24px
     background #333
     border-radius 8px 0 0 8px
 
@@ -134,20 +135,26 @@ section.todo
 
 section.current-line
   position fixed
-  bottom 180px
+  bottom 100px
   width 400px
   height 1px
   left 50%
   transform translateX(-50%)
-  border-top 2px solid orange;
+  border-top 1px solid orange;
+
   .km
     position absolute
-    right 0
-    bottom 100%
-    margin-bottom 8px
-    margin-right 24px;
+    left 0
+    bottom 50%;
     text-align right
     color orange;
+    background $background
+    padding 8px
+    height 24px
+    width 18%;
+    margin-bottom -6px
+    margin-left 12px
+    white-space nowrap
 
 section.current
   position fixed
@@ -156,7 +163,6 @@ section.current
   height 80px
   left 50%
   transform translateX(-50%)
-  background $background
 
   section.todo
     grid-template-rows auto
