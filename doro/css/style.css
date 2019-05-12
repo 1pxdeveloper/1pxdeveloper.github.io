@@ -162,12 +162,11 @@ section.todo[new] h1 {
   color: #ffa500;
 }
 section.current-line {
-  position: fixed;
-  bottom: 100px;
-  width: 400px;
+  position: absolute;
+  bottom: 28%;
   height: 1px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   border-top: 1px solid #ffa500;
 }
 section.current-line .km {
@@ -179,7 +178,6 @@ section.current-line .km {
   background: #20242a;
   padding: 8px;
   height: 24px;
-  width: 18%;
   margin-bottom: -6px;
   margin-left: 12px;
   white-space: nowrap;
