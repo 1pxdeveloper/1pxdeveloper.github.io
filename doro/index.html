@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width, user-scalable=no">
 
 	<title>Doro</title>
-	<link rel="manifest" href="manifest.json">
+	<!--<link rel="manifest" href="manifest.json">-->
 	<link rel="stylesheet" href="css/style.css"/>
 	<script src="../libs/1px.js"></script>
 </head>
@@ -17,38 +17,43 @@
 		</section>
 
 		<section class="kms">
-			<h1 *foreach="kms as row, index" class="todo" [style.bottom.%]="((kms.length-index) / kms.length * 100)">{{ (kms.length-index) * 1000 }} km</h1>
+			<h1 *foreach="kms as row, index" class="todo" [style.bottom.%]="((kms.length-index) / kms.length * 100)">{{ (kms.length-index) * 1000 | number }} km</h1>
 		</section>
 
 		<section class="todos">
 			<section *foreach="todos as todo, index" class="todo" [style.bottom.%]="+todo[4] / 1000" [attr.new]="todo[1] == todo[2]">
 				<div class="icon">
-					<div><div></div></div>
+					<div>
+						<div></div>
+					</div>
 				</div>
 				<div class="box">
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path fill="#fff" d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5zm6 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+						<path d="M0 0h24v24H0z" fill="none"/>
+						<path fill="#fff" d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5zm6 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+					</svg>
 
 					<h1>{{ todo[0] }}</h1>
 					<div flex></div>
-					<p>매 {{ todo[2] }}km 마다</p>
+					<p>매 {{ todo[2] | number }}km 마다</p>
 				</div>
 			</section>
 		</section>
 
 
 		<section class="current-line">
-			<div class="km">TODAY: 28,342 km</div>
+			<div class="km">TODAY</div>
 		</section>
 
 
-		<section class="current">
+		<section class="current" id="mycar">
 			<section class="todo">
 				<div class="icon">
 					<div>
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="48px" height="48px"
-	 viewBox="0 0 48 48" style="enable-background:new 0 0 47.032 47.032;" xml:space="preserve">
+						<?xml version="1.0" encoding="iso-8859-1"?>
+						<!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+						<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="48px" height="48px"
+								viewBox="0 0 48 48" style="enable-background:new 0 0 47.032 47.032;" xml:space="preserve">
 <g>
 	<path d="M29.395,0H17.636c-3.117,0-5.643,3.467-5.643,6.584v34.804c0,3.116,2.526,5.644,5.643,5.644h11.759
 		c3.116,0,5.644-2.527,5.644-5.644V6.584C35.037,3.467,32.511,0,29.395,0z M34.05,14.188v11.665l-2.729,0.351v-4.806L34.05,14.188z
@@ -86,35 +91,35 @@
 	<g>
 	</g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
-<g>
+							<g>
 </g>
 </svg>
 
@@ -122,12 +127,52 @@
 				</div>
 				<div class="box">
 					<div class="tri"></div>
-					<h1>현재 주행거리는 <span style="font-size: 16px; color : orange">{{ km }}</span> km 입니다.</h1>
+					<h1>현재 주행거리는 <span style="font-size: 16px; color : orange">{{ km | number }}</span> km 입니다.</h1>
 				</div>
 			</section>
 		</section>
 
 
+		<section class="logs">
+			<section class="line">
+			</section>
+
+
+			<section *foreach="days as day">
+
+				<div class="day">
+					<h1><span>2018년 11월 20일</span></h1>
+					<div class="hline"></div>
+				</div>
+
+				<section class="todo log" *foreach="logs as log">
+					<div class="icon">
+						<div>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+								<path d="M0 0h24v24H0z" fill="none"/>
+								<path fill="#fff" d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.36 0 .69-.08 1-.21v7.21c0 .55-.45 1-1 1s-1-.45-1-1V14c0-1.1-.9-2-2-2h-1V5c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v16h10v-7.5h1.5v5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V9c0-.69-.28-1.32-.73-1.77zM12 10H6V5h6v5zm6 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+							</svg>
+
+						</div>
+					</div>
+					<div class="date">AM 10:00</div>
+					<div class="km">21,000km</div>
+					<div class="box">
+						<h1>주유 40L</h1>
+						<div flex></div>
+						<p>1,338 ₩\L</p>
+					</div>
+					<div class="body">
+						주유하였습니다.
+						<p class="memo">메모 하실 수 있습니다.</p>
+					</div>
+
+				</section>
+
+			</section>
+
+
+		</section>
 	</ui-scrollview>
 </main>
 
@@ -189,13 +234,11 @@ let todos = [
 todos.forEach(todo => {
 	todo[1] = +todo[1];
 });
-todos.sort((a,b) => (b[1] - a[1]));
-
+todos.sort((a, b) => (b[1] - a[1]));
 
 
 let t = [];
 todos.forEach(todo => {
-
 	for (let i = 0; i < 10; i++) {
 		let _todo = todo.slice();
 		_todo[2] = +_todo[1];
@@ -203,10 +246,9 @@ todos.forEach(todo => {
 		_todo[1] = +_todo[1] * i;
 		t.push(_todo);
 	}
-})
+});
 
 todos = t;
-
 
 
 let pos = {};
@@ -225,13 +267,37 @@ main.km = 0;
 
 $compile(main);
 
+
+let mycar = document.getElementById("mycar");
+
 window.onscroll = function() {
 	main.km = Math.round((1 - (window.pageYOffset - 150) / (document.body.scrollHeight - document.body.offsetHeight)) * 100000);
+
+	if (window.pageYOffset > 50000) {
+		mycar.style.bottom = Math.min(document.body.offsetHeight - 96 + 16, 96 + (window.pageYOffset - 50000)) + "px";
+		main.km = 22445;
+	}
+	else {
+		mycar.style.bottom = 96 + "px";
+	}
 };
 
 
+let days = [];
+let logs = [];
+
+for (let i = 0; i < 6; i++) {
+	logs.push({});
+	days.push({});
+}
+
+days = days.slice(0,5);
+main.logs = logs;
+main.days = days;
+
+
 setTimeout(function() {
-	window.scroll(0, 9999999);
+	window.scroll(0, 50000);
 })
 
 </script>

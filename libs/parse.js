@@ -744,7 +744,7 @@ evaluateRule("|", function(a, b, c) {
 		return this.scope[b.value](value, ...args);
 	}
 
-	return module.pipe.require(b.value, pipe => {
+	return $module.pipe.require(b.value, pipe => {
 		return pipe(value, ...args);
 	});
 });

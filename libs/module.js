@@ -103,7 +103,7 @@
 
 				if (count === length) {
 					ret = args;
-					callback.apply(null, args);
+					ret = callback.apply(null, args);
 				}
 			});
 		});

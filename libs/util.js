@@ -77,6 +77,13 @@ $module.pipe("html", function() {
 });
 
 
+$module.pipe("number", function() {
+	return function(value) {
+		return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	}
+});
+
+
 /// $localStorage
 $module.factory("$localStorage", function() {
 

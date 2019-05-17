@@ -48,6 +48,7 @@ footer {
   background: #20242a url("../imgs/footer.png") no-repeat;
   background-size: contain;
   border-top: 1px solid #ffa500;
+  z-index: 999999;
 }
 ui-scrollview {
   display: flex;
@@ -86,6 +87,7 @@ section.line {
   background-position: right;
   background-size: 6px 72px;
   background-repeat: repeat-y;
+  z-index: 0;
 }
 section.todo {
   position: absolute;
@@ -143,7 +145,7 @@ section.todo .box {
   grid-column-start: 4;
   grid-column-end: -1;
   padding: 12px 24px 12px 12px;
-  background: #555;
+  background: #353535;
   border-radius: 8px 0 0 8px;
   color: #fff;
   font-size: 12px;
@@ -161,13 +163,38 @@ section.todo .box p {
 section.todo[new] h1 {
   color: #ffa500;
 }
+section.log {
+  position: relative;
+  grid-template-rows: 32px 32px minmax(50px, auto);
+  margin: 40px 0 60px;
+}
+section.log .icon >div {
+  background: #353535;
+  border-radius: 50%;
+}
+section.log .box {
+  border-radius: 8px 0 0 0;
+}
+section.log .body {
+  background: #2f2f2f;
+  grid-column-start: 4;
+  grid-column-end: -1;
+  padding: 32px 24px;
+  font-size: 12px;
+  border-radius: 0 0 0 8px;
+}
+section.log .memo {
+  margin-top: 64px;
+  opacity: 0.5;
+}
 section.current-line {
   position: absolute;
-  bottom: 28%;
+  bottom: 22.08%;
   height: 1px;
   left: 0;
   right: 0;
   border-top: 1px solid #ffa500;
+  z-index: 9999;
 }
 section.current-line .km {
   position: absolute;
@@ -184,11 +211,13 @@ section.current-line .km {
 }
 section.current {
   position: fixed;
-  bottom: 80px;
+  bottom: 96px;
   width: 400px;
   height: 80px;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 9999;
+  padding-top: 16px;
 }
 section.current section.todo {
   grid-template-rows: auto;
@@ -223,4 +252,32 @@ section.current section.todo .box .tri {
   footer {
     width: 100%;
   }
+}
+section.logs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 77.92%;
+  bottom: 0;
+  background: #222;
+}
+.day {
+  position: relative;
+  margin-top: 50px;
+}
+.day h1 {
+  position: relative;
+  padding: 13px 64px;
+  z-index: 100;
+}
+.day h1 span {
+  background: #222;
+  padding: 13px;
+}
+.day .hline {
+  position: absolute;
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+  top: 50%;
+  left: 0;
+  right: 0;
 }
