@@ -237,7 +237,7 @@ section.current section.todo .box {
   background-color: #fff;
   color: #000;
   grid-column-start: 4;
-  grid-column-end: -2;
+  grid-column-end: -3;
   border-radius: 8px;
 }
 section.current section.todo .box .tri {
@@ -352,8 +352,27 @@ section.logs section.line {
 }
 .unknown {
   position: absolute;
-  color: #777;
-  top: -4px;
-  right: -6px;
+  color: #fff;
+  top: 0px;
+  left: -18px;
   font-size: 7px;
+  z-index: 999999;
+  background: #f00;
+  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  text-align: center;
+}
+.add {
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border-radius: 50%;
+  color: #000;
+  text-align: center;
+  position: relative;
+  top: 2px;
+  left: 12px;
+  font-size: 30px;
+  line-height: 40px;
 }

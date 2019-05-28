@@ -169,8 +169,9 @@
 				</div>
 				<div class="box">
 					<div class="tri"></div>
-					<h1>현재 주행거리는 <span style="font-size: 16px; color : orange">{{ km }}</span> km 입니다.</h1>
+					<h1>현재거리는 <span style="font-size: 16px; color : orange">{{ km }}</span> km 입니다.</h1>
 				</div>
+					<div class="add">+</div>
 			</section>
 		</section>
 
@@ -361,11 +362,11 @@ window.onscroll = function() {
 	main.km = Math.round((1 - (window.pageYOffset - 150) / (document.body.scrollHeight - document.body.offsetHeight)) * 100000);
 
 	if (window.pageYOffset > 42773) {
-		mycar.style.bottom = Math.min(document.body.offsetHeight - 62, 62 + (window.pageYOffset - 42773)) + "px";
-		main.km = 22445;
+		mycar.style.bottom = Math.min(document.body.offsetHeight - 75, 75 + (window.pageYOffset - 42773)) + "px";
+		// main.km = 22445;
 	}
 	else {
-		mycar.style.bottom = 62 + "px";
+		mycar.style.bottom = 92 + "px";
 	}
 };
 
