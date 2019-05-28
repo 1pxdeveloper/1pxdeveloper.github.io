@@ -271,7 +271,7 @@ section.logs
   right 0
   top 77.92%
   bottom 0
-  background #222
+  background $background
 
   section.line
     position absolute
@@ -296,7 +296,7 @@ section.logs
     font-size 28px
 
     span
-      background #222
+      //background #222
       padding 13px
 
 
@@ -306,3 +306,37 @@ section.logs
     top 50%
     left 0
     right 0
+
+
+.report
+  position relative
+  border-top 2px solid #ccc
+  border-bottom 2px solid #ccc
+  background $background
+  padding 24px
+  text-align center
+  z-index 100
+  hbox()
+  flex-wrap wrap
+
+  h2
+    border-radius 20px
+    padding 10px 20px
+    background #999
+    color #fff
+    position absolute
+    top -18px
+    left 50%
+    transform translateX(-50%)
+
+  >section
+    width 33.33%
+    margin 16px 0
+
+    h1
+      font-size 12px
+      margin-bottom 12px
+      color #ccc
+
+    div
+      font-size 18px
