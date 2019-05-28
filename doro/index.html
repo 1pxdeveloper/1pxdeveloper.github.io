@@ -21,6 +21,20 @@
 		</section>
 
 		<section class="todos">
+
+			<section class="tip">
+				<h1>TIP - 자동차세 연납신청</h1>
+				<p>차를 소유하고 있다면 매년 부과되는 자동차세, 1월에 연납하면 가장 저렵하게 납부 할 수 있습니다.<br>
+				<br>
+					자동차세 연납, 월별 할인율<br>
+					1월 납부: 1년분의 10% 할인<br>
+					3월 납부: 1년분의 7.5%할인<br>
+					6월 납부: 1년분의 5%할인<br>
+					9월 납부: 1년분의 2.5할인<br>
+				</p>
+			</section>
+
+
 			<section *foreach="todos as todo, index" class="todo" [style.bottom.%]="+todo[4] / 1000" [attr.new]="todo[1] == todo[2]">
 				<div class="icon">
 					<div>
@@ -319,12 +333,12 @@ let mycar = document.getElementById("mycar");
 window.onscroll = function() {
 	main.km = Math.round((1 - (window.pageYOffset - 150) / (document.body.scrollHeight - document.body.offsetHeight)) * 100000);
 
-	if (window.pageYOffset > 46612) {
-		mycar.style.bottom = Math.min(document.body.offsetHeight - 96 + 16, 96 + (window.pageYOffset - 46612)) + "px";
+	if (window.pageYOffset > 42773) {
+		mycar.style.bottom = Math.min(document.body.offsetHeight - 62, 62 + (window.pageYOffset - 42773)) + "px";
 		main.km = 22445;
 	}
 	else {
-		mycar.style.bottom = 96 + "px";
+		mycar.style.bottom = 62 + "px";
 	}
 };
 
