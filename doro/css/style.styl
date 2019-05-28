@@ -12,7 +12,7 @@ $background = #20242a
   //outline 1px solid #4f80ff
   font inherit
 
-html,body
+html, body
   height 100%
 
 html
@@ -20,19 +20,18 @@ html
 
 body
   font-family "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif
+  font-size 14px
+  color #fff
+
+body
   position relative
   vbox()
   background $background
   margin auto
-  color #fff
-  font-size 14px
   width 400px
 
 [flex]
   flex 1
-
-
-
 
 
 main
@@ -41,7 +40,6 @@ main
   ui-scrollview
     height 8000%;
     background $background
-
 
 
 footer
@@ -86,7 +84,7 @@ section.line
   bottom 0
   left 42px
   width 6px
-  background-image: linear-gradient(rgba(255,255,255,.2) 60%, rgba(255,255,255,0) 0%);
+  background-image: linear-gradient(rgba(255, 255, 255, .2) 60%, rgba(255, 255, 255, 0) 0%);
   background-position: right;
   background-size: 6px 72px;
   background-repeat: repeat-y;
@@ -104,24 +102,26 @@ section.todo
   .icon
     grid-column-start 2
     grid-column-end 3
-    >div
+
+    > div
       width 40px
-      ratio(1,1)
+      ratio(1, 1)
       margin auto
       //background orange
       //border-radius 50%
       position relative
       white-space nowrap
       text-align center
-      >div
+
+      > div
         layer()
         hbox()
 
-      >svg
+      > svg
         position absolute
         top 50%
         left 50%
-        transform translate3d(-50%,-50%,0)
+        transform translate3d(-50%, -50%, 0)
 
   .date
     grid-column-start 4
@@ -131,6 +131,11 @@ section.todo
     grid-column-start -5
     grid-column-end -2
     text-align right
+
+  .km-left
+    grid-column-start 1
+    grid-column-end 4
+    text-align center
 
   .box
     //display contents
@@ -164,7 +169,7 @@ section.log
   margin 40px 0 60px
 
   .icon
-    >div
+    > div
       background #353535
       border-radius 50%
 
@@ -241,7 +246,7 @@ section.current
   border-color: transparent #ffffff transparent transparent;
 
 +mobile()
-  html,body
+  html, body
     background $background
 
   body
@@ -249,7 +254,6 @@ section.current
   section.current-line
   footer
     width 100%
-
 
 
 section.logs
@@ -269,6 +273,7 @@ section.logs
     position relative
     padding 13px 64px
     z-index 100
+
     span
       background #222
       padding 13px
@@ -276,7 +281,7 @@ section.logs
 
   .hline
     position absolute
-    border-bottom 2px solid rgba(255,255,255,.3);
+    border-bottom 2px solid rgba(255, 255, 255, .3);
     top 50%
     left 0
     right 0

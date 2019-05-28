@@ -15,14 +15,16 @@ html {
 }
 body {
   font-family: "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  color: #fff;
+}
+body {
   position: relative;
   display: flex;
   flex-flow: column;
   align-items: stretch;
   background: #20242a;
   margin: auto;
-  color: #fff;
-  font-size: 14px;
   width: 400px;
 }
 [flex] {
@@ -101,19 +103,19 @@ section.todo .icon {
   grid-column-start: 2;
   grid-column-end: 3;
 }
-section.todo .icon >div {
+section.todo .icon > div {
   width: 40px;
   margin: auto;
   position: relative;
   white-space: nowrap;
   text-align: center;
 }
-section.todo .icon >div:before {
+section.todo .icon > div:before {
   content: " ";
   display: block;
   padding-top: 100%;
 }
-section.todo .icon >div >div {
+section.todo .icon > div > div {
   position: absolute;
   top: 0;
   left: 0;
@@ -123,7 +125,7 @@ section.todo .icon >div >div {
   flex-direction: row;
   align-items: center;
 }
-section.todo .icon >div >svg {
+section.todo .icon > div > svg {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -137,6 +139,11 @@ section.todo .km {
   grid-column-start: -5;
   grid-column-end: -2;
   text-align: right;
+}
+section.todo .km-left {
+  grid-column-start: 1;
+  grid-column-end: 4;
+  text-align: center;
 }
 section.todo .box {
   display: flex;
@@ -168,7 +175,7 @@ section.log {
   grid-template-rows: 32px 32px minmax(50px, auto);
   margin: 40px 0 60px;
 }
-section.log .icon >div {
+section.log .icon > div {
   background: #353535;
   border-radius: 50%;
 }

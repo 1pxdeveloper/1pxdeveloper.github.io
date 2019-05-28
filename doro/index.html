@@ -37,6 +37,7 @@
 					<div flex></div>
 					<p>매 {{ todo[2] | number }}km 마다</p>
 				</div>
+				<div class="km-left">{{ todo.kkkm }}km</div>
 			</section>
 		</section>
 
@@ -254,6 +255,11 @@ todos = t;
 let pos = {};
 todos.forEach(todo => {
 	let km = +todo[1];
+
+	if (!pos[km]) {
+		todo.kkkm = km;
+	}
+
 	while (pos[km]) {
 		km += 50;
 	}
@@ -273,8 +279,8 @@ let mycar = document.getElementById("mycar");
 window.onscroll = function() {
 	main.km = Math.round((1 - (window.pageYOffset - 150) / (document.body.scrollHeight - document.body.offsetHeight)) * 100000);
 
-	if (window.pageYOffset > 50000) {
-		mycar.style.bottom = Math.min(document.body.offsetHeight - 96 + 16, 96 + (window.pageYOffset - 50000)) + "px";
+	if (window.pageYOffset > 46612) {
+		mycar.style.bottom = Math.min(document.body.offsetHeight - 96 + 16, 96 + (window.pageYOffset - 46612)) + "px";
 		main.km = 22445;
 	}
 	else {
@@ -297,7 +303,8 @@ main.days = days;
 
 
 setTimeout(function() {
-	window.scroll(0, 50000);
+	window.scroll(0, 46612);
+	window.onscroll();
 })
 
 </script>
