@@ -161,6 +161,7 @@ section.todo .box h1 {
   grid-column-start: 4;
   grid-column-end: -2;
   margin-left: 12px;
+  position: relative;
 }
 section.todo .box p {
   text-align: right;
@@ -348,4 +349,11 @@ section.logs section.line {
 .tip h1 {
   font-size: 18px;
   margin-bottom: 12px;
+}
+.unknown {
+  position: absolute;
+  color: #777;
+  top: -4px;
+  right: -6px;
+  font-size: 7px;
 }
