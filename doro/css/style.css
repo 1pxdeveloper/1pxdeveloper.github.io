@@ -173,25 +173,27 @@ section.todo[new] h1 {
 section.log {
   position: relative;
   grid-template-rows: 32px 32px minmax(50px, auto);
-  margin: 40px 0 60px;
 }
-section.log .icon > div {
-  background: #353535;
-  border-radius: 50%;
+section.log .icon {
+  grid-column-start: 1;
+  grid-column-end: 3;
 }
 section.log .box {
-  border-radius: 8px 0 0 0;
+  border-radius: 0 0 0 0;
 }
 section.log .body {
   background: #2f2f2f;
   grid-column-start: 4;
   grid-column-end: -1;
-  padding: 32px 24px;
+  padding: 16px 24px;
   font-size: 12px;
   border-radius: 0 0 0 8px;
 }
+section.log .body h1 {
+  font-size: 16px;
+}
 section.log .memo {
-  margin-top: 64px;
+  margin-top: 16px;
   opacity: 0.5;
 }
 section.current-line {
@@ -268,14 +270,25 @@ section.logs {
   bottom: 0;
   background: #222;
 }
+section.logs section.line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 80px;
+  width: 6px;
+  background: none;
+  border-right: 1px solid #ccc;
+  z-index: 0;
+}
 .day {
   position: relative;
   margin-top: 50px;
 }
 .day h1 {
   position: relative;
-  padding: 13px 64px;
   z-index: 100;
+  text-align: right;
+  font-size: 28px;
 }
 .day h1 span {
   background: #222;

@@ -166,29 +166,38 @@ section.todo
 section.log
   position relative
   grid-template-rows 32px 32px minmax(50px, auto)
-  margin 40px 0 60px
+  //margin 40px 0 60px
 
   .icon
-    > div
-      background #353535
-      border-radius 50%
+    grid-column-start 1
+    grid-column-end 3
+
+  //  //> div
+  //  //  background #353535
+  //  //  border-radius 50%
 
 
   .box
-    border-radius 8px 0 0 0
+    border-radius 0 0 0 0
 
 
   .body
     background #2f2f2f
     grid-column-start 4
     grid-column-end -1
-    padding 32px 24px
+    padding 16px 24px
     font-size 12px
     border-radius 0 0 0 8px
 
+    h1
+      font-size 16px
+
   .memo
-    margin-top 64px
+    margin-top 16px
     opacity 0.5
+
+
+
 
 section.current-line
   position absolute
@@ -264,6 +273,16 @@ section.logs
   bottom 0
   background #222
 
+  section.line
+    position absolute
+    top 0
+    bottom 0
+    left 80px
+    width 6px
+    background none
+    border-right: 1px solid #ccc;
+    z-index 0
+
 
 .day
   position relative
@@ -271,8 +290,10 @@ section.logs
 
   h1
     position relative
-    padding 13px 64px
+    //padding 13px 64px
     z-index 100
+    text-align right
+    font-size 28px
 
     span
       background #222
