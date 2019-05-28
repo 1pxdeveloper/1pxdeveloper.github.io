@@ -37,7 +37,7 @@
 					<div flex></div>
 					<p>매 {{ todo[2] | number }}km 마다</p>
 				</div>
-				<div class="km-left">{{ todo.kkkm }}km</div>
+				<div class="km-left" *if="todo.kkkm">{{ todo.kkkm }}km</div>
 			</section>
 		</section>
 
