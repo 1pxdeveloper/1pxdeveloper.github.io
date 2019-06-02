@@ -171,7 +171,7 @@
 		</section>
 
 
-		<section class="logs">
+		<section class="logs" id="logs">
 
 			<div class="wrap">
 				<section class="current-line">
@@ -378,12 +378,12 @@ window.onscroll = function() {
 let days = [];
 let logs = [];
 
-for (let i = 0; i < 6; i++) {
+for (let i = 0; i < 3; i++) {
 	logs.push({});
 	days.push({});
 }
 
-days = days.slice(0, 5);
+days = days.slice(0, 2);
 main.logs = logs;
 main.days = days;
 

@@ -52,7 +52,7 @@ footer {
   background: #20242a url("../imgs/footer.png") no-repeat;
   background-size: contain;
   border-top: 1px solid #ffa500;
-  z-index: 999999;
+  z-index: 999999999;
 }
 ui-scrollview {
   display: flex;
@@ -163,7 +163,7 @@ section.todo .box {
 section.todo .box h1 {
   grid-column-start: 4;
   grid-column-end: -2;
-  margin-left: 12px;
+  margin-left: 8px;
   position: relative;
 }
 section.todo .box p {
@@ -271,13 +271,14 @@ section.logs {
   right: 0;
   top: 60%;
   background: #20242a;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #ffa500;
   z-index: 99999;
+  padding-bottom: 32px;
 }
 section.logs section.line {
   position: absolute;
   top: 380px;
-  bottom: 0;
+  bottom: 32px;
   left: 80px;
   width: 6px;
   background: none;
@@ -317,14 +318,14 @@ section.logs section.line {
   align-items: center;
   flex-wrap: wrap;
   margin: 4px;
+  padding-top: 42px;
 }
 .report h2 {
   border-radius: 20px;
   padding: 10px 20px;
-  background: #999;
   color: #fff;
   position: absolute;
-  top: -18px;
+  top: 0;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -350,7 +351,7 @@ section.logs section.line {
   border: 2px solid #fff;
   right: 8px;
 }
-.tip h1 {
+.tip .box {
   font-size: 18px;
   margin-bottom: 12px;
 }
