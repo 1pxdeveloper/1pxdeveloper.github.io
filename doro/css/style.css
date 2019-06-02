@@ -320,6 +320,7 @@ section.logs section.line {
   flex-wrap: wrap;
   margin: 4px;
   padding-top: 42px;
+  margin-top: 60px;
 }
 .report h2 {
   border-radius: 20px;
@@ -360,7 +361,7 @@ section.logs section.line {
   position: absolute;
   color: #fff;
   top: 0px;
-  left: -18px;
+  left: -15px;
   font-size: 7px;
   z-index: 9999;
   background: #f00;
@@ -391,4 +392,14 @@ section.logs section.line {
   left: -20px;
   border: 2px solid #20242a;
   display: block;
+}
+section.reminder {
+  margin-bottom: 8px;
+}
+section.reminder .box {
+  grid-column-start: 3;
+  background: #ff4500;
+}
+section.reminder .box * {
+  color: #fff !important;
 }
