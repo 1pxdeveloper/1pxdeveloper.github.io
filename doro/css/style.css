@@ -85,13 +85,14 @@ section.line {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 42px;
+  left: 12%;
   width: 6px;
   background-image: linear-gradient(rgba(255,255,255,0.2) 60%, rgba(255,255,255,0) 0%);
   background-position: right;
   background-size: 6px 72px;
   background-repeat: repeat-y;
   z-index: 0;
+  margin-left: -1px;
 }
 section.todo {
   position: absolute;
