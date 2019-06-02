@@ -21,15 +21,12 @@
 
 		define(name, value) {
 			if (this.isDefined(name)) {
-				throw new TypeError(name + " is already defined.");
+				console.warn(name + " is already defined.");
 			}
 
 			this.value[name] = value;
-
 			if (this.queue[name]) {
-				let q = this.queue[name].slice();
-				delete this.queue[name];
-				q.forEach(callback => callback(value));
+				this.queue[name].forEach(callback => callback(value));
 			}
 		}
 	};

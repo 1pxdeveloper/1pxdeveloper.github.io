@@ -11,6 +11,8 @@ $background = #20242a
 *
   //outline 1px solid #4f80ff
   font inherit
+  user-select none
+  -webkit-user-select none
 
 html, body
   height 100%
@@ -201,9 +203,9 @@ section.log
 
 
 section.current-line
-  position absolute
-  bottom 22.08%
-  height 1px
+  position relative
+  //bottom 22.08%
+  height 100px
   left 0
   right 0
   border-top 1px solid orange;
@@ -212,7 +214,7 @@ section.current-line
   .km
     position absolute
     left 0
-    bottom 50%;
+    bottom 100%;
     text-align right
     color orange;
     background $background
@@ -229,7 +231,7 @@ section.current
   height 80px
   left 50%
   transform translateX(-50%)
-  z-index 9999
+  z-index 9999999
   padding-top 16px
 
   section.todo
@@ -270,9 +272,11 @@ section.logs
   position absolute
   left 0
   right 0
-  top 77.92%
-  bottom 0
+  top 60%
+  bottom 30%;
   background $background
+  border-bottom 1px solid #ccc;
+  z-index 99999
 
   section.line
     position absolute
@@ -311,14 +315,15 @@ section.logs
 
 .report
   position relative
-  border-top 2px solid #ccc
-  border-bottom 2px solid #ccc
-  background $background
+  border 2px solid #ccc
+  background blue
+  border-radius 8px
   padding 24px
   text-align center
   z-index 100
   hbox()
   flex-wrap wrap
+  margin 4px
 
   h2
     border-radius 20px
@@ -363,7 +368,7 @@ section.logs
   top: 0px;
   left: -18px;
   font-size: 7px;
-  z-index: 999999;
+  z-index: 9999;
   background: red;
   border-radius: 50%;
   width: 8px;

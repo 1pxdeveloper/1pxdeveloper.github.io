@@ -76,16 +76,12 @@
 					<h1>{{ todo[0] }} <span class="unknown">?</span>
 					</h1>
 					<div flex></div>
-					<p>매 {{ todo[2] }}km</p>
+					<p>{{ todo[2] }}km 마다</p>
 				</div>
-				<div class="km-left" *if="todo.kkkm">{{ todo.kkkm }}km</div>
+				<div class="km-left">&nbsp;<span *if="todo.kkkm">{{ todo.kkkm }}km</span>&nbsp;</div>
 			</section>
 		</section>
 
-
-		<!--<section class="current-line">-->
-		<!--<div class="km">TODAY</div>-->
-		<!--</section>-->
 
 
 		<section class="current" id="mycar">
@@ -177,6 +173,11 @@
 
 
 		<section class="logs">
+
+			<section class="current-line">
+				<div class="km">TODAY</div>
+			</section>
+
 
 			<section class="report">
 				<h2>2월 통계</h2>
@@ -325,7 +326,6 @@ todos.forEach(todo => {
 	for (let i = 0; i < 10; i++) {
 		let _todo = todo.slice();
 		_todo[2] = +_todo[1];
-		_todo[1] = +_todo[1];
 		_todo[1] = +_todo[1] * i;
 		t.push(_todo);
 	}
@@ -343,8 +343,9 @@ todos.forEach(todo => {
 	}
 
 	while (pos[km]) {
-		km += 50;
+		km += 55;
 	}
+
 	pos[km] = km;
 	todo[4] = km;
 });
@@ -359,15 +360,15 @@ $compile(main);
 let mycar = document.getElementById("mycar");
 
 window.onscroll = function() {
-	main.km = Math.round((1 - (window.pageYOffset - 150) / (document.body.scrollHeight - document.body.offsetHeight)) * 100000);
+	main.km = Math.round((1 - (window.pageYOffset - 96) / (document.body.scrollHeight - document.body.offsetHeight)) * 100000);
 
-	if (window.pageYOffset > 42773) {
-		mycar.style.bottom = Math.min(document.body.offsetHeight - 75, 75 + (window.pageYOffset - 42773)) + "px";
-		// main.km = 22445;
-	}
-	else {
-		mycar.style.bottom = 92 + "px";
-	}
+	// if (window.pageYOffset > 42773) {
+	// 	mycar.style.bottom = Math.min(document.body.offsetHeight - 75, 75 + (window.pageYOffset - 42773)) + "px";
+	// 	// main.km = 22445;
+	// }
+	// else {
+	// 	mycar.style.bottom = 92 + "px";
+	// }
 };
 
 
@@ -385,7 +386,7 @@ main.days = days;
 
 
 setTimeout(function() {
-	// window.scroll(0, 60000);
+	// window.scroll(0, 20000);
 	// window.onscroll();
 })
 

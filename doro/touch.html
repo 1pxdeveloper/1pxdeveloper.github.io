@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf8">
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<title>Touch</title>
+	<link rel="stylesheet" href="css/style.css"/>
+	<script src="../libs/1px.js"></script>
+</head>
+<body>
+
+
+<script type="module">
+
+
+
+function pan(el) {
+
+	return new Observable(observer => {
+
+		el.addEventListener("mousedown", start, true);
+		el.addEventListener("touchstart", start, true);
+
+		function start(event) {
+			window.addEventListener("mousemove", handler, true);
+			window.addEventListener("mouseup", handler, true);
+
+			window.addEventListener("touchmove", handler, true);
+			window.addEventListener("touchend", handler, true);
+			window.addEventListener("touchcancel", handler, true);
+
+			observer.next(event);
+		}
+
+		function handler(event) {
+			observer.next(event);
+		}
+
+		return function() {
+			el.removeEventListener("mousedown", start);
+			window.removeEventListener("mousemove", handler);
+			window.removeEventListener("mouseup", handler);
+			window.removeEventListener("click", handler);
+		}
+	})
+}
+
+
+pan(document.body).subscribe(event => {
+
+
+	console.log(event);
+})
+
+
+
+
+
+
+</script>
+
+
+</body>
+</html>
