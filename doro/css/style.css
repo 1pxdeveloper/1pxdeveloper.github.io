@@ -202,7 +202,7 @@ section.log .memo {
 }
 section.current-line {
   position: relative;
-  height: 100px;
+  height: 60px;
   left: 0;
   right: 0;
   border-top: 1px solid #ffa500;
@@ -270,14 +270,14 @@ section.logs {
   left: 0;
   right: 0;
   top: 60%;
-  bottom: 30%;
+  bottom: 30.6%;
   background: #20242a;
   border-bottom: 1px solid #ccc;
   z-index: 99999;
 }
 section.logs section.line {
   position: absolute;
-  top: 0;
+  top: 380px;
   bottom: 0;
   left: 80px;
   width: 6px;
