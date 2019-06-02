@@ -141,6 +141,7 @@ section.todo
 
   .box
     //display contents
+    position relative
     hbox()
     grid-column-start 4
     grid-column-end -1
@@ -388,3 +389,14 @@ section.logs
   left: 12px;
   font-size: 30px;
   line-height: 40px;
+
+
+.circle
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  background: red;
+  border-radius: 100%;
+  left: -20px;
+  border: 2px solid $background;
+  display: block;
