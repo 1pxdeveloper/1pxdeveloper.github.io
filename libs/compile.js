@@ -445,8 +445,6 @@ $module.directive("*if", function() {
 		let placeholder = document.createComment("if: " + script);
 		el._ifScript = placeholder._ifScript = script;
 
-		console.log("ifffffff", context, el, script);
-
 		context.watch$(script, function(bool) {
 
 			if (bool) {

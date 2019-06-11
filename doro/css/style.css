@@ -48,8 +48,8 @@ footer {
   left: 50%;
   transform: translateX(-50%);
   bottom: 0;
-  height: 96px;
-  background: #20242a url("../imgs/footer.png") no-repeat;
+  height: 72px;
+  background: #20242a url("../imgs/footer.png") no-repeat center center;
   background-size: contain;
   border-top: 1px solid #ffa500;
   z-index: 999999999;
@@ -85,67 +85,39 @@ section.line {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 12%;
-  width: 6px;
-  background-image: linear-gradient(rgba(255,255,255,0.2) 60%, rgba(255,255,255,0) 0%);
+  left: 72px;
+  width: 4px;
+  background-image: linear-gradient(#ffa500 60%, rgba(255,255,255,0) 0%);
   background-position: right;
   background-size: 6px 72px;
   background-repeat: repeat-y;
   z-index: 0;
-  margin-left: -1px;
+  margin-left: -2px;
 }
 section.todo {
   position: absolute;
   display: grid;
-  grid-template-columns: repeat(4, 24px 1fr 24px);
+  grid-template-columns: 72px repeat(4, 16px 1fr 16px);
   grid-template-rows: auto;
   left: 0;
   right: 0;
 }
 section.todo .icon {
-  grid-column-start: 2;
-  grid-column-end: 3;
-}
-section.todo .icon > div {
-  width: 40px;
-  margin: auto;
-  position: relative;
-  white-space: nowrap;
-  text-align: center;
-}
-section.todo .icon > div:before {
-  content: " ";
-  display: block;
-  padding-top: 100%;
-}
-section.todo .icon > div > div {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-section.todo .icon > div > svg {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate3d(-50%, -50%, 0);
-}
-section.todo .date {
-  grid-column-start: 4;
-  grid-column-end: 8;
-}
-section.todo .km {
-  grid-column-start: -5;
-  grid-column-end: -2;
-  text-align: right;
+  grid-column-start: 1;
+  grid-column-end: 2;
 }
 section.todo .km-left {
   grid-column-start: 1;
-  grid-column-end: 4;
+  grid-column-end: 2;
+  text-align: center;
+  position: relative;
+  border-bottom: 2px solid #fff;
+}
+section.todo .km-left span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   text-align: center;
 }
 section.todo .box {
@@ -153,17 +125,17 @@ section.todo .box {
   display: flex;
   flex-direction: row;
   align-items: center;
-  grid-column-start: 4;
+  grid-column-start: 3;
   grid-column-end: -1;
   padding: 12px 24px 12px 12px;
   background: #353535;
   border-radius: 8px 0 0 8px;
   color: #fff;
-  font-size: 12px;
+  font-size: 14px;
+  min-height: 48px;
 }
 section.todo .box h1 {
-  grid-column-start: 4;
-  grid-column-end: -2;
+  flex: 1;
   margin-left: 8px;
   position: relative;
 }
@@ -177,21 +149,30 @@ section.todo[new] h1 {
 }
 section.log {
   position: relative;
-  grid-template-rows: 32px 32px minmax(50px, auto);
+  margin-bottom: 24px;
 }
 section.log .icon {
   grid-column-start: 1;
-  grid-column-end: 3;
+  grid-column-end: 2;
+}
+section.log .km {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  text-align: center;
+  display: flex;
+}
+section.log .km >div {
+  margin: auto;
 }
 section.log .box {
   border-radius: 0 0 0 0;
 }
 section.log .body {
   background: #2f2f2f;
-  grid-column-start: 4;
+  grid-column-start: 3;
   grid-column-end: -1;
   padding: 16px 24px;
-  font-size: 12px;
+  font-size: 14px;
   border-radius: 0 0 0 8px;
 }
 section.log .body h1 {
@@ -213,24 +194,52 @@ section.current-line .km {
   position: absolute;
   left: 0;
   bottom: 100%;
-  text-align: right;
   color: #ffa500;
   background: #20242a;
-  padding: 8px;
   height: 24px;
-  margin-bottom: -6px;
-  margin-left: 12px;
+  line-height: 24px;
+  margin-bottom: 1px;
   white-space: nowrap;
+  width: 74px;
+  text-align: center;
 }
 section.current {
   position: fixed;
-  bottom: 96px;
+  bottom: 72px;
   width: 400px;
   height: 80px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999999;
   padding-top: 16px;
+}
+section.current .icon > div {
+  width: 40px;
+  margin: auto;
+  position: relative;
+  white-space: nowrap;
+  text-align: center;
+}
+section.current .icon > div:before {
+  content: " ";
+  display: block;
+  padding-top: 100%;
+}
+section.current .icon > div > div {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+section.current .icon > div > svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate3d(-50%, -50%, 0);
 }
 section.current section.todo {
   grid-template-rows: auto;
@@ -239,9 +248,13 @@ section.current section.todo .box {
   position: relative;
   background-color: #fff;
   color: #000;
-  grid-column-start: 4;
-  grid-column-end: -3;
+  grid-column-start: 3;
+  grid-column-end: -2;
   border-radius: 8px;
+}
+section.current section.todo .box h1 {
+  margin-right: 24px;
+  border-right: 1px solid #000;
 }
 section.current section.todo .box .tri {
   position: absolute;
@@ -272,7 +285,7 @@ section.logs {
   right: 0;
   top: 60%;
   background: #20242a;
-  border-bottom: 1px solid #ffa500;
+  border-bottom: 1px solid #ccc;
   z-index: 99999;
   padding-bottom: 32px;
 }
@@ -280,11 +293,11 @@ section.logs section.line {
   position: absolute;
   top: 380px;
   bottom: 32px;
-  left: 80px;
-  width: 6px;
-  background: none;
-  border-right: 1px solid #ccc;
+  left: 72px;
+  width: 4px;
+  background: #ccc;
   z-index: 0;
+  margin-left: -2px;
 }
 .day {
   position: relative;
@@ -309,7 +322,7 @@ section.logs section.line {
 .report {
   position: relative;
   border: 2px solid #ccc;
-  background: #00f;
+  background: #3244bd;
   border-radius: 8px;
   padding: 24px;
   text-align: center;
@@ -319,24 +332,25 @@ section.logs section.line {
   align-items: center;
   flex-wrap: wrap;
   margin: 4px;
-  padding-top: 42px;
+  padding-top: 64px;
   margin-top: 60px;
 }
 .report h2 {
   border-radius: 20px;
-  padding: 10px 20px;
+  padding: 16px 24px;
   color: #fff;
   position: absolute;
-  top: 0;
+  top: 8px;
   left: 50%;
   transform: translateX(-50%);
+  font-size: 18px;
 }
 .report >section {
   width: 33.33%;
   margin: 16px 0;
 }
 .report >section h1 {
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 12px;
   color: #ccc;
 }
@@ -348,12 +362,12 @@ section.logs section.line {
   position: absolute;
   background: #5ab75f;
   padding: 20px;
-  left: 80px;
+  left: 88px;
   border-radius: 16px;
   border: 2px solid #fff;
   right: 8px;
 }
-.tip .box {
+.tip h1 {
   font-size: 18px;
   margin-bottom: 12px;
 }
@@ -371,35 +385,47 @@ section.logs section.line {
   text-align: center;
 }
 .add {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   background: #fff;
   border-radius: 50%;
   color: #000;
   text-align: center;
-  position: relative;
-  top: 2px;
-  left: 12px;
+  position: absolute;
+  top: 0;
+  right: 0;
   font-size: 30px;
-  line-height: 40px;
+  line-height: 48px;
 }
 .circle {
-  width: 10px;
-  height: 10px;
+  width: 20px;
+  height: 20px;
   position: absolute;
   background: #f00;
   border-radius: 100%;
-  left: -20px;
-  border: 2px solid #20242a;
+  left: -26px;
+  border: 4px solid #20242a;
   display: block;
+}
+.circle.orange {
+  background: #ffa500;
+}
+.circle.blue {
+  background: #3244bd;
 }
 section.reminder {
   margin-bottom: 8px;
 }
 section.reminder .box {
-  grid-column-start: 3;
+  grid-column-start: 1;
   background: #ff4500;
+  margin-left: 48px;
 }
 section.reminder .box * {
   color: #fff !important;
+}
+[hbox] {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
