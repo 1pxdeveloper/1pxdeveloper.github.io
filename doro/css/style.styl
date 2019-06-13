@@ -103,8 +103,18 @@ section.todo
   right 0
 
   .icon
+    position relative
     grid-column-start 1
     grid-column-end 2
+
+    .cur-km
+      position absolute
+      color orange
+      left 0
+      right 0
+      bottom 100%
+      text-align center
+
 
   .km-left
     grid-column-start 1
@@ -285,7 +295,7 @@ section.logs
   top 60%
   background $background
   border-bottom 1px solid #ccc;
-  z-index 99999
+  z-index 9999999
   padding-bottom 32px
 
   section.line
@@ -434,3 +444,5 @@ section.reminder
 
 [hbox]
   hbox()
+
+
