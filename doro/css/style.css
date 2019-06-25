@@ -140,7 +140,7 @@ section.todo .box {
   border-radius: 8px 0 0 8px;
   color: #fff;
   font-size: 14px;
-  min-height: 48px;
+  min-height: 32px;
 }
 section.todo .box h1 {
   flex: 1;
@@ -168,6 +168,7 @@ section.log .km {
   grid-column-end: 2;
   text-align: center;
   display: flex;
+  font-size: 11px;
 }
 section.log .km >div {
   margin: auto;
@@ -179,16 +180,18 @@ section.log .body {
   background: #2f2f2f;
   grid-column-start: 3;
   grid-column-end: -1;
-  padding: 16px 24px;
+  padding: 12px 24px;
   font-size: 14px;
   border-radius: 0 0 0 8px;
 }
 section.log .body h1 {
-  font-size: 16px;
+  font-size: 14px;
+  color: #999;
 }
 section.log .memo {
   margin-top: 16px;
   opacity: 0.5;
+  display: none;
 }
 section.current-line {
   position: relative;
@@ -218,7 +221,7 @@ section.current {
   height: 80px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9999999;
+  z-index: 999999999;
   padding-top: 16px;
 }
 section.current .icon > div {
@@ -292,7 +295,6 @@ section.logs {
   left: 0;
   right: 0;
   top: 60%;
-  background: #20242a;
   border-bottom: 1px solid #ccc;
   z-index: 9999999;
   padding-bottom: 32px;
@@ -395,7 +397,6 @@ section.logs section.line {
 .add {
   width: 48px;
   height: 48px;
-  background: #fff;
   border-radius: 50%;
   color: #000;
   text-align: center;

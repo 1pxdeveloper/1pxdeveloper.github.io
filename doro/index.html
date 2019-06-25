@@ -312,6 +312,30 @@
 					</section>
 
 
+
+					<section class="todo log">
+						<div class="km">
+							<div>{{ 21200 - index*158 }}km</div>
+						</div>
+						<div class="box">
+							<span class="circle orange"></span>
+							<h1>운행 25km</h1>
+							<div flex></div>
+							<p>50,000원</p>
+						</div>
+						<div class="body">
+							<div hbox>
+								<h1>서울시 강남구 논현동</h1>
+								<p flex><br></p>
+								<p>10:20</p>
+							</div>
+							<p class="memo">메모</p>
+						</div>
+					</section>
+
+
+
+
 				</section>
 
 			</div>
@@ -479,12 +503,12 @@ window.onscroll = function() {
 let days = [];
 let logs = [];
 
-for (let i = 0; i < 3; i++) {
+for (let i = 0; i < 7; i++) {
 	logs.push({});
 	days.push({});
 }
 
-days = days.slice(0, 2);
+days = days.slice(0, 10);
 main.logs = logs;
 main.days = days;
 
