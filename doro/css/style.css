@@ -298,6 +298,7 @@ section.logs {
   border-bottom: 1px solid #ccc;
   z-index: 9999999;
   padding-bottom: 32px;
+  background: #20242a;
 }
 section.logs section.line {
   position: absolute;
