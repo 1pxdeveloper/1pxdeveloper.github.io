@@ -8,15 +8,19 @@
 	window.require = (path) => exports;
 
 	[
-		"module.js",
+		"utils.js",
 		"observable.js",
+		"1px.module.js",
 		"parse.js",
 		"compile.js",
+		"directives.js",
 		"component.js",
-		"util.js",
-		"import.js"
+		"batch.js",
+		"1px.touch.js",
+		// "import.js"
+
 	].forEach(src => {
 		document.write(`<script src="${pref}${src}"></script>`);
 	});
+	
 })();
-
