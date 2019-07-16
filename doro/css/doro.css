@@ -1,0 +1,211 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+* {
+  font: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+}
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+html {
+  background: #f0f0f0;
+}
+body {
+  font-family: "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  color: #000;
+}
+body {
+  position: relative;
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  background: #262b35;
+  margin: auto;
+  width: 400px;
+}
+[flex],
+flex {
+  flex: 1;
+}
+ui-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 72px;
+  background: linear-gradient(to right, #76cec9, #7ed892);
+  color: #fff;
+}
+ui-header h1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 25%;
+}
+ui-header h1 img {
+  display: block;
+  width: 62%;
+  margin: auto;
+}
+ui-scrollview {
+  position: relative;
+  background: #262b35;
+  flex: 1;
+  overflow: scroll;
+}
+ui-content {
+  position: relative;
+  display: block;
+  padding-bottom: 20%;
+}
+ui-doro {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 25%;
+}
+ui-doro ui-line {
+  position: absolute;
+  top: 0%;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  background-image: linear-gradient(#e6b34c 38%, rgba(255,255,255,0) 0%);
+  background-position: right;
+  background-size: 6px 72px;
+  background-repeat: repeat-y;
+  z-index: 0;
+  margin-left: -2px;
+}
+doro-reminder-item {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 300px 0;
+}
+doro-reminder-item .km {
+  width: 25%;
+  text-align: center;
+  color: #e6b34c;
+  background: #262b35;
+  font-weight: bold;
+}
+doro-reminder-item .items {
+  flex: 1;
+}
+doro-reminder-item .items section {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: #fff;
+  border-radius: 6px 0 0 6px;
+  overflow: hidden;
+  min-height: 100px;
+  margin: 8px 0;
+}
+doro-reminder-item .items section .icon {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 40px;
+  height: 100px;
+  background: linear-gradient(#76cec9, #7ed892);
+}
+doro-reminder-item .items section .icon img {
+  display: block;
+  margin: auto;
+  width: 60%;
+}
+doro-reminder-item .items section article {
+  display: block;
+  padding: 1em;
+}
+doro-reminder-item .items section article h1 {
+  font-weight: bold;
+  margin-bottom: 2em;
+}
+doro-reminder-item .items section article h2 {
+  font-size: 0.8em;
+  text-align: right;
+  color: #999;
+}
+ui-float-button {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #e6b34c;
+  margin-right: -10%;
+  margin-bottom: -10%;
+}
+.current-line {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #e6b34c;
+  color: #e6b34c;
+}
+.current-line span {
+  display: block;
+  background: #262b35;
+  position: relative;
+  top: -9px;
+  width: 25%;
+  text-align: center;
+}
+.doro-car {
+  display: block;
+  position: absolute;
+  bottom: 64px;
+  left: 0;
+  right: 0;
+  width: 25%;
+  height: 64px;
+}
+.doro-car .car-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fff;
+  margin: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.doro-car .car-icon img {
+  display: block;
+  width: 50%;
+  margin: auto;
+}
+.tip {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.tip >div {
+  height: 12px;
+  background: #6eadf8;
+}
+.tip img {
+  display: block;
+  width: 100%;
+}
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100%;
+  }
+}
