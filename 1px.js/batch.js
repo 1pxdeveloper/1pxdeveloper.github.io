@@ -21,8 +21,8 @@
 			throw TypeError("name is String..")
 		}
 		
+		WebComponent.template.tagName =
 		block.tagName = name.toLowerCase();
-
 		$module.require(block, component => {
 			window.customElements.define(name, component);
 			delete WebComponent.template.tagName;

@@ -226,6 +226,17 @@
 	};
 	
 	
+	Observable.prototype.concat = function(observable) {
+		return this.pipe(observer => {
+			return {
+				complete() {
+					observable.subscribe(observer);
+				},
+			}
+		});
+	};
+	
+	
 	Observable.prototype.complete = function(fn) {
 		
 		return this.pipe(observer => {
@@ -279,6 +290,23 @@
 		});
 	};
 	
+	
+	Observable.prototype.last = function() {
+		let ret;
+		return this.pipe(observer => {
+			return {
+				next(value) {
+					ret = value;
+				},
+				
+				complete() {
+					observer.next(ret);
+				},
+			}
+		});
+	};
+	
+	
 	Observable.prototype.take = function(num) {
 		
 		let count = 0;
@@ -293,6 +321,25 @@
 			}
 		});
 	};
+	
+	Observable.prototype.takeLast = function(num) {
+		num = num || 1;
+		let res = [];
+		
+		return this.pipe(observer => {
+			return {
+				next(value) {
+					res.push(value);
+					res.slice(-num);
+				},
+				
+				complete() {
+					observer.next(res);
+				},
+			}
+		});
+	};
+	
 	
 	Observable.prototype.takeUntil = function(observable$) {
 		return new Observable(observer => {
@@ -317,7 +364,7 @@
 				
 				complete() {
 					resolve(_value);
-				}
+				},
 			})
 		});
 	};
@@ -378,12 +425,87 @@
 	};
 	
 	
+	Observable.prototype.then = function(resolve, reject) {
+		let lastValue;
+		let s;
+		
+		let self = this;
+		return new Observable(observer => {
+			let x = this.subscribe({
+				next(value) {
+					
+					let res = resolve(value);
+					if (res instanceof Observable) {
+						res.toPromise().then(value => {
+							observer.next(value);
+							observer.complete();
+							
+						});
+						return;
+					}
+					
+					Promise.resolve(res).then(value => {
+						observer.next(value);
+						observer.complete();
+					});
+					
+					
+				},
+				
+				error(error) {
+					// reject(error);
+				},
+				
+				complete() {
+				
+				},
+			});
+			
+			return () => {
+				if (s) s.unsubscribe();
+			}
+		});
+	};
+	
+	
+	Observable.prototype.push = function(...args) {
+		return new Observable(observer => {
+			return this.subscribe({
+				next(value) {
+				
+				},
+				
+				error(error) {
+					// reject(error);
+				},
+				
+				complete() {
+				
+				},
+			});
+			
+			return () => {
+				console.log("cancel");
+				
+				if (s) s.unsubscribe();
+			}
+		});
+	};
+	
+	
 	/// Static
 	function noop() {
 	}
 	
 	Observable.NEVER = new Observable(noop);
 	Observable.empty = () => new Observable(observer => observer.complete());
+	
+	Observable.just = function(value) {
+		return new Observable(observer => {
+			observer.next(value);
+			observer.complete();
+		});
+	};
 	
 	Observable.interval = function(delay) {
 		let i = 0;
@@ -395,7 +517,10 @@
 	
 	Observable.timeout = function(delay) {
 		return new Observable(observer => {
-			let id = setTimeout(() => observer.next(0), delay);
+			let id = setTimeout(() => {
+				observer.next(0);
+				observer.complete();
+			}, delay);
 			return () => clearTimeout(id);
 		});
 	};

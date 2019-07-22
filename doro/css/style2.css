@@ -1,0 +1,467 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+* {
+  font: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+}
+html,
+body {
+  height: 100%;
+}
+html {
+  background: #f0f0f0;
+}
+body {
+  font-family: "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  color: #fff;
+}
+body {
+  position: relative;
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  background: #262b35;
+  margin: auto;
+  width: 400px;
+}
+flex,
+[flex] {
+  flex: 1;
+}
+ui-header {
+  position: fixed;
+  width: 400px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 72px;
+  background: linear-gradient(to right, #76cec9, #7ed892);
+  color: #fff;
+  z-index: 999999999;
+}
+ui-header h1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 25%;
+}
+ui-header h1 img {
+  display: block;
+  width: 62%;
+  margin: auto;
+}
+main {
+  flex: 1;
+}
+main ui-scrollview {
+  height: 8000%;
+  background: #262b35;
+}
+footer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: fixed;
+  width: 400px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  height: 48px;
+  background: #262b35;
+  background-size: contain;
+  z-index: 999999999;
+}
+ui-scrollview {
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  position: relative;
+}
+section.kms {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  text-align: center;
+}
+section.kms h1 {
+  position: absolute;
+  font-size: 54px;
+  font-weight: 600;
+  color: #ccc;
+  opacity: 0.2;
+  left: 0;
+  right: 0;
+  margin-bottom: -70px;
+  text-align: right;
+  letter-spacing: -0.05em;
+  margin-right: 8px;
+}
+section.line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 36px;
+  width: 4px;
+  background-image: linear-gradient(#e6b34c 60%, rgba(255,255,255,0) 0%);
+  background-position: right;
+  background-size: 6px 72px;
+  background-repeat: repeat-y;
+  z-index: 0;
+  margin-left: -2px;
+}
+section.todo {
+  position: absolute;
+  display: grid;
+  grid-template-columns: 72px repeat(4, 16px 1fr 16px);
+  grid-template-rows: auto;
+  left: 0;
+  right: 0;
+}
+section.todo .icon {
+  position: relative;
+  grid-column-start: 1;
+  grid-column-end: 2;
+}
+section.todo .icon .cur-km {
+  position: absolute;
+  color: #e6b34c;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  text-align: center;
+}
+section.todo .km-left {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  text-align: center;
+  position: relative;
+  color: #e6b34c;
+}
+section.todo .km-left span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+section.todo .box {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  grid-column-start: 3;
+  grid-column-end: -1;
+  padding: 12px 24px 12px 12px;
+  background: #fff;
+  border-radius: 8px 0 0 8px;
+  color: #000;
+  font-size: 14px;
+  min-height: 32px;
+}
+section.todo .box h1 {
+  flex: 1;
+  margin-left: 8px;
+  position: relative;
+}
+section.todo .box p {
+  text-align: right;
+  font-size: 10px;
+  color: #999;
+}
+section.todo[new] h1 {
+  color: #e6b34c;
+}
+section.log {
+  position: relative;
+  margin-bottom: 24px;
+}
+section.log .icon {
+  grid-column-start: 1;
+  grid-column-end: 2;
+}
+section.log .km {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  text-align: center;
+  display: flex;
+  font-size: 11px;
+}
+section.log .km > div {
+  margin: auto;
+}
+section.log .box {
+  border-radius: 0 0 0 0;
+}
+section.log .body {
+  background: #2f2f2f;
+  grid-column-start: 3;
+  grid-column-end: -1;
+  padding: 12px 24px;
+  font-size: 14px;
+  border-radius: 0 0 0 8px;
+}
+section.log .body h1 {
+  font-size: 14px;
+  color: #999;
+}
+section.log .memo {
+  margin-top: 16px;
+  opacity: 0.5;
+  display: none;
+}
+section.current-line {
+  position: relative;
+  height: 60px;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #e6b34c;
+  z-index: 9999;
+}
+section.current-line .km {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  color: #e6b34c;
+  background: #262b35;
+  height: 24px;
+  line-height: 24px;
+  margin-bottom: 1px;
+  white-space: nowrap;
+  width: 74px;
+  text-align: center;
+}
+section.current {
+  position: fixed;
+  bottom: 0;
+  width: 400px;
+  height: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999999999;
+  padding-top: 16px;
+}
+section.current .icon > div {
+  width: 40px;
+  margin: auto;
+  position: relative;
+  white-space: nowrap;
+  text-align: center;
+}
+section.current .icon > div:before {
+  content: " ";
+  display: block;
+  padding-top: 100%;
+}
+section.current .icon > div > div {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+section.current .icon > div > svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate3d(-50%, -50%, 0);
+}
+section.current section.todo {
+  grid-template-rows: auto;
+}
+section.current section.todo .box {
+  position: relative;
+  background-color: #fff;
+  color: #000;
+  grid-column-start: 3;
+  grid-column-end: -2;
+  border-radius: 8px;
+}
+section.current section.todo .box h1 {
+  margin-right: 24px;
+  border-right: 1px solid #000;
+}
+section.current section.todo .box .tri {
+  position: absolute;
+  right: 100%;
+}
+.tri {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 8px 4px 0;
+  border-color: transparent #fff transparent transparent;
+}
+@media (max-width: 767px) {
+  html,
+  body {
+    background: #262b35;
+  }
+  body,
+  section.current,
+  section.current-line,
+  footer {
+    width: 100%;
+  }
+}
+section.logs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 60%;
+  border-bottom: 1px solid #ccc;
+  z-index: 9999999;
+  padding-bottom: 32px;
+  background: #262b35;
+}
+section.logs section.line {
+  position: absolute;
+  top: 380px;
+  bottom: 32px;
+  left: 72px;
+  width: 4px;
+  background: #ccc;
+  z-index: 0;
+  margin-left: -2px;
+}
+.day {
+  position: relative;
+  margin-top: 50px;
+}
+.day h1 {
+  position: relative;
+  z-index: 100;
+  text-align: right;
+  font-size: 28px;
+}
+.day h1 span {
+  padding: 13px;
+}
+.day .hline {
+  position: absolute;
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+  top: 50%;
+  left: 0;
+  right: 0;
+}
+.report {
+  position: relative;
+  border: 2px solid #ccc;
+  background: #3244bd;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  z-index: 100;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 4px;
+  padding-top: 64px;
+  margin-top: 60px;
+}
+.report h2 {
+  border-radius: 20px;
+  padding: 16px 24px;
+  color: #fff;
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+}
+.report > section {
+  width: 33.33%;
+  margin: 16px 0;
+}
+.report > section h1 {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #ccc;
+}
+.report > section div {
+  font-size: 18px;
+}
+.tip {
+  bottom: 31%;
+  position: absolute;
+  background: #5ab75f;
+  padding: 20px;
+  left: 88px;
+  border-radius: 16px;
+  border: 2px solid #fff;
+  right: 8px;
+}
+.tip h1 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+.unknown {
+  position: absolute;
+  color: #fff;
+  top: 0px;
+  left: -15px;
+  font-size: 7px;
+  z-index: 9999;
+  background: #f00;
+  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  text-align: center;
+}
+.add {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: #000;
+  text-align: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 30px;
+  line-height: 48px;
+}
+.circle {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  background: #f00;
+  border-radius: 100%;
+  left: -26px;
+  border: 4px solid #262b35;
+  display: block;
+}
+.circle.orange {
+  background: #ffa500;
+}
+.circle.blue {
+  background: #3244bd;
+}
+section.reminder {
+  margin-bottom: 8px;
+}
+section.reminder .box {
+  grid-column-start: 1;
+  background: #ff4500;
+  margin-left: 48px;
+}
+section.reminder .box * {
+  color: #fff !important;
+}
+[hbox] {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
