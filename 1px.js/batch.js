@@ -18,14 +18,30 @@
 	
 	$module.component = function(name, block) {
 		if (!name) {
-			throw TypeError("name is String..")
+			throw TypeError("name must be string.")
 		}
 		
-		WebComponent.template.tagName =
-		block.tagName = name.toLowerCase();
-		$module.require(block, component => {
-			window.customElements.define(name, component);
+		let tagName = name.toLowerCase();
+		block = $module._makeInjectable(block);
+		
+		function preload() {
+			WebComponent.template.tagName = tagName;
+			let ret = block.apply(null, arguments);
 			delete WebComponent.template.tagName;
+			return ret;
+		}
+		
+		preload.$inject = block.$inject;
+		
+		$module.require(preload, component => {
+			if (document.readyState === "complete") {
+				window.customElements.define(name, component);
+			}
+			else {
+				document.addEventListener("DOMContentLoaded", function(event) {
+					window.customElements.define(name, component);
+				});
+			}
 		});
 	};
 	

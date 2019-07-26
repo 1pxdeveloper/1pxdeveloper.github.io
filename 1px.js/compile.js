@@ -264,7 +264,8 @@
 		return el;
 	}
 
-
+	$module.compile = $compile;
+	
 	exports.$compile = $compile;
 })();
 

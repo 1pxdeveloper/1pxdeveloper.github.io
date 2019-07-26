@@ -8,9 +8,9 @@
 	window.require = (path) => exports;
 
 	[
-		"utils.js",
 		"observable.js",
 		"1px.module.js",
+		"utils.js",
 		"parse.js",
 		"compile.js",
 		"directives.js",

@@ -142,6 +142,7 @@
 	$module.service = _makePrefixModuleProvider("service.");
 	$module.pipe = _makePrefixModuleProvider("pipe.");
 	
+	$module._makeInjectable = _makeInjectable;
 	
 	exports.$module = $module;
 })();
