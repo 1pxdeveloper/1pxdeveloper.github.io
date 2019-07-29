@@ -24,7 +24,11 @@ body {
   position: relative;
   background: #fff;
   margin: auto;
-  width: 414px;
+}
+@media (min-width: 1024px) {
+  body {
+    width: 414px;
+  }
 }
 input {
   border: 0;
