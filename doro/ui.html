@@ -10,61 +10,167 @@
 </head>
 
 <body>
-<main grid>
-	<ui-top-app-bar>
-		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-			<defs>
-				<style>
-					.cls-1 {
-						fill: #fff
-					}
 
-					.cls-2 {
-						fill: none
-					}
-				</style>
-			</defs>
-			<g id="baseline-arrow_forward_ios-24px" transform="rotate(180 12 12)">
-				<path id="Path_241" d="M5.88 4.12L13.76 12l-7.88 7.88L8 22l10-10L8 2z" class="cls-1" data-name="Path 241"/>
-				<path id="Path_242" d="M0 0h24v24H0z" class="cls-2" data-name="Path 242"/>
-			</g>
-		</svg>
+<main class="main">
+	<ui-scrollview>
+		<section class="contents">
+			<section class="line"></section>
+			<section class="km-pages" *foreach="arr as r">
+				<div class="space-half-page"></div>
+				<section class="contents">
+					<section class="reminder" *foreach="arr as r">
+						<section>
+							<div class="icon"></div>
+							<h1>엔진플러싱(세정)</h1>
+							<div flex></div>
+							<h2>8000km 마다</h2>
+						</section>
+					</section>
+					<div class="left-kms">60000km</div>
+					<div class="kms">60000km</div>
+				</section>
+			</section>
+		</section>
 
-		<h1>내 정보</h1>
-	</ui-top-app-bar>
+
+		<section class="contents">
+			<div class="space-half-page"></div>
+			<section class="line log"></section>
+			<section class="km-pages" *foreach="arr as r">
+				<section class="contents">
+					<h1 class="date">2019. 08. 14</h1>
+					<section class="contents" *foreach="arr as r">
+						<section class="reminder log">
+							<section>
+								<div class="icon"></div>
+								<h1>주유</h1>
+								<div flex></div>
+								<h2>1250km</h2>
+							</section>
+							<div class="divider"></div>
+							<section>
+								<div class="icon"></div>
+								<h1>논현주유소</h1>
+								<div flex></div>
+								<h2>서울시 강남구 논현동</h2>
+							</section>
+						</section>
+						<div class="left-kms">60000km</div>
+					</section>
+				</section>
+			</section>
+		</section>
 
 
-	<section>
-		<h1 class="title">내 프로필</h1>
-	</section>
+	</ui-scrollview>
 
-	<section class="form">
-		<h2 class="title">이름</h2>
-		<label><input type="text" value="김지홍"></label>
-	</section>
+	<footer class="my-car">
+		<div class="background"></div>
+		<section class="content">
+			<div class="btn-car">
+				<div class="icon-car"></div>
+			</div>
 
-	<section class="form">
-		<h2 class="title">차량번호</h2>
-		<label><input type="text" value="23노 3921"></label>
-		<button>인증완료</button>
-	</section>
+			<h1>59,399Km</h1>
+			<div class="line"></div>
+			<div flex></div>
+			<p>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+					<defs>
+						<style>
+							.cls-1 {
+								opacity: .3
+							}
 
-	<section class="form">
-		<h2 class="title">휴대폰번호</h2>
-		<label><input type="text" value="01027003858"></label>
-		<button>인증완료</button>
-	</section>
+							.cls-2 {
+								fill: none
+							}
 
-	<section class="form">
-		<h2 class="title">이메일</h2>
-		<label><input type="text" value="test@doro.com"></label>
-	</section>
+							.cls-3 {
+								fill: #fff
+							}
+						</style>
+					</defs>
+					<g id="baseline-error_outline-24px" class="cls-1">
+						<path id="Path_1385" d="M0 0h16v16H0z" class="cls-2" data-name="Path 1385"/>
+						<path id="Path_1386" d="M8 10.667h1.333V12H8zm0-5.334h1.333v4H8zM8.66 2a6.667 6.667 0 1 0 6.673 6.667A6.663 6.663 0 0 0 8.66 2zm.007 12A5.333 5.333 0 1 1 14 8.667 5.332 5.332 0 0 1 8.667 14z" class="cls-3" data-name="Path 1386" transform="translate(-.667 -.667)"/>
+					</g>
+				</svg>
 
-	<section class="form">
-		<h2 class="title">비밀번호 변경</h2>
-	</section>
+				<span>위 라인은 당시 차량의 누적 주행거리를 나타냅니다.</span>
+			</p>
+
+			<div class="btn-plus">
+				<div class="icon-plus-h"></div>
+				<div class="icon-plus-v"></div>
+			</div>
+		</section>
+	</footer>
 </main>
 
 
+<!--<main grid-all>-->
+<!--<ui-top-app-bar>-->
+<!--<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">-->
+<!--<defs>-->
+<!--<style>-->
+<!--.cls-1 {-->
+<!--fill: #fff-->
+<!--}-->
+
+<!--.cls-2 {-->
+<!--fill: none-->
+<!--}-->
+<!--</style>-->
+<!--</defs>-->
+<!--<g id="baseline-arrow_forward_ios-24px" transform="rotate(180 12 12)">-->
+<!--<path id="Path_241" d="M5.88 4.12L13.76 12l-7.88 7.88L8 22l10-10L8 2z" class="cls-1" data-name="Path 241"/>-->
+<!--<path id="Path_242" d="M0 0h24v24H0z" class="cls-2" data-name="Path 242"/>-->
+<!--</g>-->
+<!--</svg>-->
+
+<!--<h1>내 정보</h1>-->
+<!--</ui-top-app-bar>-->
+
+
+<!--<section>-->
+<!--<h1 class="title">내 프로필</h1>-->
+<!--</section>-->
+
+<!--<section class="form">-->
+<!--<h2 class="title">이름</h2>-->
+<!--<label><input type="text" value="김지홍"></label>-->
+<!--</section>-->
+
+<!--<section class="form">-->
+<!--<h2 class="title">차량번호</h2>-->
+<!--<label><input type="text" value="23노 3921"></label>-->
+<!--<button>인증완료</button>-->
+<!--</section>-->
+
+<!--<section class="form">-->
+<!--<h2 class="title">휴대폰번호</h2>-->
+<!--<label><input type="text" value="01027003858"></label>-->
+<!--<button>인증완료</button>-->
+<!--</section>-->
+
+<!--<section class="form">-->
+<!--<h2 class="title">이메일</h2>-->
+<!--<label><input type="text" value="test@doro.com"></label>-->
+<!--</section>-->
+
+<!--<section class="form">-->
+<!--<h2 class="title">비밀번호 변경</h2>-->
+<!--</section>-->
+<!--</main>-->
+
+
+<script>
+let app = $module.compile(document.body);
+
+app.arr = Array(8).fill(0);
+
+
+</script>
 </body>
 </html>

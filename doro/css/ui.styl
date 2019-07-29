@@ -17,7 +17,6 @@ $orange = #e6b34c
 
 html, body
   height 100%
-  overflow hidden
 
 html
   background #f0f0f0
@@ -29,14 +28,9 @@ body
 
 body
   position relative
-  vbox()
   background #fff
   margin auto
   width 414px
-
-[flex]
-flex
-  flex 1
 
 input
   border 0
@@ -44,14 +38,212 @@ input
   color inherit
   font inherit
 
+[flex]
+flex
+  flex 1
+
 main
+  vbox()
   position relative
   height 100%
+  overflow hidden
+  
 
 [grid]
+  display grid
+  grid-template-columns repeat(8, 8px 1fr 8px)
+
+[grid-all]
   > *
     display grid
-    grid-template-columns 13px repeat(11, 24px 9px) 24px auto
+    grid-template-columns repeat(8, 8px 1fr 8px)
+
+
+main.main
+  background-color: #202329;
+
+  section.line
+    position absolute
+    top 0
+    bottom 0
+    left 72px
+    width 4px
+    background-image: linear-gradient(orange 50%, rgba(255, 255, 255, 0) 0%);
+    background-position: right;
+    background-size: 6px 72px;
+    background-repeat: repeat-y;
+    z-index 0
+    margin-left -2px
+
+    &.log
+      background #29be9b
+
+
+.space-half-page
+  min-height 75vmax
+
+section.km-pages
+  position relative
+  vbox()
+
+  .kms
+    opacity 0.1
+    color #fff
+    font-size 44px
+    text-align right
+    font-weight bold
+    letter-spacing -2.64px;
+    font-family: Roboto;
+    margin-top -10px
+    position absolute
+    right 0
+    top 100%
+
+  .left-kms
+    position absolute
+    left 0
+    bottom 0
+    font-size 13px
+    color: #ffaa21;
+    text-align center
+    width 72px
+
+  h1.date
+    color #ffffff;
+    text-align right
+    margin-right 10px
+    margin-top 52px
+    font-size 18px
+    font-weight bold
+
+
+section.reminder
+  position relative
+  min-height 55px
+  border-radius 4px
+  box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.27);
+  background-color: #ffffff;
+  margin 10px 0
+  margin-left 90px
+
+  .divider
+    border-bottom 1px solid #ccc
+    margin-left 40px
+
+  > section
+    hbox()
+    min-height 55px
+    padding 0 10px
+    align-items center
+
+  .icon
+    width 20px
+    height 20px
+    margin-right 10px
+
+  h1
+    font-size 14px
+    font-weight bold
+    letter-spacing -0.84px
+    color #2f2f2f
+    grid-column 3 / -1
+
+  h2
+    font-size 12px
+    letter-spacing -0.72px
+    color #2f2f2f
+    opacity 0.3
+    grid-column -2 / -2
+    justify-self end
+
+
+footer.my-car
+  layer()
+  top auto
+  height 116px
+  background linear-gradient(0, #202329, transparent)
+
+  .background
+    layer()
+    filter: blur(12px);
+    background-color: #202329;
+
+  .content
+    layer()
+    vbox()
+    padding-left 72px
+    padding-top 9px
+    padding-bottom 45px
+    color: #fffcfc;
+    height 116px
+
+  h1
+    height 24px
+    font-size 18px
+    font-weight bold
+
+  p
+    hbox()
+    opacity 0.5
+    font-size 12px
+
+    > svg
+      margin-right 5px
+
+  .line
+    position absolute
+    left 51px
+    right 0
+    top 42px
+    height 2px
+    background #fff
+
+  .btn-car
+    position absolute
+    left 0
+    top 0
+    width 72px
+    height 100px
+    background url(../imgs/car2.png) no-repeat center 10px
+    background-size 50% auto
+
+  .btn-plus
+    position absolute
+    right -10px
+    top 9px
+    width 66px
+    height 66px
+    backdrop-filter: blur(15px);
+    box-shadow: 0 1.5px 3px 0 rgba(0, 0, 0, 0.16);
+    background-color: #ffffff;
+    border-radius 50%
+
+    .icon-plus-h
+    .icon-plus-v
+      position absolute
+      margin auto
+      top 50%
+      left 50%
+      transform translate(-50%, -50%)
+      background #ccc
+      width 5px
+      height 5px
+      background-image: linear-gradient(to bottom, #14ffa4, #11cbc4);
+
+    .icon-plus-h
+      height 20px
+
+    .icon-plus-v
+      width 20px
+
+
+section.contents
+  position relative
+
+ui-scrollview
+  position relative
+  display block
+  overflow scroll
 
 
 ui-top-app-bar
@@ -120,5 +312,5 @@ h2.title
     color #45a2ff
 
     justify-self end
-    grid-column -5/auto
+    grid-column -5 / auto
     grid-row 2
