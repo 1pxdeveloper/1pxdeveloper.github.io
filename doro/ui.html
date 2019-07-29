@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width, user-scalable=no">
 	<title>Doro</title>
 
-	<link rel="manifest" href="manifest.json">
+	<!--<link rel="manifest" href="manifest.json">-->
 	<link rel="stylesheet" href="css/ui.css"/>
 	<script src="../1px.js/1px.js"></script>
 </head>
@@ -16,19 +16,19 @@
 	<ui-scrollview id="a">
 		<section class="contents">
 			<section class="line"></section>
-			<section class="km-pages" *foreach="arr2 as r">
+			<section class="km-pages" *foreach="kms as km">
 				<div class="space-half-page"></div>
 				<section class="contents">
-					<section class="reminder" *foreach="arr as r">
+					<section class="reminder" *foreach="km.todos as todo" [class.right]="todo[1] === todo[2]">
 						<section>
 							<div class="icon"></div>
-							<h1>엔진플러싱(세정)</h1>
+							<h1>{{ todo[0] }}</h1>
 							<div flex></div>
-							<h2>8000km 마다</h2>
+							<h2>{{ todo[2] }}km 마다</h2>
 						</section>
 					</section>
-					<div class="left-kms">60000km</div>
-					<div class="kms">60000km</div>
+					<div class="left-kms" [hidden]="!km.todos.length">{{km.km}}km</div>
+					<div class="kms">{{km.km}}km</div>
 				</section>
 			</section>
 
@@ -43,10 +43,11 @@
 			<div style="height: 150px"></div>
 
 			<section class="line log"></section>
+
 			<section class="km-pages" *foreach="arr2 as r">
 				<section class="contents">
 					<h1 class="date">2019. 08. 14</h1>
-					<section class="contents" *foreach="arr as r">
+					<section class="contents">
 						<section class="reminder log">
 							<section>
 								<div class="icon"></div>
@@ -64,6 +65,71 @@
 						</section>
 						<div class="left-kms">60000km</div>
 					</section>
+
+
+					<section class="contents">
+						<section class="reminder log">
+							<section>
+								<div class="icon"></div>
+								<h1>운행</h1>
+								<div flex></div>
+								<h2>25km</h2>
+							</section>
+							<div class="divider"></div>
+							<section>
+								<div class="icon"></div>
+								<h1>집</h1>
+								<div flex></div>
+								<h2>서울시 강남구 논현동</h2>
+							</section>
+						</section>
+						<div class="left-kms">60000km</div>
+					</section>
+
+
+
+					<section class="contents">
+						<section class="reminder log">
+							<section>
+								<div class="icon"></div>
+								<h1>주유</h1>
+								<div flex></div>
+								<h2>1250km</h2>
+							</section>
+							<div class="divider"></div>
+							<section>
+								<div class="icon"></div>
+								<h1>논현주유소</h1>
+								<div flex></div>
+								<h2>서울시 강남구 논현동</h2>
+							</section>
+						</section>
+						<div class="left-kms">60000km</div>
+					</section>
+
+
+					<section class="contents">
+						<section class="reminder log">
+							<section>
+								<div class="icon"></div>
+								<h1>운행</h1>
+								<div flex></div>
+								<h2>25km</h2>
+							</section>
+							<div class="divider"></div>
+							<section>
+								<div class="icon"></div>
+								<h1>집</h1>
+								<div flex></div>
+								<h2>서울시 강남구 논현동</h2>
+							</section>
+						</section>
+						<div class="left-kms">60000km</div>
+					</section>
+
+
+
+
 				</section>
 			</section>
 		</section>
@@ -173,9 +239,82 @@
 
 
 <script>
+let kms = [];
+for (let i = 1; i <= 100; i++) {
+	kms.push({
+		km: i * 1000,
+		todos: []
+	});
+}
+
+
+let todos = [
+	["엔진오일", "10000"],
+	["엔진 플러싱(세정)", "20000"],
+	["점화플러그 & 코일,케이블", "30000"],
+	["리스톤링 및 연소실 세척작업", "30000"],
+	["가열(예열)플러그", "40000"],
+	["흡기라인세척 작업", "30000"],
+	["타이밍밸트", "80000"],
+	["타이밍체인", "200000"],
+	["구동벨트", "40000"],
+	["엔진/밋션 마운팅 ", "100000"],
+	["변속기(미션)오일", "40000"],
+	["디프렌션오일", "40000"],
+	["연료휠터", "30000"],
+	["연료라인/인젝터세정", "30000"],
+	["연료탱크 에어필터", "40000"],
+	["브레이크패드", "30000"],
+	["브레이크오일", "40000"],
+	["브레이크 디스크 연마", "80000"],
+	["부동액", "40000"],
+	["냉각라인 세정", "40000"],
+	["히터&에어컨휠터", "12000"],
+	["에어컨필터", "5000"],
+	["히터클리닉", "5000"],
+	["와이퍼", "8000"],
+	["에어컨 냉매 보충", "10000"],
+	["에어컨 가스 및 냉동유 교환", "40000"],
+	["통풍씨트 휠터", "40000"],
+	["파워스티어링오일", "40000"],
+	["타이어위치교환", "10000"],
+	["휠얼라이먼트", "20000"],
+	["배터리", "60000"],
+];
+
+todos.forEach(todo => {
+	todo[1] = +todo[1];
+});
+todos.sort((a, b) => (a[1] - b[1]));
+
+
+let t = [];
+todos.forEach(todo => {
+	for (let i = 0; i < 10; i++) {
+		let _todo = todo.slice();
+		_todo[2] = +_todo[1];
+		_todo[1] = +_todo[1] * i;
+
+		let index = _todo[1]/1000 -1;
+
+		if (kms[index]) {
+			kms[index].todos.push(_todo);
+		}
+		// t.push(_todo);
+	}
+});
+
+todos = t;
+
+
+kms.reverse();
+
+
 let app = $module.compile(document.body);
 app.arr = Array(8).fill(0);
 app.arr2 = Array(5).fill(0);
+
+app.kms = kms;
 
 
 setTimeout(function() {
