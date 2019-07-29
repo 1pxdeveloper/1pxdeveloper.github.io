@@ -76,7 +76,7 @@ main.main section.line.log {
   background: #29be9b;
 }
 .space-half-page {
-  min-height: 50vmax;
+  min-height: 100vmax;
 }
 .alert-divider {
   background: #fff;
@@ -273,7 +273,7 @@ ui-scrollview {
   position: relative;
   display: block;
   overflow: scroll;
-  overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch;
 }
 ui-top-app-bar {
   height: 80px;
