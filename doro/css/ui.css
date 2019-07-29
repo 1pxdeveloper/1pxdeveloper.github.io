@@ -72,7 +72,7 @@ main.main section.line.log {
   background: #29be9b;
 }
 .space-half-page {
-  min-height: 75vmax;
+  min-height: 50vmax;
 }
 section.km-pages {
   position: relative;

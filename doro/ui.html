@@ -12,10 +12,10 @@
 <body>
 
 <main class="main">
-	<ui-scrollview>
+	<ui-scrollview id="a">
 		<section class="contents">
 			<section class="line"></section>
-			<section class="km-pages" *foreach="arr as r">
+			<section class="km-pages" *foreach="arr2 as r">
 				<div class="space-half-page"></div>
 				<section class="contents">
 					<section class="reminder" *foreach="arr as r">
@@ -36,7 +36,7 @@
 		<section class="contents">
 			<div class="space-half-page"></div>
 			<section class="line log"></section>
-			<section class="km-pages" *foreach="arr as r">
+			<section class="km-pages" *foreach="arr2 as r">
 				<section class="contents">
 					<h1 class="date">2019. 08. 14</h1>
 					<section class="contents" *foreach="arr as r">
@@ -60,7 +60,7 @@
 				</section>
 			</section>
 		</section>
-
+		<div style="height: 116px"></div>
 
 	</ui-scrollview>
 
@@ -167,9 +167,14 @@
 
 <script>
 let app = $module.compile(document.body);
-
 app.arr = Array(8).fill(0);
+app.arr2 = Array(5).fill(0);
 
+
+setTimeout(function() {
+	a = document.getElementById("a");
+	a.scrollTop = 99999999999;
+});
 
 </script>
 </body>
