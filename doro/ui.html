@@ -30,11 +30,17 @@
 					<div class="kms">60000km</div>
 				</section>
 			</section>
+
+			<div style="height: 300px"></div>
 		</section>
 
 
 		<section class="contents">
-			<div class="space-half-page"></div>
+			<section class="alert-divider" id="b">
+				<h1>현재까지 누적 데이터 확인</h1>
+			</section>
+			<div style="height: 150px"></div>
+
 			<section class="line log"></section>
 			<section class="km-pages" *foreach="arr2 as r">
 				<section class="contents">
@@ -172,8 +178,10 @@ app.arr2 = Array(5).fill(0);
 
 
 setTimeout(function() {
-	a = document.getElementById("a");
-	a.scrollTop = 99999999999;
+	let b = document.getElementById("b");
+
+	let a = document.getElementById("a");
+	a.scrollTop = b.getBoundingClientRect().bottom - a.offsetHeight + 120 + 40;
 });
 
 </script>
