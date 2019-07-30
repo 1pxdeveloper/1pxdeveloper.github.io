@@ -65,7 +65,7 @@ main.main section.line {
   bottom: 0;
   left: 72px;
   width: 4px;
-  background-image: linear-gradient(#ffa500 50%, rgba(255,255,255,0) 0%);
+  background-image: linear-gradient(#ffaa21 50%, rgba(255,255,255,0) 0%);
   background-position: right;
   background-size: 6px 72px;
   background-repeat: repeat-y;
@@ -200,7 +200,7 @@ footer.my-car .content {
   flex-flow: column;
   align-items: stretch;
   padding-left: 72px;
-  padding-top: 9px;
+  padding-top: 20px;
   padding-bottom: 45px;
   color: #fffcfc;
   height: 116px;
@@ -209,6 +209,7 @@ footer.my-car h1 {
   height: 24px;
   font-size: 18px;
   font-weight: bold;
+  color: #ffaa21;
 }
 footer.my-car p {
   display: flex;
@@ -222,11 +223,11 @@ footer.my-car p > svg {
 }
 footer.my-car .line {
   position: absolute;
-  left: 51px;
+  left: 72px;
   right: 0;
   top: 42px;
   height: 2px;
-  background: #fff;
+  background: #ffaa21;
 }
 footer.my-car .btn-car {
   position: absolute;
@@ -245,7 +246,7 @@ footer.my-car .btn-plus {
   height: 66px;
   backdrop-filter: blur(15px);
   box-shadow: 0 1.5px 3px 0 rgba(0,0,0,0.16);
-  background-color: #fff;
+  background-color: #ffaa21;
   border-radius: 50%;
 }
 footer.my-car .btn-plus .icon-plus-h,
@@ -255,10 +256,9 @@ footer.my-car .btn-plus .icon-plus-v {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #ccc;
   width: 5px;
   height: 5px;
-  background-image: linear-gradient(to bottom, #14ffa4, #11cbc4);
+  background: #fff;
 }
 footer.my-car .btn-plus .icon-plus-h {
   height: 20px;

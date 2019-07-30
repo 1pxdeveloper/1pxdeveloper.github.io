@@ -2,7 +2,7 @@
 
 $background = #262b35
 $top = 72px
-$orange = #e6b34c
+$orange = #ffaa21
 
 *
   margin 0
@@ -70,7 +70,7 @@ main.main
     bottom 0
     left 72px
     width 4px
-    background-image: linear-gradient(orange 50%, rgba(255, 255, 255, 0) 0%);
+    background-image: linear-gradient($orange 50%, rgba(255, 255, 255, 0) 0%);
     background-position: right;
     background-size: 6px 72px;
     background-repeat: repeat-y;
@@ -119,7 +119,7 @@ section.km-pages
     left 0
     bottom 0
     font-size 13px
-    color: #ffaa21;
+    color: $orange;
     text-align center
     width 72px
 
@@ -143,7 +143,7 @@ section.reminder
   color #2f2f2f
 
   &.right
-    background-image: linear-gradient(to bottom, #ef6837, #ffaa21);
+    background-image: linear-gradient(to bottom, #ef6837, $orange);
     color #fff
 
   .divider
@@ -191,7 +191,7 @@ footer.my-car
     layer()
     vbox()
     padding-left 72px
-    padding-top 9px
+    padding-top 20px
     padding-bottom 45px
     color: #fffcfc;
     height 116px
@@ -200,6 +200,7 @@ footer.my-car
     height 24px
     font-size 18px
     font-weight bold
+    color $orange
 
   p
     hbox()
@@ -211,11 +212,11 @@ footer.my-car
 
   .line
     position absolute
-    left 51px
+    left 72px
     right 0
     top 42px
     height 2px
-    background #fff
+    background $orange
 
   .btn-car
     position absolute
@@ -234,7 +235,8 @@ footer.my-car
     height 66px
     backdrop-filter: blur(15px);
     box-shadow: 0 1.5px 3px 0 rgba(0, 0, 0, 0.16);
-    background-color: #ffffff;
+    //background-color: #ffffff;
+    background-color $orange
     border-radius 50%
 
     .icon-plus-h
@@ -244,10 +246,12 @@ footer.my-car
       top 50%
       left 50%
       transform translate(-50%, -50%)
-      background #ccc
       width 5px
       height 5px
-      background-image: linear-gradient(to bottom, #14ffa4, #11cbc4);
+      background #fff
+
+      //background #ccc
+      //background-image: linear-gradient(to bottom, #14ffa4, #11cbc4);
 
     .icon-plus-h
       height 20px
