@@ -323,7 +323,7 @@ setTimeout(function() {
 	let fix = a.scrollTop = b.getBoundingClientRect().bottom - a.offsetHeight + 120 + 40;
 
 	a.onscroll = function() {
-		app.currentKm = (fix - a.scrollTop);
+		app.currentKm = parseInt(fix - a.scrollTop);
 
 		console.log(app.currentKm);
 	}

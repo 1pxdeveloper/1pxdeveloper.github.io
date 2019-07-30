@@ -178,7 +178,6 @@ footer.my-car {
   bottom: 0;
   top: auto;
   height: 116px;
-  background: linear-gradient(0, #202329, transparent);
   z-index: 9999;
 }
 footer.my-car .background {
