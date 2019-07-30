@@ -199,7 +199,7 @@ footer.my-car .content {
   flex-flow: column;
   align-items: stretch;
   padding-left: 72px;
-  padding-top: 20px;
+  padding-top: 10px;
   padding-bottom: 45px;
   color: #fffcfc;
   height: 116px;
@@ -208,7 +208,7 @@ footer.my-car h1 {
   height: 24px;
   font-size: 18px;
   font-weight: bold;
-  color: #ffaa21;
+  color: #fff;
 }
 footer.my-car p {
   display: flex;
@@ -226,7 +226,7 @@ footer.my-car .line {
   right: 0;
   top: 42px;
   height: 2px;
-  background: #ffaa21;
+  background: #fff;
 }
 footer.my-car .btn-car {
   position: absolute;
@@ -245,7 +245,7 @@ footer.my-car .btn-plus {
   height: 66px;
   backdrop-filter: blur(15px);
   box-shadow: 0 1.5px 3px 0 rgba(0,0,0,0.16);
-  background-color: #ffaa21;
+  background-color: #fff;
   border-radius: 50%;
 }
 footer.my-car .btn-plus .icon-plus-h,
@@ -257,7 +257,7 @@ footer.my-car .btn-plus .icon-plus-v {
   transform: translate(-50%, -50%);
   width: 5px;
   height: 5px;
-  background: #fff;
+  background-image: linear-gradient(to bottom, #14ffa4, #11cbc4);
 }
 footer.my-car .btn-plus .icon-plus-h {
   height: 20px;
