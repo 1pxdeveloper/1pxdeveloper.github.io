@@ -2,7 +2,7 @@
 
 $background = #262b35
 $top = 72px
-$orange = #e6b34c
+$orange = #ffaa21
 
 *
   margin 0
@@ -70,7 +70,7 @@ main.main
     bottom 0
     left 72px
     width 4px
-    background-image: linear-gradient(orange 50%, rgba(255, 255, 255, 0) 0%);
+    background-image: linear-gradient($orange 50%, rgba(255, 255, 255, 0) 0%);
     background-position: right;
     background-size: 6px 72px;
     background-repeat: repeat-y;
@@ -120,7 +120,7 @@ doro-km-page
     left 0
     bottom 0
     font-size 13px
-    color: #ffaa21;
+    color: $orange;
     text-align center
     width 72px
 
@@ -145,7 +145,7 @@ doro-reminder
   color #2f2f2f
 
   &.right
-    background-image: linear-gradient(to bottom, #ef6837, #ffaa21);
+    background-image: linear-gradient(to bottom, #ef6837, $orange);
     color #fff
 
   .divider
@@ -181,7 +181,7 @@ footer.my-car
   layer()
   top auto
   height 116px
-  background linear-gradient(0, #202329, transparent)
+  //background linear-gradient(0, #202329, transparent)
   z-index 9999
 
   .background
@@ -193,7 +193,7 @@ footer.my-car
     layer()
     vbox()
     padding-left 72px
-    padding-top 9px
+    padding-top 10px
     padding-bottom 45px
     color: #fffcfc;
     height 116px
@@ -202,6 +202,7 @@ footer.my-car
     height 24px
     font-size 18px
     font-weight bold
+    color #fff
 
   p
     hbox()
@@ -237,6 +238,7 @@ footer.my-car
     backdrop-filter: blur(15px);
     box-shadow: 0 1.5px 3px 0 rgba(0, 0, 0, 0.16);
     background-color: #ffffff;
+    //background-color $orange
     border-radius 50%
 
     .icon-plus-h
@@ -246,9 +248,9 @@ footer.my-car
       top 50%
       left 50%
       transform translate(-50%, -50%)
-      background #ccc
       width 5px
       height 5px
+      //background #fff
       background-image: linear-gradient(to bottom, #14ffa4, #11cbc4);
 
     .icon-plus-h

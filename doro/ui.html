@@ -126,7 +126,7 @@
 				<div class="icon-car"></div>
 			</div>
 
-			<h1>59,399Km</h1>
+			<h1>{{ currentKm }}Km</h1>
 			<div class="line"></div>
 			<div flex></div>
 			<p>
@@ -336,9 +336,14 @@ app.kms = kms;
 
 setTimeout(function() {
 	let b = document.getElementById("b");
-
 	let a = document.getElementById("a");
-	a.scrollTop = b.getBoundingClientRect().bottom - a.offsetHeight + 120 + 40;
+	let fix = a.scrollTop = b.getBoundingClientRect().bottom - a.offsetHeight + 120 + 40;
+
+	a.onscroll = function() {
+		app.currentKm = parseInt(fix - a.scrollTop);
+
+		console.log(app.currentKm);
+	}
 });
 
 </script>
