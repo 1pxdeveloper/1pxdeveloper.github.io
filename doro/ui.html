@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=414, user-scalable=no">
 	<title>Doro</title>
 
-	<link rel="manifest" href="manifest.json">
+	<!--<link rel="manifest" href="manifest.json">-->
 	<link rel="stylesheet" href="css/ui.css"/>
 	<script src="../1px.js/1px.js"></script>
 </head>
@@ -16,22 +16,7 @@
 	<ui-scrollview id="a">
 		<section class="contents">
 			<section class="line"></section>
-			<section class="km-pages" *foreach="kms as km">
-				<div class="space-half-page"></div>
-				<section class="contents">
-					<section class="reminder" *foreach="km.todos as todo" [class.right]="todo[1] === todo[2]">
-						<section>
-							<div class="icon"></div>
-							<h1>{{ todo[0] }}</h1>
-							<div flex></div>
-							<h2>{{ todo[2] }}km 마다</h2>
-						</section>
-					</section>
-					<div class="left-kms" [hidden]="!km.todos.length">{{km.km}}km</div>
-					<div class="kms">{{km.km}}km</div>
-				</section>
-			</section>
-
+			<doro-km-page class="km-pages" *foreach="kms as km" [km]="km"></doro-km-page>
 			<div style="height: 300px"></div>
 		</section>
 
@@ -87,7 +72,6 @@
 					</section>
 
 
-
 					<section class="contents">
 						<section class="reminder log">
 							<section>
@@ -126,8 +110,6 @@
 						</section>
 						<div class="left-kms">60000km</div>
 					</section>
-
-
 
 
 				</section>
@@ -239,6 +221,41 @@
 
 
 <script>
+$module.component("doro-km-page", function(WebComponent) {
+
+	//language=HTML
+	WebComponent.template`
+		<template class="reminder">
+			<div class="space-half-page"></div>
+			<section class="contents">
+				<doro-reminder *foreach="km.todos as todo" [todo]="todo"></doro-reminder>
+				<div class="left-kms" [hidden]="!km.todos.length">{{km.km}}km</div>
+				<div class="kms">{{km.km}}km</div>
+			</section>
+		</template>
+	`
+})
+
+$module.component("doro-reminder", function(WebComponent) {
+
+	//language=HTML
+	WebComponent.template`
+		<template class="reminder" [class.right]="todo[1] === todo[2]">
+			<section>
+				<div class="icon"></div>
+				<h1>{{ todo[0] }}</h1>
+				<div flex></div>
+				<h2>{{ todo[2] }}km 마다</h2>
+			</section>
+		</template>
+	`
+})
+
+
+</script>
+
+
+<script>
 let kms = [];
 for (let i = 1; i <= 100; i++) {
 	kms.push({
@@ -295,7 +312,7 @@ todos.forEach(todo => {
 		_todo[2] = +_todo[1];
 		_todo[1] = +_todo[1] * i;
 
-		let index = _todo[1]/1000 -1;
+		let index = _todo[1] / 1000 - 1;
 
 		if (kms[index]) {
 			kms[index].todos.push(_todo);

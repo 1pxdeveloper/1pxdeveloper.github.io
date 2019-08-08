@@ -10,11 +10,14 @@
 		/// @TODO: template 연동은 임시..
 		static template() {
 			let html = String.raw(...arguments);
-			let wrap = document.createElement("body");
+			let wrap = document.createElement("template");
 			wrap.innerHTML = html;
 			
-			$$templates[WebComponent.template.tagName] = wrap.getElementsByTagName("template")[0];
-			console.log(WebComponent.template.tagName, $$templates[WebComponent.template.tagName])
+			let template = wrap.content.querySelector("template") || wrap;
+			$$templates[WebComponent.template.tagName] = template;
+			console.log(WebComponent.template.tagName, $$templates[WebComponent.template.tagName]);
+			
+			return template;
 		}
 		
 		static templateSelector(selector) {
@@ -28,13 +31,24 @@
 		}
 		
 		connectedCallback() {
-			console.log(this.outerHTML, this.innerHTML);
-
 			this.$$originalContent = Array.from(this.childNodes);
-			
-			
+
 			let context = JSContext.connect(this);
 			let template = $$templates[this.tagName.toLowerCase()];
+
+			/// inline-template 기능
+			if (this.hasAttribute("inline-template")) {
+				template = document.createElement("template");
+				template.innerHTML = this.innerHTML;
+				for (let attr of this.attributes) {
+					template.setAttributeNode(attr.cloneNode(true));
+				}
+			}
+			
+			/// template 상속
+			else if (!template && this.constructor.$template) {
+				template = this.constructor.$template;
+			}
 			
 			if (template) {
 				template = template.cloneNode(true);

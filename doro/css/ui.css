@@ -90,13 +90,14 @@ main.main section.line.log {
   position: relative;
   z-index: 1;
 }
-section.km-pages {
+doro-km-page {
+  display: block;
   position: relative;
   display: flex;
   flex-flow: column;
   align-items: stretch;
 }
-section.km-pages .kms {
+doro-km-page .kms {
   opacity: 0.1;
   color: #fff;
   font-size: 44px;
@@ -109,7 +110,7 @@ section.km-pages .kms {
   right: 0;
   top: 100%;
 }
-section.km-pages .left-kms {
+doro-km-page .left-kms {
   position: absolute;
   left: 0;
   bottom: 0;
@@ -118,7 +119,7 @@ section.km-pages .left-kms {
   text-align: center;
   width: 72px;
 }
-section.km-pages h1.date {
+doro-km-page h1.date {
   color: #fff;
   text-align: right;
   margin-right: 10px;
@@ -126,7 +127,8 @@ section.km-pages h1.date {
   font-size: 18px;
   font-weight: bold;
 }
-section.reminder {
+doro-reminder {
+  display: block;
   position: relative;
   min-height: 55px;
   border-radius: 4px;
@@ -136,15 +138,15 @@ section.reminder {
   margin-left: 90px;
   color: #2f2f2f;
 }
-section.reminder.right {
+doro-reminder.right {
   background-image: linear-gradient(to bottom, #ef6837, #ffaa21);
   color: #fff;
 }
-section.reminder .divider {
+doro-reminder .divider {
   border-bottom: 1px solid #ccc;
   margin-left: 40px;
 }
-section.reminder > section {
+doro-reminder > section {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -152,18 +154,18 @@ section.reminder > section {
   padding: 0 10px;
   align-items: center;
 }
-section.reminder .icon {
+doro-reminder .icon {
   width: 20px;
   height: 20px;
   margin-right: 10px;
 }
-section.reminder h1 {
+doro-reminder h1 {
   font-size: 14px;
   font-weight: bold;
   letter-spacing: -0.84px;
   grid-column: 3/-1;
 }
-section.reminder h2 {
+doro-reminder h2 {
   font-size: 12px;
   letter-spacing: -0.72px;
   opacity: 0.3;
@@ -222,7 +224,7 @@ footer.my-car p > svg {
 }
 footer.my-car .line {
   position: absolute;
-  left: 51px;
+  left: 72px;
   right: 0;
   top: 42px;
   height: 2px;

@@ -4,7 +4,6 @@
 	/// @TODO:: 여기는 엔진 코드와 실제 사용 코드간의 인터페이스를 억지로라도 맞춰주는 코드
 	/// @TODO: 아직 인터페이스에 대한 확신이 안 듬..
 	
-	
 	const {$module} = require("./1px.module");
 	const {Observable} = require("./observable");
 	const {WebComponent} = require("./component");
@@ -34,6 +33,8 @@
 		preload.$inject = block.$inject;
 		
 		$module.require(preload, component => {
+			component = component || class extends WebComponent {};
+
 			if (document.readyState === "complete") {
 				window.customElements.define(name, component);
 			}
