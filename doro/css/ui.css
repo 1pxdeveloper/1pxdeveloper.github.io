@@ -90,14 +90,16 @@ main.main section.line.log {
   position: relative;
   z-index: 1;
 }
-doro-km-page {
+doro-km-page,
+.km-pages {
   display: block;
   position: relative;
   display: flex;
   flex-flow: column;
   align-items: stretch;
 }
-doro-km-page .kms {
+doro-km-page .kms,
+.km-pages .kms {
   opacity: 0.1;
   color: #fff;
   font-size: 44px;
@@ -110,7 +112,8 @@ doro-km-page .kms {
   right: 0;
   top: 100%;
 }
-doro-km-page .left-kms {
+doro-km-page .left-kms,
+.km-pages .left-kms {
   position: absolute;
   left: 0;
   bottom: 0;
@@ -119,7 +122,8 @@ doro-km-page .left-kms {
   text-align: center;
   width: 72px;
 }
-doro-km-page h1.date {
+doro-km-page h1.date,
+.km-pages h1.date {
   color: #fff;
   text-align: right;
   margin-right: 10px;
@@ -127,7 +131,8 @@ doro-km-page h1.date {
   font-size: 18px;
   font-weight: bold;
 }
-doro-reminder {
+doro-reminder,
+doro-log {
   display: block;
   position: relative;
   min-height: 55px;
@@ -138,15 +143,18 @@ doro-reminder {
   margin-left: 90px;
   color: #2f2f2f;
 }
-doro-reminder.right {
+doro-reminder.right,
+doro-log.right {
   background-image: linear-gradient(to bottom, #ef6837, #ffaa21);
   color: #fff;
 }
-doro-reminder .divider {
+doro-reminder .divider,
+doro-log .divider {
   border-bottom: 1px solid #ccc;
   margin-left: 40px;
 }
-doro-reminder > section {
+doro-reminder > section,
+doro-log > section {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -154,18 +162,26 @@ doro-reminder > section {
   padding: 0 10px;
   align-items: center;
 }
-doro-reminder .icon {
+doro-reminder .icon,
+doro-log .icon {
   width: 20px;
   height: 20px;
   margin-right: 10px;
 }
-doro-reminder h1 {
+doro-reminder .icon > svg,
+doro-log .icon > svg {
+  width: 100%;
+  height: 100%;
+}
+doro-reminder h1,
+doro-log h1 {
   font-size: 14px;
   font-weight: bold;
   letter-spacing: -0.84px;
   grid-column: 3/-1;
 }
-doro-reminder h2 {
+doro-reminder h2,
+doro-log h2 {
   font-size: 12px;
   letter-spacing: -0.72px;
   opacity: 0.3;
@@ -340,4 +356,76 @@ h2.title {
   justify-self: end;
   grid-column: -5/auto;
   grid-row: 2;
+}
+doro-report,
+doro-tip {
+  position: relative;
+  display: block;
+  margin: 11px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 9px 10px 0 rgba(0,0,0,0.46);
+  overflow: hidden;
+  z-index: 1;
+}
+doro-report .top,
+doro-tip .top {
+  height: 10px;
+  background-image: linear-gradient(101deg, #14ffa4, #11cbc4);
+}
+doro-report header {
+  padding: 40px 0;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+doro-report header > * {
+  margin: auto;
+}
+doro-report section {
+  padding: 0 32px;
+  padding-bottom: 45px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  text-align: center;
+  grid-gap: 20px;
+}
+doro-report section dt {
+  font-size: 13px;
+  color: #29be9b;
+  margin: 10px;
+}
+doro-report section dd {
+  font-size: 16px;
+  font-weight: bold;
+  color: #000;
+}
+doro-tip .top {
+  background-image: linear-gradient(101deg, #1dd8d1, #33a1ff);
+}
+doro-tip header {
+  padding: 40px 32px;
+  font-weight: bold;
+}
+doro-tip header h1 {
+  font-size: 20px;
+  margin: 10px 0 16px;
+  font-weight: bold;
+}
+doro-tip header h3 {
+  font-size: 12px;
+  opacity: 0.68;
+}
+doro-tip header .date {
+  color: #a8a8a8;
+  font-size: 12px;
+}
+doro-tip section {
+  padding: 32px;
+  padding-top: 16px;
+  text-align: justify;
+  font-size: 14px;
+  line-height: 1.62;
 }

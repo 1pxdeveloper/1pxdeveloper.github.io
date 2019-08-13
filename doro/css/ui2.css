@@ -1,0 +1,188 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+* {
+  font: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+}
+html,
+body {
+  height: 100%;
+}
+html {
+  background: #f0f0f0;
+  display: flex;
+}
+body {
+  font-family: "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
+  color: #000;
+  width: 414px;
+  margin: auto;
+}
+html {
+  font-size: 12.176470588235293px;
+}
+main {
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  width: 414px;
+  min-height: 896px;
+  background: #fff;
+  margin: 3rem auto;
+}
+h1,
+h2,
+h3 {
+  font-weight: bold;
+}
+p {
+  text-align: justify;
+}
+img {
+  width: 100%;
+  height: auto;
+}
+[flex] {
+  flex: 1;
+}
+[hbox] {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+[vbox] {
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+}
+space[size="1"] {
+  padding: 0.5rem;
+}
+[color="green"] {
+  color: #29be9b;
+}
+[color="orange"] {
+  color: #ffaa21;
+}
+.ui-top-app-bar {
+  height: 6rem;
+  max-height: 6rem;
+  min-height: 6rem;
+  background-image: linear-gradient(102deg, #1dd87b, #11cbc4);
+  color: #fff;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: flex-end;
+  font-size: 1.38rem;
+  box-shadow: 0 4px 10px 0 rgba(0,0,0,0.1);
+}
+.ui-top-app-bar doro-back-button {
+  display: flex;
+  width: 6rem;
+  height: 100%;
+}
+.ui-top-app-bar doro-back-button > * {
+  margin: auto;
+}
+.ui-top-app-bar > h1 {
+  align-self: flex-end;
+  padding: 2rem 0;
+}
+section.page {
+  position: relative;
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  flex: 1;
+  padding: 3rem 0;
+}
+section.page > header {
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  min-height: 5rem;
+  font-weight: bold;
+  font-size: 1.62rem;
+}
+section.page > header img {
+  display: block;
+  margin-bottom: 2rem;
+  box-shadow: 0 3px 4px 0 rgba(0,0,0,0.27);
+}
+section.page > header,
+section.page > section {
+  margin-left: 3rem;
+  margin-right: 3rem;
+}
+section.page section.form {
+  padding: 5rem 0;
+}
+section.page section.form > div + div {
+  margin-top: 3rem;
+}
+section.page section.form > div h1 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+section.page section.form > div h2 {
+  font-size: 1.14rem;
+  border-bottom: 1px solid #dedede;
+  padding: 0.38em 0;
+  color: #29be9b;
+}
+section.page section.list > div {
+  padding: 1rem 0;
+}
+section.page section.ui-button-bar {
+  background: #f1f1f1;
+  padding: 2rem 3rem;
+  border: 1px solid #dedede;
+  font-size: 1.14rem;
+  margin: 0;
+}
+.notice-box {
+  padding: 2rem 2rem;
+  margin: 3rem;
+  border: 1px solid #dedede;
+  border-radius: 0.38rem;
+}
+.notice-box.dense {
+  padding: 1rem 2rem;
+}
+doro-button {
+  display: flex;
+  padding: 1rem;
+  background: linear-gradient(102deg, #14ffa4, #11cfc1, #11cbc4);
+  color: #fff;
+  text-align: center;
+  font-size: 1.38rem;
+  border-radius: 0.38rem;
+}
+doro-button > * {
+  margin: auto;
+}
+.bar {
+  padding: 2rem 3rem;
+  border-bottom: 1px solid #dedede;
+}
+.bar.black {
+  background: linear-gradient(99deg, #393a41, #2f2f34);
+  box-shadow: 0 4px 10px 0 rgba(0,0,0,0.1);
+  color: #fff;
+  border-bottom: 0;
+}
+doro-check-button {
+  display: flex;
+}
+doro-check-button > * {
+  margin: auto;
+}
+doro-check-button svg * {
+  fill: #000;
+}

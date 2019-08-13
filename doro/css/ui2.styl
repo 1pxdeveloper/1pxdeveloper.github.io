@@ -1,0 +1,195 @@
+@import core
+
+$background = #262b35
+$top = 72px
+$orange = #ffaa21
+$green = #29be9b;
+$gray-border = #dedede;
+$green-gradient3 = linear-gradient(102deg, #14ffa4, #11cfc1, #11cbc4);
+
+*
+  margin 0
+  padding 0
+  box-sizing border-box
+
+*
+  //outline 1px solid #4f80ff
+  font inherit
+  user-select none
+  -webkit-user-select none
+
+html, body
+  height 100%
+
+html
+  background #f0f0f0
+  display flex
+
+body
+  font-family "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif
+  color #000
+  width 414px
+  //height 896px
+  margin auto
+
+html
+  font-size (414 / 34) px
+
+main
+  vbox()
+  width 414px
+  min-height 896px
+  background #fff
+  margin 3rem auto
+
+
+h1
+h2
+h3
+  font-weight bold
+
+p
+  text-align justify
+
+img
+  width 100%
+  height auto
+
+[flex]
+  flex 1
+
+[hbox]
+  hbox()
+
+[vbox]
+  vbox()
+
+space[size="1"]
+  padding 0.5rem
+
+[color="green"]
+  color $green
+
+[color="orange"]
+  color $orange
+
+
+.ui-top-app-bar
+  height 6rem
+  max-height 6rem
+  min-height 6rem
+  background-image: linear-gradient(102deg, #1dd87b, #11cbc4);
+  color #fff
+  hbox()
+  align-content flex-end
+  font-size 1.38rem
+  box-shadow 0 4px 10px 0 rgba(0, 0, 0, 0.1);
+
+  doro-back-button
+    display flex
+    width 6rem
+    height 100%
+
+    > *
+      margin auto
+
+  > h1
+    align-self flex-end
+    padding 2rem 0
+
+section.page
+  position relative
+  vbox()
+  flex 1
+  padding 3rem 0
+
+  > header
+    vbox()
+    justify-content flex-end
+    min-height 5rem
+    font-weight bold
+    font-size 1.62rem
+
+    img
+      display block
+      margin-bottom 2rem
+      box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.27);
+
+  > header
+  > section
+    margin-left 3rem
+    margin-right 3rem
+
+
+  section.form
+    padding 5rem 0
+
+    > div
+      + div
+        margin-top 3rem
+
+      h1
+        font-size 1rem
+        margin-bottom 1rem
+
+      h2
+        font-size 1.14rem
+        border-bottom 1px solid $gray-border
+        padding 0.38em 0
+        color $green
+
+  section.list
+    > div
+      padding 1rem 0
+
+  section.ui-button-bar
+    background #f1f1f1
+    padding 2rem 3rem
+    border 1px solid $gray-border
+    font-size 1.14rem
+    margin 0
+
+
+.notice-box
+  padding 2rem 2rem
+  margin 3rem
+  border 1px solid $gray-border
+  border-radius 0.38rem
+
+  &.dense
+    padding 1rem 2rem
+
+
+doro-button
+  display flex
+  padding 1rem
+  background $green-gradient3
+  color #fff
+  text-align center
+  font-size 1.38rem
+  border-radius 0.38rem
+
+  > *
+    margin auto
+
+
+.bar
+  padding 2rem 3rem
+  border-bottom 1px solid $gray-border
+
+  &.black
+    background linear-gradient(99deg, #393a41, #2f2f34);
+    box-shadow 0 4px 10px 0 rgba(0, 0, 0, 0.1);
+    color #fff
+    border-bottom 0
+
+
+doro-check-button
+  display flex
+
+  > *
+    margin auto
+
+  svg
+    *
+      fill #000
