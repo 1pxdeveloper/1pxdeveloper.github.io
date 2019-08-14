@@ -1,9 +1,10 @@
 @import core
 
-$background = #262b35
+$background = #202329
 $top = 72px
 $left = 80px
 $orange = #ffaa21
+$green = #14ffa4
 
 *
   margin 0
@@ -63,7 +64,7 @@ main
 
 
 main.main
-  background-color: #202329;
+  background-color: $background;
 
   section.line
     position absolute
@@ -432,3 +433,16 @@ doro-tip
     text-align justify
     font-size 14px
     line-height 1.38
+
+
+
+.ui-top-app-bar
+  hbox()
+  layer()
+  bottom auto
+  height 48px
+  background $background
+  z-index 9999999
+  svg
+    fill $green
+    margin-right 16px
