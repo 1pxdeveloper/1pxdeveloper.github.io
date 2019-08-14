@@ -75,6 +75,7 @@ main.main section.line {
 }
 main.main section.line.log {
   background: #29be9b;
+  top: 200px;
 }
 .space-half-page {
   min-height: 100vmax;
@@ -89,8 +90,8 @@ main.main section.line.log {
   font-weight: bold;
   text-align: center;
   color: #2f2f2f;
-  height: 56px;
-  line-height: 56px;
+  height: 42px;
+  line-height: 42px;
   position: relative;
   z-index: 1;
 }
@@ -200,7 +201,7 @@ footer.my-car {
   right: 0;
   bottom: 0;
   top: auto;
-  height: 116px;
+  height: 86px;
   z-index: 9999;
 }
 footer.my-car .background {
