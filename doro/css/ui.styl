@@ -125,7 +125,7 @@ doro-km-page
   .left-kms
     position absolute
     left 0
-    bottom 0
+    bottom 10px
     font-size 14px
     font-weight bold
     color: $orange;
@@ -152,10 +152,14 @@ doro-log
   margin 10px 0
   margin-left 90px
   color #2f2f2f
+  overflow hidden
 
   &.right
-    background-image: linear-gradient(to bottom, #ef6837, $orange);
-    color #fff
+    .top
+      layer()
+      bottom auto
+      height 4px
+      background-image: linear-gradient(to bottom, #ef6837, $orange);
 
   .divider
     border-bottom 1px solid #ccc

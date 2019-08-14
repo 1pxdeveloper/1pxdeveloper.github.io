@@ -121,7 +121,7 @@ doro-km-page .left-kms,
 .km-pages .left-kms {
   position: absolute;
   left: 0;
-  bottom: 0;
+  bottom: 10px;
   font-size: 14px;
   font-weight: bold;
   color: #ffaa21;
@@ -148,11 +148,18 @@ doro-log {
   margin: 10px 0;
   margin-left: 90px;
   color: #2f2f2f;
+  overflow: hidden;
 }
-doro-reminder.right,
-doro-log.right {
+doro-reminder.right .top,
+doro-log.right .top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  bottom: auto;
+  height: 4px;
   background-image: linear-gradient(to bottom, #ef6837, #ffaa21);
-  color: #fff;
 }
 doro-reminder .divider,
 doro-log .divider {
