@@ -65,12 +65,13 @@ main.main section.line {
   bottom: 0;
   left: 80px;
   width: 4px;
-  background-image: linear-gradient(#ffaa21 50%, rgba(255,255,255,0) 0%);
+  background-image: linear-gradient(#ffaa21 38%, rgba(255,255,255,0) 0%);
   background-position: right;
   background-size: 6px 80px;
   background-repeat: repeat-y;
   z-index: 0;
   margin-left: -2px;
+  opacity: 0.38;
 }
 main.main section.line.log {
   background: #29be9b;
