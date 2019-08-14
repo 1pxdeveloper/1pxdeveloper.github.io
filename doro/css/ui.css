@@ -63,11 +63,11 @@ main.main section.line {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 72px;
+  left: 80px;
   width: 4px;
   background-image: linear-gradient(#ffaa21 50%, rgba(255,255,255,0) 0%);
   background-position: right;
-  background-size: 6px 72px;
+  background-size: 6px 80px;
   background-repeat: repeat-y;
   z-index: 0;
   margin-left: -2px;
@@ -79,7 +79,10 @@ main.main section.line.log {
   min-height: 100vmax;
 }
 .alert-divider {
-  background: #fff;
+  background: url("../imgs/chess_bg.jpg");
+  background-size: auto 100%;
+  border-top: 1px solid #fff;
+  border-bottom: 1px solid #fff;
   letter-spacing: -0.9px;
   font-style: 16px;
   font-weight: bold;
@@ -117,10 +120,11 @@ doro-km-page .left-kms,
   position: absolute;
   left: 0;
   bottom: 0;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: bold;
   color: #ffaa21;
   text-align: center;
-  width: 72px;
+  width: 80px;
 }
 doro-km-page h1.date,
 .km-pages h1.date {
@@ -226,14 +230,13 @@ footer.my-car h1 {
   height: 24px;
   font-size: 18px;
   font-weight: bold;
-  color: #fff;
+  color: #ffaa21;
 }
 footer.my-car p {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
   opacity: 0.5;
-  font-size: 12px;
+  font-size: 14px;
+  text-align: right;
+  padding-right: 60px;
 }
 footer.my-car p > svg {
   margin-right: 5px;
@@ -406,7 +409,7 @@ doro-tip .top {
   background-image: linear-gradient(101deg, #1dd8d1, #33a1ff);
 }
 doro-tip header {
-  padding: 40px 32px;
+  padding: 32px;
   font-weight: bold;
 }
 doro-tip header h1 {
@@ -424,8 +427,8 @@ doro-tip header .date {
 }
 doro-tip section {
   padding: 32px;
-  padding-top: 16px;
+  padding-top: 0;
   text-align: justify;
   font-size: 14px;
-  line-height: 1.62;
+  line-height: 1.38;
 }

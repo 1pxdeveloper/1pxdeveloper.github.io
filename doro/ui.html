@@ -24,15 +24,15 @@
 
 
 		<section class="contents">
+			<section class="alert-divider" id="b">
+				<h1></h1>
+			</section>
+
+			<div style="height: 100px"></div>
+
 			<doro-report></doro-report>
 
-			<section class="alert-divider" id="b">
-				<h1>현재까지 누적 데이터 확인</h1>
-			</section>
-			<div style="height: 150px"></div>
-
 			<section class="line log"></section>
-
 
 			<section class="km-pages" *foreach="arr2 as r">
 				<section class="contents">
@@ -134,31 +134,7 @@
 			<h1>{{ currentKm }}Km</h1>
 			<div class="line"></div>
 			<div flex></div>
-			<p>
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-					<defs>
-						<style>
-							.cls-1 {
-								opacity: .3
-							}
-
-							.cls-2 {
-								fill: none
-							}
-
-							.cls-3 {
-								fill: #fff
-							}
-						</style>
-					</defs>
-					<g id="baseline-error_outline-24px" class="cls-1">
-						<path id="Path_1385" d="M0 0h16v16H0z" class="cls-2" data-name="Path 1385"/>
-						<path id="Path_1386" d="M8 10.667h1.333V12H8zm0-5.334h1.333v4H8zM8.66 2a6.667 6.667 0 1 0 6.673 6.667A6.663 6.663 0 0 0 8.66 2zm.007 12A5.333 5.333 0 1 1 14 8.667 5.332 5.332 0 0 1 8.667 14z" class="cls-3" data-name="Path 1386" transform="translate(-.667 -.667)"/>
-					</g>
-				</svg>
-
-				<span>위 라인은 당시 차량의 누적 주행거리를 나타냅니다.</span>
-			</p>
+			<p><span>차량 현재 누적거리: 13510km</span></p>
 
 			<div class="btn-plus">
 				<div class="icon-plus-h"></div>
