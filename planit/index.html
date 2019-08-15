@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="utf8">
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+
+	<title>Plan'it</title>
+	<!--<link rel="manifest" href="manifest.json">-->
+	<link rel="stylesheet" href="css/style.css"/>
+	<script src="js/player.min.js"></script>
+	<script src="../1px.js/1px.js"></script>
+</head>
+<body>
+<body>
+
+<video-background-list inline-template>
+	<video-background #video *foreach="ids as id, i" [attr.id]="'v'+i" [attr.vid]="id" [root]="this" .pause()="i !== index" .play()="i === index"></video-background>
+
+	<div class="number">
+		<div *foreach="ids as id, i" (click)="setPage(i)" [class.selected]="i === index"><h1>{{ i + 1 }}</h1></div>
+	</div>
+
+	<div class="track">
+		<div class="progress" [style.width.%]="percent"></div>
+	</div>
+</video-background-list>
+
+
+<header class="ui-top-app-bar">
+	<img src="imgs/logo-planit.svg"/>
+	<div flex></div>
+	<div class="menu"><a href="javascript:">works</a></div>
+	<div class="menu"><a href="javascript:">directors</a></div>
+	<div class="menu"><a href="javascript:">plan v</a></div>
+	<div class="menu"><a href="javascript:">blog</a></div>
+	<div class="menu"><a href="javascript:">about</a></div>
+	<div class="menu"><a href="javascript:">contact</a></div>
+</header>
+
+<script>
+$module.component("video-background-list", function(WebComponent) {
+	return class extends WebComponent {
+		init() {
+			this.ids = ["348955571", "352203681", "352230624", "352199240", "348125914"];
+			this.percent = 0;
+
+			/// @FIXME..
+			setTimeout(() => {
+				this.index = 0;
+			})
+
+			window.v = this;
+		}
+
+		next() {
+			this.setPage(this.index + 1);
+		}
+
+		setPage(i) {
+			this.index = i;
+			this.index = this.index % this.ids.length;
+		}
+
+		timeupdate(percent) {
+			this.percent = percent;
+		}
+	}
+});
+
+
+$module.component("video-background", function(WebComponent) {
+	return class extends WebComponent {
+		init() {
+
+			let options = {
+				id: this.getAttribute("vid"),
+				autopause: false,
+				background: true,
+				loop: false,
+				muted: true,
+			};
+
+			this.player = new Vimeo.Player(this, options);
+			this.player.pause();
+
+			this.player.on("ended", () => {
+				this.root.next();
+			})
+		}
+
+		play() {
+			console.log("play!!!", this, this.player);
+
+			this.hidden = false;
+			this.player.off("timeupdate");
+			this.player.on("timeupdate", res => {
+				this.root.timeupdate(res.percent * 100);
+			});
+
+			return this.player.play().then(() => {
+
+			})
+		}
+
+		pause() {
+			console.log("pause!!!", this, this.player);
+			this.hidden = true;
+			this.player.off("timeupdate");
+			return this.player.pause().then(() => {
+				return this.player.setCurrentTime(0);
+			})
+		}
+	}
+});
+
+
+// function createVideo(selector, vid) {
+// 	let options01 = {
+// 		id: vid,
+// 		autopause: true,
+// 		autoplay: false,
+// 		background: true,
+// 		loop: false,
+// 		muted: true,
+// 	};
+//
+// 	let video01Player = new Vimeo.Player(document.getElementById(selector), options01);
+//
+// 	video01Player.pause();
+//
+// 	video01Player.on('play', function() {
+// 		console.log('Played the first video');
+// 	});
+//
+// 	return video01Player;
+// }
+//
+//
+// let a = createVideo("a", "348955571");
+// let b = createVideo("b", "352230624");
+//
+// a.play();
+// a.on("ended", function() {
+// 	b.play();
+// })
+
+
+</script>
+
+
+</body>
+</html>
