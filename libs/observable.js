@@ -229,6 +229,9 @@ Observable.prototype.complete = function(fn) {
 };
 
 
+
+
+
 Observable.prototype.mergeMap = function(fn) {
 	return this.pipe(observer => {
 		return {

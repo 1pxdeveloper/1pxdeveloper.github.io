@@ -85,12 +85,12 @@
 	}
 	
 	function cleanupSubscription(subscription) {
-		let cleanup = subscription._cleanup;
-		if (!cleanup)
-			return;
+		delete subscription._observer;
 		
+		let cleanup = subscription._cleanup;
 		delete subscription._cleanup;
-		cleanup();
+		
+		if (cleanup) cleanup();
 	}
 	
 	function callMethod(obj, key, value) {
@@ -138,7 +138,6 @@
 		
 		unsubscribe() {
 			if (this.closed) return;
-			delete this._observer;
 			cleanupSubscription(this);
 		}
 	}
@@ -249,6 +248,12 @@
 		});
 	};
 	
+	Observable.prototype.finalize = function(fn) {
+		return new Observable(observer => {
+			this.subscribe(observer);
+			return fn;
+		});
+	};
 	
 	Observable.prototype.mergeMap = function(fn) {
 		return this.pipe(observer => {
@@ -301,6 +306,7 @@
 				
 				complete() {
 					observer.next(ret);
+					observer.complete();
 				},
 			}
 		});
@@ -335,6 +341,7 @@
 				
 				complete() {
 					observer.next(res);
+					observer.complete();
 				},
 			}
 		});
@@ -344,7 +351,12 @@
 	Observable.prototype.takeUntil = function(observable$) {
 		return new Observable(observer => {
 			let s = this.subscribe(observer);
-			let stop = s.unsubscribe.bind(s);
+			
+			const stop = () => {
+				s.unsubscribe();
+				observer.complete();
+			};
+			
 			observable$.subscribe(stop, stop, stop);
 		});
 	};
@@ -468,6 +480,20 @@
 	};
 	
 	
+	Observable.prototype.toArray = function() {
+		let ret = [];
+		
+		return this.pipe(observer => Object({
+			next(value) {
+				ret.push(value);
+			},
+			complete() {
+				observer.next(ret);
+				observer.complete();
+			},
+		}));
+	};
+	
 	Observable.prototype.push = function(...args) {
 		return new Observable(observer => {
 			return this.subscribe({
@@ -515,10 +541,10 @@
 		});
 	};
 	
-	Observable.timeout = function(delay) {
+	Observable.timeout = function(delay, value) {
 		return new Observable(observer => {
 			let id = setTimeout(() => {
-				observer.next(0);
+				observer.next(value);
 				observer.complete();
 			}, delay);
 			return () => clearTimeout(id);
@@ -536,16 +562,52 @@
 		});
 	};
 	
-	Observable.zip = function(...observables) {
+	Observable.forkjoin = function(...observables) {
 		
-		let result = new Array(observables.length);
+		let ret = new Array(observables.length);
+		let count = 0;
 		
 		return new Observable(observer => {
-			
+			observables.forEach((o, index) => {
+				o.last().subscribe(v => {
+					ret[index] = v;
+					
+					console.log(JSON.stringify(ret));
+					
+					count++;
+					if (count === ret.length) {
+						observer.next(ret);
+						observer.complete();
+					}
+				});
+			})
+		})
+	};
+	
+	Observable.zip = function(...observables) {
+		
+		let stack = new Array(observables.length).fill(null).map(v => []);
+		
+		return new Observable(observer => {
 			let s = observables.map((observable, index) => {
-				return observable.subscribe(function(value) {
-					result[index] = value;
-					observer.next(result);
+				
+				
+				console.log(observable);
+				
+				
+				return observable.subscribe(value => {
+					
+					console.log(value);
+					
+					
+					stack[index].push(value);
+					console.log(JSON.stringify(stack), index);
+					
+					if (stack.every(v => v.length > 0)) {
+						let ret = [];
+						stack.forEach(v => ret.push(v.shift()));
+						observer.next(ret);
+					}
 				});
 			});
 			
@@ -602,6 +664,83 @@
 		return o;
 	};
 	
+	
+	class Subject extends Observable {
+		constructor() {
+			super(observer => {
+				if (this.closed) return;
+				
+				this.observers.push(observer);
+				let _cleanup = observer._subscription._cleanup;
+				observer._subscription._cleanup = () => {
+					this.observers.splice(this.observers.indexOf(observer), 1);
+					_cleanup && _cleanup();
+				};
+			});
+			
+			this.observers = [];
+		}
+		
+		get closed() {
+			return this.observers === undefined;
+		}
+		
+		next(value) {
+			if (this.closed) return;
+			this.observers.slice().forEach(observer => observer.next(value));
+		}
+		
+		error(err) {
+			if (this.closed) return;
+			this.observers.slice().forEach(observer => observer.error(err));
+			delete this.observers;
+		}
+		
+		complete() {
+			if (this.closed) return;
+			this.observers.slice().forEach(observer => observer.complete());
+			delete this.observers;
+		}
+	}
+	
+	
+	class AsyncSubject extends Subject {
+		constructor() {
+			super();
+			let _subscriber = this._subscriber;
+			this._subscriber = (observer) => {
+				if (this.closed) {
+					observer.next(this.value);
+					observer.complete();
+					return;
+				}
+				return _subscriber.call(null, observer);
+			}
+		}
+		
+		next(value) {
+			if (this.closed) return;
+			this.value = value;
+		}
+		
+		error(err) {
+			if (this.closed) return;
+			this.observers.slice().forEach(observer => observer.error(err));
+			delete this.observers;
+		}
+		
+		complete() {
+			if (this.closed) return;
+			this.observers.slice().forEach(observer => {
+				observer.next(this.value);
+				observer.complete();
+			});
+			delete this.observers;
+		}
+	}
+	
 	exports.Observable = Observable;
+	exports.Subject = Subject;
+	exports.AsyncSubject = AsyncSubject;
 	
 })();

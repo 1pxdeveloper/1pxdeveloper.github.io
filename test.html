@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script>window.exports = window;</script>
+	<script src="1px.js/observable.js"></script>
+</head>
+<body>
+
+
+<script>
+
+
+/// Module
+
+
+function makeInjectable(callback) {
+	if (Array.isArray(callback)) {
+		let array = callback;
+		callback = array[array.length - 1];
+		callback.$inject = array.slice(0, -1);
+	}
+
+	if (typeof callback !== "function") {
+		throw TypeError("factory must be array or function.");
+	}
+
+	if (!callback.$inject) {
+		let s = callback.toString();
+		callback.$inject = s.slice(s.indexOf("(") + 1, s.indexOf(")")).split(/\s*,\s*/).filter(x => x);
+	}
+
+	return callback;
+}
+
+function noop() {}
+
+function createModule() {
+	let values = Object.create(null);
+
+	function value(name, _value) {
+		let v = values[name] = values[name] || new AsyncSubject();
+
+		if (arguments.length === 1) {
+			return v;
+		}
+
+		v.next(_value);
+		v.complete();
+	}
+
+	function require(callback, resolve) {
+		resolve = resolve || noop;
+		callback = makeInjectable(callback);
+
+		let args$ = callback.$inject.map(name => value(name));
+
+		Observable.forkjoin(...args$).subscribe(args => {
+			// @TODO: decorator(callback, args)
+			resolve(callback.apply(null, args));
+		})
+	}
+
+	function factory(name, callback) {
+		require(callback, res => value(name, res))
+	}
+
+	return {value, require, factory};
+}
+
+
+window.$module = createModule();
+
+
+$module.require(function(A) {
+	console.log(A);
+});
+
+$module.require(function(A, B) {
+	console.log("@@", A, B);
+	return "BBB";
+});
+
+$module.factory("B", function(A) {
+	console.log("@@", A);
+	return "BBB";
+});
+
+
+$module.value("A", 100);
+
+
+/// WATCH
+
+const ARRAY_METHODS = ["reverse", "splice", "push", "pop", "unshift", "shift", "sort"];
+const DATE_METHODS = ["setDate", "setFullYear", "setHours", "setMilliseconds", "setMonth", "setSeconds", "setTime", "setUTCDate", "setUTCFullYear", "setUTCHours", "setUTCMilliseconds", "setUTCMinutes", "setUTCSeconds", "setYear"];
+
+function mutationObservableFromClass$(object, methods) {
+	let key = methods[0];
+	if (object[key].subject) {
+		return object[key].subject;
+	}
+
+	let subject = new AsyncSubject();
+
+	let prototype = Object.getPrototypeOf(object);
+	let wrap = Object.create(prototype);
+	Object.setPrototypeOf(object, wrap);
+
+	for (let method of methods) {
+		wrap[method] = function() {
+			let result = prototype[method].apply(this, arguments);
+			subject.next(this);
+			subject.complete();
+			return result;
+		}
+	}
+
+	return subject.finalize(() => {
+		delete wrap[key].subject;
+		Object.setPrototypeOf(object, prototype);
+	})
+}
+
+function mutationObservable$(object) {
+	if (Array.isArray(object)) return mutationObservableFromClass$(object, ARRAY_METHODS);
+	if (object instanceof Date) return mutationObservableFromClass$(object, DATE_METHODS);
+	return Observable.NEVER;
+}
+
+
+function watch$(object, prop) {
+
+	let desc = Object.getOwnPropertyDescriptor(object, prop);
+	if (desc) {
+		if (desc.set && desc.set.subject) {
+			return desc.set.subject;
+		}
+
+		if (desc.configurable === false || desc.writable === false) {
+			return mutationObservable$(object[prop]);
+		}
+	}
+
+	let value = object[prop];
+
+	let subject = new AsyncSubject();
+	let subscription = mutationObservable$(value).subscribe(subject);
+
+	function set(newValue) {
+		if (Object.is(value, newValue)) {
+			return;
+		}
+		value = newValue;
+		subject.next(value);
+		subject.complete();
+	}
+
+	set.subject = subject;
+
+	Object.defineProperty(object, prop, {
+		enumerable: true,
+		configurable: true,
+		get: () => value,
+		set: set,
+	});
+
+	return subject.finalize(() => {
+		subscription.unsubscribe();
+		delete object[prop];
+		object[prop] = value;
+	});
+}
+
+
+window.a = [];
+window.c = a;
+
+
+watch$(window, "a").subscribe(v => {
+	console.log("2222", v);
+});
+
+watch$(window, "a").subscribe(v => {
+	console.log("3333", v);
+});
+
+
+// $module.factory("abc", function(A, B, C) {
+//
+// 	console.log("abc", arguments);
+// 	return "abc!!";
+// });
+//
+//
+// $module.value("A", 100);
+//
+//
+// $module.value("C", "CCCCC");
+//
+//
+// setTimeout(function() {
+// 	$module.value("B", "asdfasdfsad");
+//
+//
+// }, 1000);
+//
+//
+// $module.factory("def", function(A, abc, C) {
+//
+// 	console.log("def", arguments);
+//
+// 	return "ddeeff";
+// });
+//
+//
+// $module.require(function(abc, def) {
+//
+//
+// 	alert("!!!");
+//
+// 	console.log(arguments);
+// });
+//
+//
+// // setTimeout(function() {
+// //
+// //
+// // }, 1000);
+
+
+</script>
+
+
+</body>
+</html>

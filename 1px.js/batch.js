@@ -12,6 +12,7 @@
 	window.$module = $module;
 	
 	$module.value("Observable", Observable);
+	$module.value("Subject", Observable.subject);
 	
 	$module.value("WebComponent", WebComponent);
 	

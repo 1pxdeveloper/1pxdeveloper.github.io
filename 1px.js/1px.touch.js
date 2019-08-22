@@ -324,7 +324,7 @@
 
 		"pan": function(el, event, handler) {
 			if (event.type === TOUCH_MOVE && event.isPanStart) {
-				event.originalEvent.preventDefault();
+				// event.originalEvent.preventDefault();
 
 				let handlers = el.$$touch.$handlers;
 				if (typeof handlers["panstart"] === "function") {
@@ -337,7 +337,7 @@
 			}
 
 			if (event.type === TOUCH_MOVE && event.isPanning) {
-				event.originalEvent.preventDefault();
+				// event.originalEvent.preventDefault();
 				return handler(event);
 			}
 		},

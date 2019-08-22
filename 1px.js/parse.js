@@ -742,7 +742,7 @@
 		let value = evaluate(a);
 		let args = c.map(evaluate);
 		
-		return module.pipe.require(b.value, pipe => {
+		return $module.pipe.require(b.value, pipe => {
 			return pipe(value, ...args);
 		});
 	});
