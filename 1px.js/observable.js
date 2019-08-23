@@ -391,15 +391,15 @@
 			
 			subscription = subscription || this.subscribe({
 				next(value) {
-					observers.forEach(observer => observer.next(value));
+					observers.slice().forEach(observer => observer.next(value));
 				},
 				
 				error(err) {
-					observers.forEach(observer => observer.error(err));
+					observers.slice().forEach(observer => observer.error(err));
 				},
 				
 				complete() {
-					observers.forEach(observer => observer.complete());
+					observers.slice().forEach(observer => observer.complete());
 				},
 			});
 			
@@ -407,6 +407,7 @@
 				observers.splice(observers.indexOf(observer), 1);
 				if (observers.length === 0) {
 					subscription.unsubscribe();
+					subscription = undefined;
 				}
 			}
 		});
@@ -520,8 +521,7 @@
 	
 	
 	/// Static
-	function noop() {
-	}
+	function noop() {}
 	
 	Observable.NEVER = new Observable(noop);
 	Observable.empty = () => new Observable(observer => observer.complete());
@@ -533,20 +533,20 @@
 		});
 	};
 	
-	Observable.interval = function(delay) {
-		let i = 0;
+	Observable.interval = function(timeout) {
 		return new Observable(observer => {
-			let id = setInterval(() => observer.next(i++), delay);
+			let i = 0;
+			let id = setInterval(() => observer.next(i++), timeout);
 			return () => clearInterval(id);
 		});
 	};
 	
-	Observable.timeout = function(delay, value) {
+	Observable.timeout = function(timeout, value) {
 		return new Observable(observer => {
 			let id = setTimeout(() => {
 				observer.next(value);
 				observer.complete();
-			}, delay);
+			}, timeout);
 			return () => clearTimeout(id);
 		});
 	};
@@ -568,14 +568,18 @@
 		let count = 0;
 		
 		return new Observable(observer => {
-			observables.forEach((o, index) => {
-				o.last().subscribe(v => {
-					ret[index] = v;
-					
+			if (ret.length === 0) {
+				observer.next(ret);
+				observer.complete();
+				return;
+			}
+			
+			observables.forEach((observable, index) => {
+				observable.last().subscribe(value => {
+					ret[index] = value;
 					console.log(JSON.stringify(ret));
 					
-					count++;
-					if (count === ret.length) {
+					if (++count === ret.length) {
 						observer.next(ret);
 						observer.complete();
 					}
@@ -586,14 +590,10 @@
 	
 	Observable.zip = function(...observables) {
 		
-		let stack = new Array(observables.length).fill(null).map(v => []);
+		let stack = new Array(observables.length).fill(null).map(() => []);
 		
 		return new Observable(observer => {
 			let s = observables.map((observable, index) => {
-				
-				
-				console.log(observable);
-				
 				
 				return observable.subscribe(value => {
 					
@@ -648,22 +648,6 @@
 			}
 		});
 	};
-	
-	Observable.subject = function() {
-		
-		let o = new Observable(observer => {
-			o.next = observer.next.bind(observer);
-			o.error = observer.error.bind(observer);
-			o.complete = observer.complete.bind(observer);
-		}).share();
-		
-		o.next = noop;
-		o.error = noop;
-		o.complete = noop;
-		
-		return o;
-	};
-	
 	
 	class Subject extends Observable {
 		constructor() {

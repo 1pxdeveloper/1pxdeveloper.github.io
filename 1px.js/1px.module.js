@@ -1,49 +1,10 @@
 (function() {
 	"use strict";
 	
+	const {Observable, AsyncSubject} = require("./observable");
+
 	function noop() {}
 	
-	function Register(value) {
-		this.queue = Object.create(null);
-		this.value = value || Object.create(null);
-	}
-	
-	Register.prototype = {
-		
-		get(name) {
-			return this.value[name];
-		},
-		
-		delete(name) {
-			delete this.value[name];
-			delete this.queue[name];
-		},
-		
-		define(name, value) {
-			this.value[name] = value;
-			
-			if (this.queue[name]) {
-				this.queue[name].forEach(callback => {
-					callback(name, value);
-				});
-			}
-		},
-		
-		isDefined(name) {
-			return name in this.value;
-		},
-		
-		whenDefined(name, callback) {
-			this.queue[name] = this.queue[name] || [];
-			this.queue[name].push(callback);
-			
-			if (name in this.value) {
-				callback(name, this.value[name]);
-			}
-		},
-	};
-	
-	///
 	function _makeInjectable(callback) {
 		if (Array.isArray(callback)) {
 			let array = callback;
@@ -55,28 +16,15 @@
 			throw TypeError("factory must be array or function.");
 		}
 		
-		if (callback.$inject) {
-			return callback;
+		if (!callback.$inject) {
+			let s = callback.toString();
+			callback.$inject = s.slice(s.indexOf("(") + 1, s.indexOf(")")).split(/\s*,\s*/).filter(x => x);
 		}
 		
-		let s = callback.toString();
-		callback.$inject = s.slice(s.indexOf("(") + 1, s.indexOf(")")).split(/\s*,\s*/).filter(x => x);
 		return callback;
 	}
 	
-	function _invokeValue(resolve, callback, args, index, name, value) {
-		args[index] = value;
-		for (let k = 0; k < args.length; k++) if (!(k in args)) return;
-		resolve(callback.apply(null, args));
-	}
-	
-	function _invokeFactory(name, factory) {
-		if (!value$$.isDefined(name)) {
-			$module.require(factory, value$$.define.bind(value$$, name));
-		}
-	}
-	
-	function _makePrefixModuleProvider(prefix) {
+	function _makePrefixModuleProvider($module, prefix) {
 		function factory(name, callback) {
 			$module.factory(prefix + name, callback);
 		}
@@ -85,63 +33,63 @@
 			$module.value(prefix + name, value);
 		};
 		
-		factory.require = function(callback) {
+		factory.require = function(callback, resolve) {
 			callback = _makeInjectable(callback);
 			callback.$inject = callback.$inject.map(name => prefix + name);
-			$module.require(callback);
+			
+			console.log(callback.$inject);
+			
+			
+			$module.require(callback, resolve);
 		};
 		
 		return factory;
 	}
 	
 	
-	/// exports
-	const value$$ = new Register();
-	const factory$$ = new Register();
-	
-	function $module() {
-		/// @TODO ...
-	}
-	
-	$module.value = function(name, value) {
-		value$$.define(name, value);
-	};
-	
-	$module.factory = function(name, callback) {
-		// value$$.delete(name);
-		factory$$.define(name, _makeInjectable(callback));
-	};
-	
-	$module.require = function(callback, resolve) {
-		resolve = resolve || noop;
-		callback = _makeInjectable(callback);
-		if (!callback.$inject.length) {
-			resolve(callback());
-			return;
+	function createModule() {
+		let values = Object.create(null);
+		
+		function value(name, _value) {
+			let v = values[name] = values[name] || new AsyncSubject();
+			
+			if (arguments.length === 1) {
+				return v;
+			}
+			
+			v.next(_value);
+			v.complete();
 		}
 		
-		let args = Array(callback.$inject.length);
-		callback.$inject.forEach((name, index) => {
-			factory$$.whenDefined(name, _invokeFactory);
-			value$$.whenDefined(name, _invokeValue.bind(null, resolve, callback, args, index));
-		});
-		
-		
-		/// @FIXME: 테스트 용
-		setTimeout(function() {
-			callback.$inject.forEach(name => {
-				if (!value$$.isDefined(name) && name.indexOf(".") < 0) {
-					console.warn(name + " is not defined yet.");
-				}
-			})
+		function require(callback, resolve) {
+			resolve = resolve || noop;
+			callback = _makeInjectable(callback);
 			
-		}, 1000);
-	};
+			let args$ = callback.$inject.map(name => value(name));
+			
+			Observable.forkjoin(...args$).subscribe(args => {
+				// @TODO: decorator(callback, args)
+				resolve(callback.apply(null, args));
+			})
+		}
+		
+		function factory(name, callback) {
+			require(callback, result => value(name, result))
+		}
+		
+		let $module = {};
+		$module._values = values;
+		$module.value = value;
+		$module.factory = factory;
+		$module.require = require;
+		$module.directive = _makePrefixModuleProvider($module, "directive.");
+		$module.service = _makePrefixModuleProvider($module, "service.");
+		$module.pipe = _makePrefixModuleProvider($module, "pipe.");
+		
+		return $module;
+	}
 	
-	$module.directive = _makePrefixModuleProvider("directive.");
-	$module.service = _makePrefixModuleProvider("service.");
-	$module.pipe = _makePrefixModuleProvider("pipe.");
-	
+	let $module = createModule();
 	$module._makeInjectable = _makeInjectable;
 	
 	exports.$module = $module;

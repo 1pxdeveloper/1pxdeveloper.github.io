@@ -5,14 +5,15 @@
 	/// @TODO: 아직 인터페이스에 대한 확신이 안 듬..
 	
 	const {$module} = require("./1px.module");
-	const {Observable} = require("./observable");
+	const {Observable, Subject, AsyncSubject} = require("./observable");
 	const {WebComponent} = require("./component");
 	
 	window.Observable = Observable;
 	window.$module = $module;
 	
 	$module.value("Observable", Observable);
-	$module.value("Subject", Observable.subject);
+	$module.value("Subject", Subject);
+	$module.value("AsyncSubject", AsyncSubject);
 	
 	$module.value("WebComponent", WebComponent);
 	
@@ -33,14 +34,19 @@
 		
 		preload.$inject = block.$inject;
 		
+		
 		$module.require(preload, component => {
+			
+			console.log(component);
+			
+			
 			component = component || class extends WebComponent {};
-
+			
 			if (document.readyState === "complete") {
 				window.customElements.define(name, component);
 			}
 			else {
-				document.addEventListener("DOMContentLoaded", function(event) {
+				document.addEventListener("DOMContentLoaded", function() {
 					window.customElements.define(name, component);
 				});
 			}
@@ -49,6 +55,8 @@
 	
 	
 	/// 이건 너무 별론데...
-	const {JSContext} = require("./parse");
+	const {JSContext, $compile} = require("./compile");
 	$module.value("JSContext", JSContext);
+	$module.compile = $compile;
+	
 })();

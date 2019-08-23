@@ -13,9 +13,9 @@
 
 
 /// Module
+function noop() {}
 
-
-function makeInjectable(callback) {
+function _makeInjectable(callback) {
 	if (Array.isArray(callback)) {
 		let array = callback;
 		callback = array[array.length - 1];
@@ -34,7 +34,24 @@ function makeInjectable(callback) {
 	return callback;
 }
 
-function noop() {}
+function _makePrefixModuleProvider($module, prefix) {
+	function factory(name, callback) {
+		$module.factory(prefix + name, callback);
+	}
+
+	factory.value = function(name, value) {
+		$module.value(prefix + name, value);
+	};
+
+	factory.require = function(callback, resolve) {
+		callback = _makeInjectable(callback);
+		callback.$inject = callback.$inject.map(name => prefix + name);
+		$module.require(callback, resolve);
+	};
+
+	return factory;
+}
+
 
 function createModule() {
 	let values = Object.create(null);
@@ -52,7 +69,7 @@ function createModule() {
 
 	function require(callback, resolve) {
 		resolve = resolve || noop;
-		callback = makeInjectable(callback);
+		callback = _makeInjectable(callback);
 
 		let args$ = callback.$inject.map(name => value(name));
 
@@ -63,10 +80,18 @@ function createModule() {
 	}
 
 	function factory(name, callback) {
-		require(callback, res => value(name, res))
+		require(callback, result => value(name, result))
 	}
 
-	return {value, require, factory};
+	let $module = {};
+	$module.value = value;
+	$module.factory = factory;
+	$module.require = require;
+	$module.directive = _makePrefixModuleProvider($module, "directive.");
+	$module.service = _makePrefixModuleProvider($module, "service.");
+	$module.pipe = _makePrefixModuleProvider($module, "pipe.");
+
+	return $module;
 }
 
 
@@ -89,102 +114,6 @@ $module.factory("B", function(A) {
 
 
 $module.value("A", 100);
-
-
-/// WATCH
-
-const ARRAY_METHODS = ["reverse", "splice", "push", "pop", "unshift", "shift", "sort"];
-const DATE_METHODS = ["setDate", "setFullYear", "setHours", "setMilliseconds", "setMonth", "setSeconds", "setTime", "setUTCDate", "setUTCFullYear", "setUTCHours", "setUTCMilliseconds", "setUTCMinutes", "setUTCSeconds", "setYear"];
-
-function mutationObservableFromClass$(object, methods) {
-	let key = methods[0];
-	if (object[key].subject) {
-		return object[key].subject;
-	}
-
-	let subject = new AsyncSubject();
-
-	let prototype = Object.getPrototypeOf(object);
-	let wrap = Object.create(prototype);
-	Object.setPrototypeOf(object, wrap);
-
-	for (let method of methods) {
-		wrap[method] = function() {
-			let result = prototype[method].apply(this, arguments);
-			subject.next(this);
-			subject.complete();
-			return result;
-		}
-	}
-
-	return subject.finalize(() => {
-		delete wrap[key].subject;
-		Object.setPrototypeOf(object, prototype);
-	})
-}
-
-function mutationObservable$(object) {
-	if (Array.isArray(object)) return mutationObservableFromClass$(object, ARRAY_METHODS);
-	if (object instanceof Date) return mutationObservableFromClass$(object, DATE_METHODS);
-	return Observable.NEVER;
-}
-
-
-function watch$(object, prop) {
-
-	let desc = Object.getOwnPropertyDescriptor(object, prop);
-	if (desc) {
-		if (desc.set && desc.set.subject) {
-			return desc.set.subject;
-		}
-
-		if (desc.configurable === false || desc.writable === false) {
-			return mutationObservable$(object[prop]);
-		}
-	}
-
-	let value = object[prop];
-
-	let subject = new AsyncSubject();
-	let subscription = mutationObservable$(value).subscribe(subject);
-
-	function set(newValue) {
-		if (Object.is(value, newValue)) {
-			return;
-		}
-		value = newValue;
-		subject.next(value);
-		subject.complete();
-	}
-
-	set.subject = subject;
-
-	Object.defineProperty(object, prop, {
-		enumerable: true,
-		configurable: true,
-		get: () => value,
-		set: set,
-	});
-
-	return subject.finalize(() => {
-		subscription.unsubscribe();
-		delete object[prop];
-		object[prop] = value;
-	});
-}
-
-
-window.a = [];
-window.c = a;
-
-
-watch$(window, "a").subscribe(v => {
-	console.log("2222", v);
-});
-
-watch$(window, "a").subscribe(v => {
-	console.log("3333", v);
-});
 
 
 // $module.factory("abc", function(A, B, C) {

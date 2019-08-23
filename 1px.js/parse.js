@@ -1,7 +1,7 @@
 (function() {
 	"use strict";
 	
-	const {Observable} = require("./observable");
+	const {Observable, Subject} = require("./observable");
 	
 	function noop() {}
 	
@@ -15,40 +15,37 @@
 	/// watch$
 	const watch$ = (function() {
 		
+		/// WATCH
 		const ARRAY_METHODS = ["reverse", "splice", "push", "pop", "unshift", "shift", "sort"];
 		const DATE_METHODS = ["setDate", "setFullYear", "setHours", "setMilliseconds", "setMonth", "setSeconds", "setTime", "setUTCDate", "setUTCFullYear", "setUTCHours", "setUTCMilliseconds", "setUTCMinutes", "setUTCSeconds", "setYear"];
 		
 		function mutationObservableFromClass$(object, methods) {
 			let key = methods[0];
-			if (object[key].observable$) {
-				return object[key].observable$;
-			}
+			let observable$ = object[key].observable$;
 			
-			let observable$ = new Observable(observer => {
+			return observable$ = observable$ || new Observable(observer => {
 				let prototype = Object.getPrototypeOf(object);
-				let o = Object.create(prototype);
-				Object.setPrototypeOf(object, o);
+				let wrap = Object.create(prototype);
+				Object.setPrototypeOf(object, wrap);
 				
 				for (let method of methods) {
-					o[method] = function() {
+					wrap[method] = function() {
 						let result = prototype[method].apply(this, arguments);
 						observer.next(this);
 						observer.complete();
 						return result;
 					}
 				}
+				wrap[key].observable$ = observable$;
 				
-				o[key].observable$ = observable$;
-				
-				return function() {
-					delete o[key].observable$;
+				return () => {
+					delete wrap[key].observable$;
 					Object.setPrototypeOf(object, prototype);
 				}
 				
 			}).share();
-			
-			return observable$;
 		}
+		
 		
 		function mutationObservable$(object) {
 			if (Array.isArray(object)) return mutationObservableFromClass$(object, ARRAY_METHODS);
@@ -56,8 +53,6 @@
 			return Observable.NEVER;
 		}
 		
-		
-		let num = 0;
 		
 		function watch$(object, prop) {
 			
@@ -80,10 +75,7 @@
 				}
 			}
 			
-			let observable$ = new Observable(function(observer) {
-				num++;
-				// console.log("watch$ ob: " + num, object, prop);
-				
+			let observable$ = new Observable(observer => {
 				let value = object[prop];
 				let subscription = mutationObservable$(value).subscribe(observer);
 				
@@ -101,18 +93,11 @@
 				Object.defineProperty(object, prop, {
 					enumerable: true,
 					configurable: true,
-					get: function() {
-						return value;
-					},
+					get: () => value,
 					set: set,
 				});
 				
-				/// cleanup!
-				return function() {
-					
-					num--;
-					// console.log("-watch$ ob: " + num, object, prop);
-					
+				return () => {
 					subscription.unsubscribe();
 					delete set.observable$;
 					delete object[prop];
@@ -123,7 +108,7 @@
 			
 			return observable$;
 		}
-		
+
 		return watch$;
 	})();
 	
@@ -860,7 +845,7 @@
 			return new Observable(function(observer) {
 				setContext(tokens, context, local);
 				
-				let stop$ = Observable.subject();
+				let stop$ = new Subject();
 				
 				let watchers = [];
 				tokens.forEach(token => {
@@ -953,7 +938,7 @@
 		constructor(global, local) {
 			this.global = global || Object(null);
 			this.local = local || Object(null);
-			this.disconnect$ = Observable.subject();
+			this.disconnect$ = new Subject();
 		}
 		
 		disconnect() {

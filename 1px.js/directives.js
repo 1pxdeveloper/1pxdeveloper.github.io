@@ -5,6 +5,10 @@
 	/// Default Template Directive
 	$module.directive("*foreach", function() {
 
+		
+		console.log("*foreach *foreach *foreach ");
+		
+		
 		function LCS(s1, s2) {
 			s1 = s1 || [];
 			s2 = s2 || [];
@@ -78,7 +82,7 @@
 		return function(context, el, script) {
 
 			/// Prepare Placeholder
-			let placeholder = document.createComment("forech: " + script);
+			let placeholder = document.createComment("foreach: " + script);
 			let placeholderEnd = document.createComment("endforech");
 			let repeatNode = el.cloneNode(true);
 			repeatNode.removeAttribute("*foreach");

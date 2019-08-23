@@ -1,14 +1,13 @@
 (function() {
+	"use strict";
+	
 	const {$module} = require("./1px.module");
 	const {JSContext} = require("./parse");
 	
-	
-	function traverse(node, fn) {
-		fn = fn || noop;
-		
+	function traverse(node, callback) {
 		let stack = [];
 		while(node) {
-			node = fn(node) === false ? stack.pop() : node.firstChild || stack.pop();
+			node = callback(node) === false ? stack.pop() : node.firstChild || stack.pop();
 			node && node.nextSibling && stack.push(node.nextSibling);
 		}
 	}
@@ -16,18 +15,17 @@
 	
 	/// ELEMENT_NODE
 	function compile_element_node(el, context, to) {
-		to = to || el;
-		
-		if (to !== el) {
-			for (let attr of Array.from(el.attributes)) {
-				to.setAttributeNode(attr.cloneNode(true));
-			}
-		}
-		
 		switch (el.tagName) {
 			case "STYLE":
 			case "SCRIPT":
 				return false;
+		}
+		
+		to = to || el;
+		if (to !== el) {
+			for (let attr of Array.from(el.attributes)) {
+				to.setAttributeNode(attr.cloneNode(true));
+			}
 		}
 		
 		/// @NOTE: FORM Submit 방지
@@ -86,28 +84,33 @@
 	}
 	
 	/// @FIXME...
-	function syntax(context, el, attr, start, fn, end) {
+	function syntax(context, el, attr, start, callback, end) {
 		let name = attr.nodeName;
 		let value = attr.nodeValue;
 		
 		if (end === "" && name.startsWith(start) && name.endsWith(end)) {
-			fn(context, el, value, name.slice(start.length));
+			callback(context, el, value, name.slice(start.length));
 			// el.removeAttributeNode(attr); // @TODO: DEBUG mode
 			return true;
 		}
 		
 		if (end !== undefined && name.startsWith(start) && name.endsWith(end)) {
-			fn(context, el, value, name.slice(start.length, -end.length));
+			callback(context, el, value, name.slice(start.length, -end.length));
 			// el.removeAttributeNode(attr);
 			return true;
 		}
 		
 		if (name === start) {
-			fn(context, el, value);
+			callback(context, el, value);
 			// el.removeAttributeNode(attr);
 			return true;
 		}
 	}
+	
+	function _prop(context, el, script, prop) {
+		context.watch$(script, value => el[prop] = value);
+	}
+	
 	
 	// function _getOptions(value) {
 	// 	return options.reduce((o, option) => {
@@ -158,10 +161,6 @@
 			return $.filter(e => e.keyCode === 27)
 		},
 	};
-	
-	function _prop(context, el, script, prop) {
-		context.watch$(script, value => el[prop] = value);
-	}
 	
 	function _event(context, el, script, value) {
 		
@@ -297,6 +296,7 @@
 	
 	/// TEXT_NODE
 	function _nodeValue(value) {
+		
 		/// HTML Element
 		if (this.__node) {
 			this.__node.forEach(node => node.remove());
@@ -311,7 +311,6 @@
 		}
 		
 		this.nodeValue = value === undefined ? "" : value;
-		//			domChanged(textNode.parentNode);
 	}
 	
 	function compile_text_node(textNode, context) {
@@ -360,8 +359,6 @@
 		
 		return el;
 	}
-	
-	$module.compile = $compile;
 	
 	exports.$compile = $compile;
 })();
