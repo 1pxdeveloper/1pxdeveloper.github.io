@@ -36,10 +36,6 @@
 		factory.require = function(callback, resolve) {
 			callback = _makeInjectable(callback);
 			callback.$inject = callback.$inject.map(name => prefix + name);
-			
-			console.log(callback.$inject);
-			
-			
 			$module.require(callback, resolve);
 		};
 		
