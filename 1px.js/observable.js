@@ -179,7 +179,6 @@
 			o.next = o.next || observer.next.bind(observer);
 			o.error = o.error || observer.error.bind(observer);
 			o.complete = o.complete || observer.complete.bind(observer);
-			
 			return this.subscribe(o);
 		});
 	};
@@ -236,6 +235,8 @@
 	};
 	
 	
+	
+	
 	Observable.prototype.complete = function(fn) {
 		
 		return this.pipe(observer => {
@@ -255,13 +256,11 @@
 		});
 	};
 	
-	Observable.prototype.mergeMap = function(fn) {
-		return this.pipe(observer => {
+	Observable.prototype.flatMap = Observable.prototype.mergeMap = function(callback) {
+		return this.map(callback).pipe(observer => {
 			return {
-				next() {
-					Observable.of(fn.apply(observer, arguments)).subscribe(value => {
-						observer.next(value);
-					});
+				next(value) {
+					value.subscribe(observer.next.bind(observer), observer.error.bind(observer), noop);
 				},
 			}
 		});
@@ -551,6 +550,18 @@
 		});
 	};
 	
+	
+	Observable.fromPromise = function(promise) {
+		return new Observable(observer => {
+			promise.then(res => {
+				observer.next(res);
+				observer.complete();
+			}, err => {
+				observer.error(err);
+			})
+		});
+	};
+	
 	Observable.fromEvent = function(el, type, useCapture) {
 		return new Observable(observer => {
 			function handler(event) {
@@ -619,24 +630,17 @@
 	
 	Observable.merge = function(...observables) {
 		
-		
 		return new Observable(observer => {
 			
-			let index = 0;
 			let len = observables.length;
+			let count = 0;
 			
 			let s = observables.map(observable => {
-				
 				return observable.subscribe({
-					next(value) {
-						observer.next(value)
-					},
-					error(err) {
-						observer.error(err)
-					},
+					next(value) { observer.next(value) },
+					error(err) { observer.error(err) },
 					complete() {
-						index++;
-						if (len === index) {
+						if (++count === len) {
 							observer.complete();
 						}
 					},
@@ -653,8 +657,8 @@
 		constructor() {
 			super(observer => {
 				if (this.closed) return;
-				
 				this.observers.push(observer);
+				
 				let _cleanup = observer._subscription._cleanup;
 				observer._subscription._cleanup = () => {
 					this.observers.splice(this.observers.indexOf(observer), 1);
@@ -687,6 +691,27 @@
 		}
 	}
 	
+	
+	class BehaviorSubject extends Subject {
+		constructor(value) {
+			super();
+			this.value = value;
+			
+			let _subscriber = this._subscriber;
+			this._subscriber = (observer) => {
+				if (this.closed) return;
+				
+				console.log("scrive???", this.value)
+				observer.next(this.value);
+				return _subscriber.call(null, observer);
+			}
+		}
+		
+		next(value) {
+			this.value = value;
+			super.next(value);
+		}
+	}
 	
 	class AsyncSubject extends Subject {
 		constructor() {
@@ -723,8 +748,10 @@
 		}
 	}
 	
+	
 	exports.Observable = Observable;
 	exports.Subject = Subject;
 	exports.AsyncSubject = AsyncSubject;
+	exports.BehaviorSubject = BehaviorSubject;
 	
 })();

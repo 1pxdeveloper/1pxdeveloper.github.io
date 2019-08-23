@@ -9,154 +9,99 @@
 <body>
 
 
+<button onclick="play()">play</button>
+<button onclick="pause()">pause</button>
+<button onclick="resume()">resume</button>
+
+
 <script>
 
 
-/// Module
-function noop() {}
+Observable.prototype.switchMap = function(callback) {
+	return this.pipe(observer => {
+		let subscription;
 
-function _makeInjectable(callback) {
-	if (Array.isArray(callback)) {
-		let array = callback;
-		callback = array[array.length - 1];
-		callback.$inject = array.slice(0, -1);
-	}
+		return {
+			next(value) {
+				if (subscription) subscription.unsubscribe();
+				let observable = callback(value);
+				subscription = observable.subscribe(observer);
+			},
 
-	if (typeof callback !== "function") {
-		throw TypeError("factory must be array or function.");
-	}
-
-	if (!callback.$inject) {
-		let s = callback.toString();
-		callback.$inject = s.slice(s.indexOf("(") + 1, s.indexOf(")")).split(/\s*,\s*/).filter(x => x);
-	}
-
-	return callback;
-}
-
-function _makePrefixModuleProvider($module, prefix) {
-	function factory(name, callback) {
-		$module.factory(prefix + name, callback);
-	}
-
-	factory.value = function(name, value) {
-		$module.value(prefix + name, value);
-	};
-
-	factory.require = function(callback, resolve) {
-		callback = _makeInjectable(callback);
-		callback.$inject = callback.$inject.map(name => prefix + name);
-		$module.require(callback, resolve);
-	};
-
-	return factory;
-}
+			complete() {}
+		}
+	});
+};
 
 
-function createModule() {
-	let values = Object.create(null);
 
-	function value(name, _value) {
-		let v = values[name] = values[name] || new AsyncSubject();
+Observable.prototype.concatMap = function(callback) {
 
-		if (arguments.length === 1) {
-			return v;
+	return this.pipe(observer => {
+
+		let queue = [];
+		let ing = false;
+		let isCompleted = false;
+
+		function doQueue() {
+			if (ing) return;
+
+			let fn = queue.shift();
+			if (fn) {
+				fn();
+			}
+			else {
+				if (isCompleted) {
+					observer.complete();
+				}
+			}
 		}
 
-		v.next(_value);
-		v.complete();
-	}
+		return {
+			next(value) {
+				queue.push(() => {
+					ing = true;
 
-	function require(callback, resolve) {
-		resolve = resolve || noop;
-		callback = _makeInjectable(callback);
+					let observable = callback(value);
+					if (!(observable instanceof Observable)) {
+						observable = Observable.of(value);
+					}
 
-		let args$ = callback.$inject.map(name => value(name));
+					observable.subscribe(
+						value => observer.next(value),
+						err => observer.error(err),
+						() => {
+							ing = false;
+							doQueue();
+						},
+					);
+				});
 
-		Observable.forkjoin(...args$).subscribe(args => {
-			// @TODO: decorator(callback, args)
-			resolve(callback.apply(null, args));
-		})
-	}
+				doQueue();
+			},
 
-	function factory(name, callback) {
-		require(callback, result => value(name, result))
-	}
-
-	let $module = {};
-	$module.value = value;
-	$module.factory = factory;
-	$module.require = require;
-	$module.directive = _makePrefixModuleProvider($module, "directive.");
-	$module.service = _makePrefixModuleProvider($module, "service.");
-	$module.pipe = _makePrefixModuleProvider($module, "pipe.");
-
-	return $module;
-}
-
-
-window.$module = createModule();
+			complete() {
+				isCompleted = true;
+			},
+		}
+	});
+};
 
 
-$module.require(function(A) {
-	console.log(A);
-});
+let pause$ = new BehaviorSubject(false);
 
-$module.require(function(A, B) {
-	console.log("@@", A, B);
-	return "BBB";
-});
-
-$module.factory("B", function(A) {
-	console.log("@@", A);
-	return "BBB";
+let o = Observable.of(1, 2, 3, 4, 5, 6, 7, 8).concatMap(v => {
+	return pause$.switchMap(v => {
+		console.log("switchMap", v);
+		return v ? Observable.NEVER : Observable.timeout(1000, v);
+	});
 });
 
 
-$module.value("A", 100);
+o.subscribe(v => {
 
-
-// $module.factory("abc", function(A, B, C) {
-//
-// 	console.log("abc", arguments);
-// 	return "abc!!";
-// });
-//
-//
-// $module.value("A", 100);
-//
-//
-// $module.value("C", "CCCCC");
-//
-//
-// setTimeout(function() {
-// 	$module.value("B", "asdfasdfsad");
-//
-//
-// }, 1000);
-//
-//
-// $module.factory("def", function(A, abc, C) {
-//
-// 	console.log("def", arguments);
-//
-// 	return "ddeeff";
-// });
-//
-//
-// $module.require(function(abc, def) {
-//
-//
-// 	alert("!!!");
-//
-// 	console.log(arguments);
-// });
-//
-//
-// // setTimeout(function() {
-// //
-// //
-// // }, 1000);
+	console.log("@@@@@", v);
+});
 
 
 </script>
