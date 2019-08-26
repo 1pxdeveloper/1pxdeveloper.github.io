@@ -5,10 +5,6 @@
 	/// Default Template Directive
 	$module.directive("*foreach", function() {
 
-		
-		console.log("*foreach *foreach *foreach ");
-		
-		
 		function LCS(s1, s2) {
 			s1 = s1 || [];
 			s2 = s2 || [];
@@ -97,10 +93,13 @@
 
 			context.watch$(script, array => {
 
+
+				console.log(array);
+
+
 				/// @FIXME: 고급스럽게 전환하기
 				let [$row, $index] = array["@@keys"];
 				array = array.map(v => v["@@entries"][0]);
-
 
 				/// LCS 알고리즘을 통해 삭제할 노드와 남길 노드를 분리한다.
 				let [d, e] = LCS(prevArray, array);

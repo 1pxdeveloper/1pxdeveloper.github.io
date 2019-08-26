@@ -5,6 +5,8 @@ $top = 72px
 $left = 80px
 $orange = #ffaa21
 $green = #14ffa4
+$green-dark = #29be9b
+
 
 *
   margin 0
@@ -52,6 +54,9 @@ main
   height 100%
   overflow hidden
 
+
+[color=green]
+  color $green-dark;
 
 [grid]
   display grid
@@ -154,6 +159,7 @@ doro-log
   margin-left 90px
   color #2f2f2f
   overflow hidden
+  font-weight bold
 
   &.right
     .top
@@ -186,6 +192,7 @@ doro-log
     font-weight bold
     letter-spacing -0.84px
     grid-column 3 / -1
+    margin-right 16px
 
   h2
     font-size 12px
@@ -193,7 +200,18 @@ doro-log
     opacity 0.3
     grid-column -2 / -2
     justify-self end
+    &[color=green]
+      opacity 1
 
+  h3.price
+    font-size 16px
+    font-weight bold
+    letter-spacing -0.84px
+    color $green-dark
+
+  p
+    font-size 12px
+    align-self start
 
 footer.my-car
   layer()

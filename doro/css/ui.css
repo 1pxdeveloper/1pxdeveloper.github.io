@@ -48,6 +48,9 @@ main {
   height: 100%;
   overflow: hidden;
 }
+[color=green] {
+  color: #29be9b;
+}
 [grid] {
   display: grid;
   grid-template-columns: repeat(8, 8px 1fr 8px);
@@ -149,6 +152,7 @@ doro-log {
   margin-left: 90px;
   color: #2f2f2f;
   overflow: hidden;
+  font-weight: bold;
 }
 doro-reminder.right .top,
 doro-log.right .top {
@@ -192,6 +196,7 @@ doro-log h1 {
   font-weight: bold;
   letter-spacing: -0.84px;
   grid-column: 3/-1;
+  margin-right: 16px;
 }
 doro-reminder h2,
 doro-log h2 {
@@ -200,6 +205,22 @@ doro-log h2 {
   opacity: 0.3;
   grid-column: -2/-2;
   justify-self: end;
+}
+doro-reminder h2[color=green],
+doro-log h2[color=green] {
+  opacity: 1;
+}
+doro-reminder h3.price,
+doro-log h3.price {
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: -0.84px;
+  color: #29be9b;
+}
+doro-reminder p,
+doro-log p {
+  font-size: 12px;
+  align-self: start;
 }
 footer.my-car {
   position: absolute;
