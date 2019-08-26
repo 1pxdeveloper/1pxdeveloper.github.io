@@ -179,7 +179,12 @@
 			o.next = o.next || observer.next.bind(observer);
 			o.error = o.error || observer.error.bind(observer);
 			o.complete = o.complete || observer.complete.bind(observer);
-			return this.subscribe(o);
+
+			let s = this.subscribe(o);
+			return () => {
+				o.finalize && o.finalize();
+				s.unsubscribe();
+			}
 		});
 	};
 	
