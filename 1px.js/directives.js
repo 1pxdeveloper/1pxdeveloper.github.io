@@ -93,10 +93,6 @@
 
 			context.watch$(script, array => {
 
-
-				console.log(array);
-
-
 				/// @FIXME: 고급스럽게 전환하기
 				let [$row, $index] = array["@@keys"];
 				array = array.map(v => v["@@entries"][0]);

@@ -151,3 +151,22 @@ $module.factory("Transform", function() {
 		},
 	}
 });
+
+
+$module.factory("FLIP", function() {
+	
+	return {
+		translateY: function(el, first) {
+			let last = el.getBoundingClientRect();
+			let invert = (first.top - last.top);
+			
+			el.animate([
+				{transform: `translateY(${invert}px)`},
+				{transform: 'translateY(0)'},
+			], {
+				duration: 1000,
+				easing: "ease",
+			});
+		}
+	}
+});

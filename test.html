@@ -28,11 +28,10 @@ Observable.prototype.switchMap = function(callback) {
 				subscription = observable.subscribe(observer);
 			},
 
-			complete() {}
+			complete() {},
 		}
 	});
 };
-
 
 
 Observable.prototype.concatMap = function(callback) {
@@ -40,68 +39,76 @@ Observable.prototype.concatMap = function(callback) {
 	return this.pipe(observer => {
 
 		let queue = [];
-		let ing = false;
-		let isCompleted = false;
+		let running = false;
+		let completed = false;
+		let subscriptions = [];
 
 		function doQueue() {
-			if (ing) return;
+			if (running) return;
 
-			let fn = queue.shift();
-			if (fn) {
-				fn();
+			let nextJob = queue.shift();
+			if (nextJob) {
+				return nextJob();
 			}
-			else {
-				if (isCompleted) {
-					observer.complete();
-				}
+
+			if (completed) {
+				observer.complete();
 			}
 		}
 
 		return {
 			next(value) {
 				queue.push(() => {
-					ing = true;
+					running = true;
 
 					let observable = callback(value);
 					if (!(observable instanceof Observable)) {
 						observable = Observable.of(value);
 					}
 
-					observable.subscribe(
+					subscriptions.push(observable.subscribe(
 						value => observer.next(value),
 						err => observer.error(err),
 						() => {
-							ing = false;
+							running = false;
 							doQueue();
 						},
-					);
+					));
 				});
 
 				doQueue();
 			},
 
 			complete() {
-				isCompleted = true;
+				completed = true;
+			},
+
+			finalize() {
+				subscriptions.forEach(subscription => subscription.unsubscribe());
 			},
 		}
-	});
+	})
 };
 
 
 let pause$ = new BehaviorSubject(false);
 
-let o = Observable.of(1, 2, 3, 4, 5, 6, 7, 8).concatMap(v => {
-	return pause$.switchMap(v => {
-		console.log("switchMap", v);
-		return v ? Observable.NEVER : Observable.timeout(1000, v);
+let o = Observable.of(1, 2, 3, 4, 5, 6, 7, 8).concatMap(value => {
+
+	return pause$.switchMap(paused => {
+		console.log("switchMap", paused);
+		return paused ? Observable.NEVER : Observable.timeout(1000, value);
 	});
+
 });
 
 
-o.subscribe(v => {
+let x = o.subscribe(v => {
 
 	console.log("@@@@@", v);
 });
+
+
 
 
 </script>
