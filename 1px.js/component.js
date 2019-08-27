@@ -15,13 +15,13 @@
 			
 			let template = wrap.content.querySelector("template") || wrap;
 			$$templates[WebComponent.template.tagName] = template;
-			console.log(WebComponent.template.tagName, $$templates[WebComponent.template.tagName]);
+			// console.log(WebComponent.template.tagName, $$templates[WebComponent.template.tagName]);
 			
 			return template;
 		}
 		
 		static templateSelector(selector) {
-			console.log(WebComponent.template.tagName, document.querySelector(selector));
+			// console.log(WebComponent.template.tagName, document.querySelector(selector));
 			$$templates[WebComponent.template.tagName] = document.querySelector(selector);
 		}
 		

@@ -5,7 +5,7 @@
 	/// @TODO: 아직 인터페이스에 대한 확신이 안 듬..
 
 	const {$module} = require("./1px.module");
-	const {Observable, Subject, AsyncSubject} = require("./observable");
+	const {Observable, Subject, AsyncSubject, BehaviorSubject} = require("./observable");
 	const {WebComponent} = require("./component");
 
 	function DOMReady(callback) {
@@ -19,6 +19,7 @@
 	$module.value("Observable", Observable);
 	$module.value("Subject", Subject);
 	$module.value("AsyncSubject", AsyncSubject);
+	$module.value("BehaviorSubject", BehaviorSubject);
 
 	$module.value("WebComponent", WebComponent);
 
