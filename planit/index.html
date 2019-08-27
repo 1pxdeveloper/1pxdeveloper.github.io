@@ -15,7 +15,7 @@
 
 <video-background-list inline-template>
 
-	<video-background #video *foreach="ids as id, i" [attr.id]="'v'+i" [attr.vid]="id" [root]="this" .pause()="i !== index" .play()="i === index"></video-background>
+	<video-background #video *foreach="ids as id, i" [attr.id]="'v'+i" [attr.vid]="id" :root="this" .pause()="i !== index" .play()="i === index"></video-background>
 
 	<div class="number">
 		<div *foreach="ids as id, i" (click)="setPage(i)" [class.selected]="i === index"><h1>{{ i + 1 }}</h1></div>

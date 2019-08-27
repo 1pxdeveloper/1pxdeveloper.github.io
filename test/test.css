@@ -1,0 +1,11 @@
+#test {
+  display: block;
+  width: 200px;
+  height: 200px;
+  background: #ff4500;
+  transition: opacity 1s;
+  opacity: 1;
+}
+#test[hidden] {
+  opacity: 0;
+}

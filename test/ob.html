@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="../1px.js/1px.js"></script>
+</head>
+<body>
+
+
+<script>
+
+
+let o = new Observable(observer => {
+
+
+	let i = 0;
+	let id = setInterval(() => observer.next(i++), 1000);
+
+	return () => {
+		console.log("clean");
+		clearInterval(id);
+	}
+});
+
+
+
+o.take(5).subscribe(v => {
+
+
+	console.log(v);
+
+})
+
+
+</script>
+</body>
+</html>

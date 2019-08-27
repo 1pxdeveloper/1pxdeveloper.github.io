@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="utf8">
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<!--<link rel="manifest" href="manifest.json">-->
+
+	<link rel="stylesheet" href="test.css"/>
+	<script src="../1px.js/1px.js"></script>
+
+</head>
+
+<body is="app">
+
+
+<button (click)="toggle()">toggle</button>
+
+
+<div $a id="test" [hidden]="flag">skldfjaklsjdkljafklds</div>
+
+
+<script>
+$module.controller("app", function(Observable, Subject) {
+
+	return {
+		init() {
+			this.flag = false;
+
+
+			let el = this.$a;
+			let final$ = new Subject();
+
+			Observable.merge(
+				Observable.fromEvent(el, "transitionstart"),
+				Observable.fromEvent(el, "transitionrun")
+			).take(1).subscribe(event => {
+
+				final$.next();
+
+				console.log(event);
+
+				Observable.fromEvent(el, "transitionend").complete(console.log).take(1).subscribe(event => {
+
+
+					// console.log(event);
+				});
+
+			});
+
+
+		},
+
+		toggle() {
+			this.flag = !this.flag;
+		}
+	}
+})
+</script>
+
+</body>
+</html>

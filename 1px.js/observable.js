@@ -189,9 +189,8 @@
 
 
 	Observable.prototype.count = function(fn) {
-		let count = 0;
-
 		return this.pipe(observer => {
+			let count = 0;
 			return {
 				next() {
 					count++;
@@ -199,28 +198,27 @@
 
 				complete() {
 					observer.next(count);
-					count = 0;
 				},
 			}
 		});
 	};
 
 
-	Observable.prototype.map = function(fn) {
-		return this.pipe(observer => {
-			return {
-				next() {
-					observer.next(fn(...arguments));
-				},
-			}
-		});
-	};
-
-	Observable.prototype.do = function(fn) {
+	Observable.prototype.map = function(callback) {
 		return this.pipe(observer => {
 			return {
 				next(value) {
-					fn(value);
+					observer.next(callback(value));
+				},
+			}
+		});
+	};
+
+	Observable.prototype.do = function(callback) {
+		return this.pipe(observer => {
+			return {
+				next(value) {
+					callback(value);
 					observer.next(value);
 				},
 			}
@@ -239,22 +237,21 @@
 	};
 
 
-	Observable.prototype.complete = function(fn) {
-
+	Observable.prototype.complete = function(callback) {
 		return this.pipe(observer => {
 			return {
 				complete() {
-					fn();
+					callback();
 					observer.complete();
 				},
 			}
 		});
 	};
 
-	Observable.prototype.finalize = function(fn) {
+	Observable.prototype.finalize = function(callback) {
 		return new Observable(observer => {
 			this.subscribe(observer);
-			return fn;
+			return callback;
 		});
 	};
 
@@ -315,7 +312,6 @@
 
 
 	Observable.prototype.take = function(num) {
-
 		let count = 0;
 		return this.pipe(observer => {
 			return {

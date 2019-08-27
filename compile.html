@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+
+	<script>
+	document.onreadystatechange = function(event) {
+		console.log(document.body.innerHTML, document.readyState);
+	}
+	</script>
+
+</head>
+<body>
+
+<section>
+	<h1>hello {{ name }}</h1>
+
+	<template id="a" is="MyComponent">
+		<h1 [innerHTML]="abc">This is template</h1>
+	</template>
+</section>
+
+
+<script>
+function DOMWalk(node, callback) {
+	if (!node) return;
+
+	let queue = [node];
+
+	while (queue.length) {
+		node = queue.shift();
+
+		// Option: Closing,
+		if (typeof node === "function") {
+			let closing = node;
+			node = queue.shift();
+			closing(node);
+			continue;
+		}
+
+		// Option: Skip children
+		let ret = callback(node);
+		if (ret === false) {
+			continue;
+		}
+
+		if (node.childNodes) {
+			let childNodes = Array.from(node.childNodes);
+			if (typeof ret === "function") childNodes.push(ret, node);
+			queue = childNodes.concat(queue);
+		}
+	}
+}
+
+
+function compile(element, context) {
+	DOMWalk(element, (node) => {
+		switch (node.nodeType) {
+			case 1:
+				return compile_element(node, context);
+
+			case 3:
+				return compile_text(node, context);
+		}
+	})
+}
+
+function compile_element(element, context) {
+	if (element.tagName === "HEAD") return false;
+	if (element.tagName === "STYLE") return false;
+	if (element.tagName === "SCRIPT") return false;
+
+	if (element.tagName === "TEMPLATE") {
+
+		console.warn(element);
+
+		compile(element.content, context);
+
+		return () => {
+			console.warn(element);
+			// element.replaceWith(element.content);
+		};
+	}
+
+
+	console.log(element);
+}
+
+function compile_text(node, context) {
+	if (node.nodeValue != false) {
+		return false;
+	}
+}
+
+
+compile(document.documentElement, {});
+</script>
+
+
+</body>
+</html>
