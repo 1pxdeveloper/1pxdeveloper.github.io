@@ -113,6 +113,75 @@
 	})();
 	
 	
+	/// Tokenizer
+	tokenize.re = /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)|((?:\d*\.\d+)|\d+)|('[^']*'|"[^"]*")|(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!?:;.,<>=\[\]\(\){}])|(\s)|./g;
+	
+	tokenize.types = [
+		"",
+		"(name)",
+		"(number)",
+		"(string)",
+		"(operator)",
+		"(ws)",
+		"(unknown)",
+	];
+	
+	function tokenize(script) {
+		/// assert: typeof script === "string";
+		
+		let tokens = [];
+		
+		script.replace(tokenize.re, function(value) {
+			
+			/// Parse Type
+			let type;
+			for (let i = 1; i < arguments.length; i++) {
+				if (arguments[i]) {
+					type = tokenize.types[i];
+					break;
+				}
+			}
+			
+			/// Create Token
+			let token;
+			switch (type) {
+				case "(name)":
+					token = Object.create($symbol_table[value] || $symbol_table["(name)"]);
+					token.value = "value" in token ? token.value : value;
+					tokens.push(token);
+					break;
+				
+				case "(number)":
+					token = Object.create($symbol_table["(literal)"]);
+					token.value = +value;
+					tokens.push(token);
+					break;
+				
+				case "(string)":
+					token = Object.create($symbol_table["(literal)"]);
+					token.value = value.slice(1, -1);
+					tokens.push(token);
+					break;
+				
+				case "(operator)":
+					token = Object.create($symbol_table[value]);
+					token.value = value;
+					tokens.push(token);
+					break;
+				
+				case "(unknown)":
+					throw SyntaxError("Unexpected token " + value);
+			}
+			
+			return value;
+		});
+		
+		tokens.forEach(token => token.script = script);
+		tokens.index = 0;
+		return tokens;
+	}
+	
+	
 	/// Operator precedence
 	const PREFIX = 1;
 	const INFIX = 2;
@@ -134,9 +203,9 @@
 	precedence(INFIX, "**");
 	precedence(INFIX, "*", "/", "%");
 	precedence(INFIX, "+", "-");
+	precedence(INFIX, "|");
 	precedence(INFIX, "<", ">", ">=", "in");
 	precedence(INFIX, "===", "!==", "==", "!=");
-	precedence(INFIX, "|");
 	precedence(INFIX, "as");
 	precedence(INFIX, "=", "=>");
 	precedence(INFIX, "if");
@@ -182,7 +251,7 @@
 		length: 0,
 		
 		error(err) {
-			throw SyntaxError(err);
+			throw SyntaxError(this.script + " " + err);
 		},
 		
 		nud() {
@@ -299,64 +368,7 @@
 	
 	infix(";");
 	infix("if");
-	
-	infixr("=", function(left) {
-		if (left.id !== "." && left.id !== "[" && left.id !== "(name)") {
-			left.error("Invalid left-hand side in assignment.");
-		}
-		
-		this.push(left);
-		this.push(expression(this.lbp - 1));
-	});
-	
-	infix("as", function(left) {
-		this.push(left, next("(name)"));
-		
-		if ($token.id === ",") {
-			next(",");
-			this.push(next("(name)"));
-		}
-		else {
-			this.push({});
-		}
-		
-		if ($token.id === "=>") {
-			next("=>");
-			this.push(expression());
-		}
-	});
-	
-	infix("|", function(left) {
-		if ($token.id !== "(name)") {
-			$token.error("Unexpected token: " + $token.id);
-		}
-		
-		this.push(left);
-		this.push($token);
-		next();
-		
-		let args = this.push([]);
-		
-		if ($token.id === ":") {
-			next(":");
-			
-			for (; ;) {
-				let o = expression();
-				args.push(o);
-				
-				if ($token.id !== ",") {
-					break;
-				}
-				next(",");
-			}
-		}
-	});
-	
-	infix("?", function(left) {
-		this.push(left, expression());
-		next(":");
-		this.push(expression());
-	});
+	infix("=>");
 	
 	infixr(["&&", "||"]);
 	infixr(["===", "!==", "==", "!=", "<", "<=", ">", ">="]);
@@ -366,50 +378,35 @@
 	
 	prefix(["+", "-", "!"]);
 	
-	prefix("(", function() {
-		
-		let _next = $tokens[$tokens.index];
-		let _next2 = $tokens[$tokens.index + 1];
-		
-		if (_next.id === "," || (_next.id === ")" && _next2 && _next2.id === "=>")) {
-			let args = Object.create($symbol_table["(array)"]);
-			args.value = [];
-			this.push(args);
-			
-			for (; ;) {
-				args.value.push(next("(name)"));
-				if ($token.id !== ",") {
-					break;
-				}
-				next(",");
-			}
-			next(")");
-
-			next("=>");
-			
-			this.push(expression());
-			return;
+	/// foo = bar
+	infixr("=", function(left) {
+		if (left.id !== "." && left.id !== "[" && left.id !== "(name)") {
+			left.error("Invalid left-hand side in assignment.");
 		}
 		
-		if (_next.id === "=>") {
-			let args = Object.create($symbol_table["(array)"]);
-			args.value = [];
-			this.push(args);
-			next(")");
-			
-			next("=>");
-			
-			this.push(expression());
-			return;
-		}
-		
-		
-		let e = expression();
-		next(")");
-		return e;
+		this.push(left);
+		this.push(expression(this.lbp - 1));
 	});
 	
+	/// foo.bar
+	infix(".", function(left) {
+		this.push(left, next("(name)"));
+	});
 	
+	/// foo[bar]
+	infix("[", function(left) {
+		this.push(left, expression());
+		next("]");
+	});
+	
+	/// foo ? bar : baz
+	infix("?", function(left) {
+		this.push(left, expression());
+		next(":");
+		this.push(expression());
+	});
+	
+	/// [foo, bar, baz, ...]
 	prefix("[", function() {
 		let array = Object.create($symbol_table["(array)"]);
 		array.value = [];
@@ -431,6 +428,8 @@
 		return array;
 	});
 	
+	
+	/// {foo: bar, ...}
 	prefix("{", function() {
 		let args = this.push([]);
 		
@@ -458,26 +457,18 @@
 		next("}");
 	});
 	
-	infix(".", function(left) {
-		if ($token.id !== "(name)") {
-			throw SyntaxError("Unexpected token " + $token.id);
-		}
-		
-		this.push(left, next());
-	});
-	
-	infix("[", function(left) {
-		this.push(left, expression());
-		next("]");
-	});
-	
+	/// foo(bar, ...)
+	/// foo.bar(baz, ...)
 	infix("(", function(left) {
 		let args = Object.create($symbol_table["(array)"]);
 		args.value = [];
 		
+		/// foo(bar, ...)
 		if (left.id === "." || left.id === "[") {
 			this.push(left[0], left[1], args);
 		}
+		
+		/// foo.bar(baz, ...)
 		else {
 			this.push(left, args);
 		}
@@ -499,75 +490,91 @@
 	});
 	
 	
-	infix("=>", function(left) {
-		this.push(left);
-		this.push(expression());
+	/// (foo, ...) => bar
+	/// () => bar
+	/// (foo) => bar
+	/// (foo)
+	prefix("(", function() {
+		
+		let _next = $tokens[$tokens.index];
+		let _next2 = $tokens[$tokens.index + 1];
+		
+		/// (foo, ...) => bar
+		if (_next.id === "," || (_next.id === ")" && _next2 && _next2.id === "=>")) {
+			let args = Object.create($symbol_table["(array)"]);
+			args.value = [];
+			this.push(args);
+			
+			for (; ;) {
+				args.value.push(next("(name)"));
+				if ($token.id !== ",") {
+					break;
+				}
+				next(",");
+			}
+			next(")");
+			
+			next("=>");
+			
+			this.push(expression());
+			return;
+		}
+		
+		/// (foo) => bar
+		if (_next.id === "=>") {
+			let args = Object.create($symbol_table["(array)"]);
+			args.value = [];
+			this.push(args);
+			next(")");
+			
+			next("=>");
+			
+			this.push(expression());
+			return;
+		}
+		
+		
+		/// (foo)
+		let e = expression();
+		next(")");
+		return e;
 	});
 	
 	
-	/// Tokenizer
-	tokenize.re = /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)|((?:\d*\.\d+)|\d+)|('[^']*'|"[^"]*")|(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!?:;.,<>=\[\]\(\){}])|(\s)|./g;
-	
-	tokenize.types = [
-		"",
-		"(name)",
-		"(number)",
-		"(string)",
-		"(operator)",
-		"(ws)",
-		"(unknown)",
-	];
-	
-	function tokenize(script) {
-		let tokens = [];
+	/// foo as bar, baz
+	infix("as", function(left) {
+		this.push(left, next("(name)"));
 		
-		String(script).trim().replace(tokenize.re, function(value) {
-			let type;
-			let token;
+		if ($token.id === ",") {
+			next(",");
+			this.push(next("(name)"));
+		}
+		else {
+			this.push({});
+		}
+		
+		if ($token.id === "=>") {
+			next("=>");
+			this.push(expression());
+		}
+	});
+	
+	/// foo | bar: baz, ...
+	infix("|", function(left) {
+		let args = this.push(left, next("(name)"), []);
+		
+		if ($token.id === ":") {
+			next(":");
 			
-			/// parse Type
-			for (let i = 1; i < arguments.length; i++) {
-				if (arguments[i]) {
-					type = tokenize.types[i];
+			for (; ;) {
+				args.push(expression());
+				if ($token.id !== ",") {
 					break;
 				}
+				next(",");
 			}
-			
-			switch (type) {
-				case "(name)":
-					token = Object.create($symbol_table[value] || $symbol_table["(name)"]);
-					token.value = "value" in token ? token.value : value;
-					tokens.push(token);
-					break;
-				
-				case "(number)":
-					token = Object.create($symbol_table["(literal)"]);
-					token.value = +value;
-					tokens.push(token);
-					break;
-				
-				case "(string)":
-					token = Object.create($symbol_table["(literal)"]);
-					token.value = value.slice(1, -1);
-					tokens.push(token);
-					break;
-				
-				case "(operator)":
-					token = Object.create($symbol_table[value]);
-					token.value = value;
-					tokens.push(token);
-					break;
-				
-				case "(unknown)":
-					throw SyntaxError("Unexpected token " + value);
-			}
-			
-			return value;
-		});
-		
-		tokens.index = 0;
-		return tokens;
-	}
+		}
+	});
 	
 	
 	/// Evaluate
@@ -592,8 +599,8 @@
 		return this.value.map(evaluate);
 	});
 	
-	evaluateRule("{", function(a) {
-		return a.reduce(function(object, o) {
+	evaluateRule("{", (a) => {
+		return a.reduce((object, o) => {
 			object[o.key] = evaluate(o);
 			return object;
 		}, {});
@@ -662,22 +669,10 @@
 		return fn && fn.apply(this.object, evaluate(b));
 	});
 	
+	/// foo.bar(...baz)
 	evaluateRule("(", function(a, b, c) {
 		let fn = this.setObjectProp(evaluate(a), b.id === "(name)" ? b.value : evaluate(b));
 		return fn && fn.apply(this.object, evaluate(c));
-	});
-	
-	
-	evaluateRule("=>", function(a, b) {
-		let args = [a.value];
-		let tokens = _flat_tokens(b);
-		
-		return function(..._args) {
-			let r = {};
-			args.forEach((key, index) => r[key] = _args[index]);
-			tokens.forEach(t => t.local = r);
-			return evaluate(b);
-		}
 	});
 	
 	
@@ -703,6 +698,14 @@
 		});
 	});
 	
+	/// foo if bar
+	evaluateRule("if", function(a, b) {
+		this.ifcondition = evaluate(b);
+		if (this.ifcondition) {
+			return evaluate(b);
+		}
+	});
+	
 	
 	function _flat_tokens(token) {
 		let tokens = [];
@@ -718,6 +721,18 @@
 		
 		return tokens;
 	}
+	
+	evaluateRule("=>", function(a, b) {
+		let args = [a.value];
+		let tokens = _flat_tokens(b);
+		
+		return function(..._args) {
+			let r = {};
+			args.forEach((key, index) => r[key] = _args[index]);
+			tokens.forEach(t => t.local = r);
+			return evaluate(b);
+		}
+	});
 	
 	evaluateRule("as", function(a, b, c) {
 		
@@ -764,15 +779,6 @@
 		
 		ret["@@keys"] = [name_of_item, name_of_index];
 		return ret;
-	});
-	
-	
-	evaluateRule("if", function(a, b) {
-		this.ifcondition = evaluate(b);
-		if (this.ifcondition) {
-			return evaluate(a);
-		}
-		return undefined;
 	});
 	
 	
@@ -852,28 +858,22 @@
 	
 	const nextTick = function() {
 		
-		let i = 0;
 		let index = 0;
 		let queue = [];
 		
-		function nextTick(fn) {
-			if (fn && typeof fn !== "function") throw TypeError("argument is must be function.");
+		function nextTick(callback) {
+			if (callback && typeof callback !== "function") throw TypeError("argument is must be function.");
 			
 			if (queue.length === 0) {
-				Promise.resolve().then(() => {
-					nextTick.commit();
-				})
+				Promise.resolve().then(() => nextTick.commit());
 			}
-			
-			queue.push(fn);
+			queue.push(callback);
 		}
 		
-		nextTick.queue = queue;
-		
 		nextTick.commit = function() {
-			let fn;
-			while(fn = queue[index++]) {
-				fn();
+			let callback;
+			while((callback = queue[index++])) {
+				callback();
 			}
 			
 			index = 0;
@@ -905,8 +905,8 @@
 		}
 		
 		constructor(global, local) {
-			this.global = global || Object(null);
-			this.local = local || Object(null);
+			this.global = global || Object.create(null);
+			this.local = local || Object.create(null);
 			this.disconnect$ = new Subject();
 		}
 		
@@ -927,13 +927,10 @@
 			return $parse(script).assign(this.global, this.local, value);
 		}
 		
+		/// @TODO: script 가 array 면?? watch$(['a', 'b', 'c'], ...)
+		/// @TODO: script 가 template 면?? watch$(`this.dkjfksfd `) script.raw 확인....
+		/// @TODO: fn이 있던 없던 Observer로??
 		watch$(script, fn) {
-			
-			/// @TODO: script 가 array 면?? watch$(['a', 'b', 'c'], ...)
-			
-			/// @TODO: script 가 template 면?? watch$(`this.dkjfksfd `) script.raw 확인....
-			
-			/// @TODO: fn이 있던 없던 Observer로??
 			script = String(script).trim();
 			
 			let next = typeof fn === "function" ? fn : noop;

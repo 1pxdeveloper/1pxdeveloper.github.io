@@ -11,8 +11,8 @@
 	<script src="../1px.js/1px.js"></script>
 </head>
 
-<body is="todo-mvc">
-<section class="todoapp">
+<body>
+<section class="todoapp" is="app-todo">
 	<header class="header">
 		<h1>todos</h1>
 		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="addTodo(el.value); el.value = ''">
@@ -76,7 +76,7 @@
 <script src="js/app.js"></script>
 
 <script>
-$module.controller("todo-mvc", function() {
+$module.controller("app-todo", function() {
 
 	return class {
 		init($) {
@@ -112,7 +112,7 @@ $module.controller("todo-mvc", function() {
 
 			completed = completed || false;
 			this.todos.push({
-				title, completed
+				title, completed,
 			})
 		}
 

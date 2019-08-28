@@ -46,6 +46,10 @@
 	function createModule() {
 		let values = Object.create(null);
 		
+		function get(name) {
+			return values[name] && values[name].value;
+		}
+		
 		function value(name, _value) {
 			let v = values[name] = values[name] || new AsyncSubject();
 			
@@ -75,6 +79,7 @@
 		
 		let $module = {};
 		$module._values = values;
+		$module.get = get;
 		$module.value = value;
 		$module.factory = factory;
 		$module.require = require;

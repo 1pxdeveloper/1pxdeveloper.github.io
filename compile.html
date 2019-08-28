@@ -3,98 +3,527 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Title</title>
-
-	<script>
-	document.onreadystatechange = function(event) {
-		console.log(document.body.innerHTML, document.readyState);
-	}
-	</script>
-
+	<script src="1px.js/1px.dev.js"></script>
 </head>
-<body>
 
-<section>
-	<h1>hello {{ name }}</h1>
+<body is="root">
+
+<header>
+	<h1>Hello,</h1>
+	<h2>world</h2>
+</header>
+
+<section is="blog-component as b" [name]="'Hello'">
+	<h1>hello {{ b.name }}</h1>
 
 	<template id="a" is="MyComponent">
 		<h1 [innerHTML]="abc">This is template</h1>
+		<section>
+			<template>
+				<h1>skldjlfksjdf</h1>
+				<h2>skldjlfksjdf</h2>
+			</template>
+		</section>
 	</template>
 </section>
 
 
 <script>
-function DOMWalk(node, callback) {
+const {$module, JSContext} = require();
+
+
+function tag() {
+
+}
+
+function tag2() {
+
+}
+
+
+$module.component = function(name, callback) {
+
+	let meta = {
+		template() {
+
+		},
+
+		style() {
+
+		},
+
+		pipe() {
+
+		},
+	};
+
+	meta.cls = callback.bind(meta)();
+	console.log(meta);
+};
+
+
+$module.component("ai-tutor", function(capitalize) {
+
+	// language=HTML
+	this.template`
+		<template [attr.state]="state">
+			<ai-background [src]="_img" [has_image]="_has_image" s_tyle="filter:blur(40px)"></ai-background>
+
+			<header class="ui-top-app-bar">
+				<div class="back-btn" (click)="backhome()">
+					<svg fill="#fff" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+						<path d="M0 0h24v24H0z" fill="none"/>
+						<path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+					</svg>
+				</div>
+			</header>
+		</template>
+	`;
+
+	// language=CSS
+	this.style`
+        * {
+            background: #fff;
+        }
+	`;
+
+	this.pipe({capitalize});
+
+
+	return class AITutor {
+		init($) {
+
+		}
+	}
+});
+
+
+function traverseDOM(node, callback) {
 	if (!node) return;
 
 	let queue = [node];
 
-	while (queue.length) {
+	while(queue.length) {
 		node = queue.shift();
 
 		// Option: Closing,
 		if (typeof node === "function") {
-			let closing = node;
-			node = queue.shift();
-			closing(node);
+			node();
 			continue;
 		}
 
-		// Option: Skip children
+		// Option: Skip children,
 		let ret = callback(node);
 		if (ret === false) {
 			continue;
 		}
 
+		// Walk ChildNodes
 		if (node.childNodes) {
 			let childNodes = Array.from(node.childNodes);
-			if (typeof ret === "function") childNodes.push(ret, node);
+			if (typeof ret === "function") childNodes.push(ret);
 			queue = childNodes.concat(queue);
 		}
 	}
 }
 
 
-function compile(element, context) {
-	DOMWalk(element, (node) => {
+function compile(element, context, $module) {
+	if (!(context instanceof JSContext)) {
+		context = new JSContext(context);
+	}
+
+	traverseDOM(element, (node) => {
 		switch (node.nodeType) {
 			case 1:
-				return compile_element(node, context);
+				return compile_element(node, context, $module);
 
 			case 3:
-				return compile_text(node, context);
+				return compile_text(node, context, $module);
 		}
 	})
 }
 
-function compile_element(element, context) {
-	if (element.tagName === "HEAD") return false;
-	if (element.tagName === "STYLE") return false;
-	if (element.tagName === "SCRIPT") return false;
+function compile_element(el, context, $module) {
+	if (el.tagName === "HEAD") return false;
+	if (el.tagName === "STYLE") return false;
+	if (el.tagName === "SCRIPT") return false;
 
-	if (element.tagName === "TEMPLATE") {
+	let ret;
 
-		console.warn(element);
+	/// Template Directive
+	/// @FIXME:... default template directive
+	let hasTemplateDirective = ["*foreach", "*if", "*else"].some(attrName => {
+		let hasAttr = el.hasAttribute(attrName);
+		if (hasAttr) {
+			let attr = el.getAttributeNode(attrName);
+			$module.directive.require([attrName, directive => directive(el, context, attr)]);
+		}
+		return hasAttr;
+	});
 
-		compile(element.content, context);
+	if (hasTemplateDirective) {
+		return false;
+	}
+
+
+	/// Attribute Directive
+	for (let attr of Array.from(el.attributes)) {
+
+		/// Custom Directives
+		let directive = $module.directive.get(attr.nodeName);
+		if (typeof directive === "function") {
+			if (directive(el, context, attr) === false) {
+				ret = false;
+			}
+			continue;
+		}
+
+		/// Basic Directives
+		/// @TODO: custom-directive 등록할때 아래처럼 syntax를 등록하는건 어떨까?
+		if (syntax(el, context, attr, "#", _ref)) continue;
+		if (syntax(el, context, attr, "$", _ref2)) continue;
+		if (syntax(el, context, attr, "(", _event, ")")) continue;
+		if (syntax(el, context, attr, "[(", _twoway, ")]")) continue;
+		if (syntax(el, context, attr, "[attr.", _attr, "]")) continue;
+		if (syntax(el, context, attr, "[style.", _style, "]")) continue;
+		if (syntax(el, context, attr, "[class.", _class, "]")) continue;
+		if (syntax(el, context, attr, "[show.", _transition, "]")) continue;
+		if (syntax(el, context, attr, "[visible.", _visible2, "]")) continue;
+		if (syntax(el, context, attr, "[visible", _visible, "]")) continue;
+		if (syntax(el, context, attr, "[", _prop, "]")) continue;
+		if (syntax(el, context, attr, ".", _call, ")")) continue;
+	}
+
+
+	if (el.tagName === "TEMPLATE") {
+
+		console.warn(el);
+		compile(el.content, context);
 
 		return () => {
-			console.warn(element);
+			console.warn(el);
 			// element.replaceWith(element.content);
 		};
 	}
 
-
-	console.log(element);
+	console.log(el);
 }
 
-function compile_text(node, context) {
-	if (node.nodeValue != false) {
+/// @FIXME...
+function syntax(el, context, attr, start, callback, end) {
+	end = end || "";
+	let name = attr.nodeName;
+	let value = attr.nodeValue;
+
+	if (!name.startsWith(start) || name.endsWith(end)) {
 		return false;
+	}
+
+	callback(el, context, value, name.slice(start.length, -end.length));
+	return true;
+}
+
+
+/// Template Syntax
+function _visible(el, context, script, prop) {
+	prop = "hidden";
+	context.watch$(script, value => el[prop] = !value);
+}
+
+function _visible2(el, context, script, prop) {
+
+	context.watch$(script, value => {
+		if (value) {
+			el.hidden = false;
+		}
+		else {
+			el.hidden = true;
+		}
+	});
+}
+
+function _prop(el, context, script, prop) {
+	context.watch$(script, value => el[prop] = value);
+}
+
+// function _getOptions(value) {
+// 	return options.reduce((o, option) => {
+// 		o[option] = true;
+// 		return o;
+// 	}, Object.create(null));
+// }
+
+Event.pipes = {
+
+	prevent($) {
+		return $.do(e => e.preventDefault())
+	},
+
+	stop($) {
+		return $.do(e => e.stopPropagation())
+	},
+
+	capture($) {
+		return $;
+	},
+
+	self($) {
+		return $.filter(e => e.target === $.element)
+	},
+
+	once($) {
+		return $.take(1)
+	},
+
+	shift($) {
+		return $.filter(e => e.shiftKey)
+	},
+
+	alt($) {
+		return $.filter(e => e.altKey)
+	},
+
+	ctrl($) {
+		return $.filter(e => e.ctrlKey)
+	},
+
+	meta($) {
+		return $.filter(e => e.metaKey)
+	},
+
+	cmd($) {
+		return $.filter(e => e.metaKey)
+	},
+};
+
+function _event(el, context, script, value) {
+
+	let [type, ...options] = value.split("|");
+	let useCapture = options.indexOf("capture") >= 0;
+
+
+	/// Keyboard Event
+	let keys = [];
+	if (type.startsWith("keydown") || type.startsWith("keypress") || type.startsWith("keyup")) {
+		[type, ...keys] = type.split(".");
+		console.log(type, keys);
+	}
+
+	let event;
+	let o$ = context.on$(el, type, useCapture).do(e => event = e);
+	o$.element = el;
+
+	if (keys.length) {
+		o$ = o$.filter(e => {
+			return keys.indexOf(e.key.toLowerCase()) >= 0;
+		});
+		o$.element = el;
+	}
+
+	options.forEach(pipe => {
+		let handler = Event.pipes[pipe] || Event.pipes["*"];
+		if (!handler) throw new Error(pipe + " is not registered event pipe.");
+		o$ = handler(o$);
+		o$.element = el;
+	});
+
+	o$.subscribe(function(event) {
+		context.local.event = event;
+		context.evaluate(script);
+	});
+}
+
+/// two-way
+function _twoway(el, context, script, value) {
+
+	let [prop, ...options] = value.split(".");
+
+	options = options.reduce((o, option) => {
+		o[option] = true;
+		return o;
+	}, Object.create(null));
+
+
+	context.watch$(script, value => el[prop] = value);
+	context.on$(el, options.change ? "change" : "input").subscribe(function() {
+		context.assign(script, el[prop]);
+	});
+}
+
+function _attr(el, context, script, attr) {
+	context.watch$(script, value => {
+		if (!value && value !== 0) {
+			el.removeAttribute(attr);
+		}
+		else {
+			el.setAttribute(attr, value)
+		}
+	});
+}
+
+function _style(el, context, script, name) {
+
+	let [prop, unit] = name.split(".", 2);
+	unit = unit || "";
+
+	context.watch$(script, value => {
+		switch (unit) {
+			case "url":
+				value = "url('" + encodeURI(value) + "')";
+				break;
+
+			default:
+				value = value + unit;
+				break;
+		}
+
+		el.style[prop] = value;
+	});
+}
+
+function _class(el, context, script, name) {
+	context.watch$(script, value => {
+		value ? el.classList.add(name) : el.classList.remove(name);
+	});
+}
+
+function _ref(el, context, script, name) {
+	context.local[name] = el;
+}
+
+function _ref2(el, context, script, name) {
+	context.global["$" + name] = el;
+}
+
+function _transition(el, context, script, name) {
+
+	function transitionend() {
+		el.classList.remove(name + "-enter-active");
+		el.classList.remove(name + "-enter");
+		el.classList.remove(name + "-enter-to");
+
+		el.removeEventListener("transitionend", transitionend);
+		el.removeEventListener("transitionend", transitionHideEnd);
+	}
+
+	function transitionHideEnd() {
+		el.classList.remove(name + "-leave-active");
+		el.classList.remove(name + "-leave");
+		el.classList.remove(name + "-leave-to");
+		el.hidden = true;
+
+		el.removeEventListener("transitionend", transitionend);
+		el.removeEventListener("transitionend", transitionHideEnd);
+	}
+
+	context.watch$(script, value => {
+		if (value === undefined) return;
+
+		if (value) {
+			el.removeEventListener("transitionend", transitionend);
+			el.removeEventListener("transitionend", transitionHideEnd);
+
+			el.classList.add(name + "-enter-active");
+			el.classList.add(name + "-enter");
+			el.hidden = false;
+
+			if (parseFloat(window.getComputedStyle(el).transitionDuration)) {
+				el.addEventListener("transitionend", transitionend, false);
+				requestAnimationFrame(() => {
+					el.classList.remove(name + "-enter");
+					el.classList.add(name + "-enter-to");
+				})
+			}
+			else {
+				transitionend();
+			}
+		}
+		else {
+			el.removeEventListener("transitionend", transitionend);
+			el.removeEventListener("transitionend", transitionHideEnd);
+
+			el.classList.add(name + "-leave-active");
+			el.classList.add(name + "-leave");
+			el.offsetWidth;
+
+			if (parseFloat(window.getComputedStyle(el).transitionDuration)) {
+
+
+				el.addEventListener("transitionend", transitionHideEnd, false);
+				el.addEventListener("transitioncancel", transitionHideEnd, false);
+
+				requestAnimationFrame(() => {
+					el.classList.remove(name + "-leave");
+					el.classList.add(name + "-leave-to");
+				})
+			}
+			else {
+				transitionHideEnd();
+			}
+		}
+	});
+}
+
+function _call(el, context, script, name) {
+	context.watch$(script, value => {
+		if (value === true) {
+			let doScript = "_tmp." + name + ")";
+			// console.log("_call", el, doScript);
+
+			context.local._tmp = el;
+
+			try {
+				context.evaluate(doScript);
+
+			} catch (e) {
+
+				console.error(e);
+			}
+		}
+	});
+}
+
+/// TEXT_NODE
+function compile_text(node, context) {
+	let index = node.nodeValue.indexOf("{{");
+
+	while(index >= 0) {
+		node = node.splitText(index);
+
+		index = node.nodeValue.indexOf("}}");
+		if (index === -1) return;
+
+		let next = node.splitText(index + 2);
+		let script = node.nodeValue.slice(2, -2);
+		context.watch$(script, _nodeValue.bind(node));
+
+		node = next;
+		index = node.nodeValue.indexOf("{{");
 	}
 }
 
+function _nodeValue(value) {
+	/// HTML Element
+	if (this.__node) {
+		this.__node.forEach(node => node.remove());
+		delete this.__node;
+	}
 
-compile(document.documentElement, {});
+	if (value instanceof Node) {
+		this.nodeValue = "";
+		/// @FIXME:.. Element Node는????
+		this.__node = Array.from(value.childNodes || [value]);
+		this.before(value);
+		return;
+	}
+
+	this.nodeValue = value === undefined ? "" : value;
+}
+
+
+// var test = {};
+// compile(document.documentElement, test, $module);
 </script>
 
 
