@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="1px.js/1px.js"></script>
+</head>
+<body>
+
+<script>
+const {JSContext} = require();
+
+
+let d = {x: [1, 2, 3]};
+let $ = JSContext.connect(d);
+
+
+$`x.map((x,index) => x + index)`.subscribe(console.log);
+
+$(`x.map((x,index) => x + index)`).subscribe(console.log);
+
+
+
+function test(string) {
+
+	// console.log(arguments);
+
+	console.log(string);
+}
+
+
+test`askdjkladjklajsla`;
+
+
+</script>
+</body>
+</html>

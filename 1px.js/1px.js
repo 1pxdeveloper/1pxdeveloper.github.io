@@ -17,6 +17,7 @@
 		"component.js",
 		"batch.js",
 		"1px.touch.js",
+		"1px.http.js",
 		// "import.js"
 
 	].forEach(src => {
