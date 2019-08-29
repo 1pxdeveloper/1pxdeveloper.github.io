@@ -81,7 +81,7 @@ main.main section.line.log {
   top: 200px;
 }
 .space-half-page {
-  min-height: 100vmax;
+  min-height: 38vmax;
 }
 .alert-divider {
   background: url("../imgs/chess_bg.jpg");
