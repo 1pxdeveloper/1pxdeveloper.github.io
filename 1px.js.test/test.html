@@ -3,35 +3,34 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Title</title>
+	<script src="1px.js"></script>
 </head>
 <body>
 
-<script src="commonjs.js"></script>
 
-<script src="../1px.js/observable.js"></script>
-<script src="parse.precedence.js"></script>
-<script src="parse.evaluate.js"></script>
-<script src="parse.tokenize.js"></script>
-<script src="parse.expression.js"></script>
-at
+<main is="todo">
+	<div>{{ arr }}</div>
+
+	<ul>
+		<li *foreach="arr.filter(filter) as row">{{ row }}</li>
+	</ul>
+</main>
+
 
 <script>
+$module.controller("todo", function() {
+	return class {
+		init() {
+			this.arr = [1, 2, 3];
+			this.filter = (v) => v
 
+			console.log(this.filter);
 
-let root = window.$parse("5 + 10 * 2");
-
-
-console.log(root);
-console.log(JSON.stringify(root, null, 2));
-
-
-let x = evaluate(root);
-
-
-
-console.log(x);
-
-
+		}
+	}
+});
 </script>
+
+
 </body>
 </html>
