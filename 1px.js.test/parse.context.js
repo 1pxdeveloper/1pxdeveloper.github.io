@@ -3,7 +3,6 @@
 	
 	const {Subject, BehaviorSubject} = require();
 	const {$parse} = require();
-	const noop = () => {};
 	
 	function nextTick() {
 	
@@ -71,7 +70,13 @@
 			// let subject = new BehaviorSubject();
 			//
 			
-			$parse(script).watch(this.thisObj, ...this.locals).takeUntil(this.disconnect$).subscribe(fn);
+			$parse(script).watch(this.thisObj, ...this.locals).takeUntil(this.disconnect$).finalize(() => {
+
+
+				console.warn("unwatch", script);
+
+
+			}).subscribe(fn);
 			
 			
 			//
@@ -87,7 +92,7 @@
 				return Observable.merge(...type.map(type => this.on$(el, type, useCapture)));
 			}
 			
-			return Observable.fromEvent(el, type, useCapture).takeUntil(this.disconnect$);
+			return Observable.fromEvent(el, type, useCapture);//.takeUntil(this.disconnect$);
 		}
 		
 		/// @FIXME: .. 기능 확대 필요!!! ex) /users/:id

@@ -1,6 +1,6 @@
 (function() {
 	"use strict";
-	
+
 	const {Observable} = require();
 	
 	/// WATCH
@@ -38,7 +38,7 @@
 	function mutationObservable$(object) {
 		if (Array.isArray(object)) return mutationObservableFromClass$(object, ARRAY_METHODS);
 		if (object instanceof Date) return mutationObservableFromClass$(object, DATE_METHODS);
-		return Observable.NEVER;
+		return Observable.never();
 	}
 	
 	
@@ -46,11 +46,11 @@
 	
 	function watch$$(object, prop) {
 		if (Object(object) !== object) {
-			return Observable.NEVER;
+			return Observable.never();
 		}
 		
 		if (Array.isArray(object) && +prop === prop) {
-			return Observable.NEVER;
+			return Observable.never();
 		}
 		
 		let desc = Object.getOwnPropertyDescriptor(object, prop);

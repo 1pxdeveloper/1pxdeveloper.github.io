@@ -14,7 +14,6 @@
 		
 		"module.js",
 		
-		"parse.precedence.js",
 		"parse.expression.js",
 		"parse.watch.js",
 		"parse.evaluate.js",

@@ -8,27 +8,38 @@
 <body>
 
 
-<main is="todo">
-	<div>{{ arr }}</div>
+<!--<main is="todo">-->
+	<!--<div>{{ arr }}</div>-->
 
-	<ul>
-		<li *foreach="arr.filter(filter) as row">{{ row }}</li>
-	</ul>
-</main>
+	<!--<ul>-->
+		<!--<li *foreach="arr.filter(filter) as row">{{ row }}</li>-->
+	<!--</ul>-->
+<!--</main>-->
 
 
 <script>
-$module.controller("todo", function() {
-	return class {
-		init() {
-			this.arr = [1, 2, 3];
-			this.filter = (v) => v
 
-			console.log(this.filter);
 
-		}
-	}
-});
+const {tokenize} = require();
+
+
+let r = tokenize("a.b(c)");
+
+
+console.log("rrr", r);
+
+
+// $module.controller("todo", function() {
+// 	return class {
+// 		init() {
+// 			this.arr = [1, 2, 3];
+// 			this.filter = (v) => v
+//
+// 			console.log(this.filter);
+//
+// 		}
+// 	}
+// });
 </script>
 
 

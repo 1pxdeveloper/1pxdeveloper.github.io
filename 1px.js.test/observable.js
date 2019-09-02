@@ -512,6 +512,7 @@
 	function noop() {}
 
 	Observable.NEVER = new Observable(noop);
+	Observable.never = () => new Observable(noop);
 	Observable.empty = () => new Observable(observer => observer.complete());
 
 	// @FIXME: 내가 만든거

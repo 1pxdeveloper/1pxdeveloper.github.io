@@ -26,12 +26,12 @@ Observable.prototype.share = function() {
 		return function() {
 			observers = observers.filter(o => o !== observer);
 			
-			// console.log("shaere??", observers.length);
+			console.log("shaere??", observers.length);
 
-			if (observers.length === 0) {
-				subscription.unsubscribe();
-				subscription = null;
-			}
+			// if (observers.length === 0) {
+			// 	subscription.unsubscribe();
+			// 	subscription = null;
+			// }
 		}
 	});
 };
