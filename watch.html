@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script>window.exports = window;</script>
+	<!--<script src="1px.js/1px.js"></script>-->
+</head>
+<body>
+
+<script>
+/// Tokenizer
+tokenize.re = /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)|((?:\d*\.\d+)|\d+)|('[^']*'|"[^"]*")|(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!?:;.,<>=\[\]\(\){}])|(\s)|./g;
+
+tokenize.types = [
+	"",
+	"(name)",
+	"(number)",
+	"(string)",
+	"(operator)",
+	"(ws)",
+	"(unknown)",
+];
+
+tokenize.lex = [
+	["(name)", /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)/],
+	["(number)", /((?:\d*\.\d+)|\d+)/],
+	["(string)", /('[^']*'|"[^"]*)"/],
+	["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!?:;.,<>=\[\]\(\){}])/],
+	["(ws)", /(\s)/],
+	["(unknown)", /./]
+];
+
+let re = tokenize.lex.map(v => v[1].source).join("|");
+
+function tokenize(script) {
+	/// assert: typeof script === "string";
+	let tokens = [];
+
+	script.replace(tokenize.re, function(value) {
+
+		/// Parse Type
+		let type;
+		for (let i = 1; i < arguments.length; i++) {
+			if (arguments[i]) {
+				type = tokenize.types[i];
+				break;
+			}
+		}
+
+		/// Create Token
+		let token;
+		switch (type) {
+			case "(name)":
+				token = Object.create($symbol_table[value] || $symbol_table["(name)"]);
+				token.value = "value" in token ? token.value : value;
+				tokens.push(token);
+				break;
+
+			case "(number)":
+				token = Object.create($symbol_table["(literal)"]);
+				token.value = +value;
+				tokens.push(token);
+				break;
+
+			case "(string)":
+				token = Object.create($symbol_table["(literal)"]);
+				token.value = value.slice(1, -1);
+				tokens.push(token);
+				break;
+
+			case "(operator)":
+				token = Object.create($symbol_table[value]);
+				token.value = value;
+				tokens.push(token);
+				break;
+
+			case "(unknown)":
+				throw SyntaxError("Unexpected token " + value);
+		}
+
+		return value;
+	});
+
+	tokens.forEach(token => token.script = script);
+	tokens.index = 0;
+	return tokens;
+}
+
+</script>
+
+
+</body>
+</html>

@@ -89,11 +89,9 @@
 	}
 
 	function cleanupSubscription(subscription) {
-		delete subscription._observer;
-
 		let cleanup = subscription._cleanup;
+		delete subscription._observer;
 		delete subscription._cleanup;
-
 		if (cleanup) cleanup();
 	}
 

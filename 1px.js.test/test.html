@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+
+<script src="commonjs.js"></script>
+
+<script src="../1px.js/observable.js"></script>
+<script src="parse.precedence.js"></script>
+<script src="parse.evaluate.js"></script>
+<script src="parse.tokenize.js"></script>
+<script src="parse.expression.js"></script>
+at
+
+<script>
+
+
+let root = window.$parse("5 + 10 * 2");
+
+
+console.log(root);
+console.log(JSON.stringify(root, null, 2));
+
+
+let x = evaluate(root);
+
+
+
+console.log(x);
+
+
+</script>
+</body>
+</html>
