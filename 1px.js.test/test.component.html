@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Test - Component</title>
+	<script src="1px.js"></script>
+</head>
+<body>
+
+<test-kit [name]="123"></test-kit>
+
+<script>
+$module.component("test-kit", function() {
+
+	return class {
+		//language=HTML
+		static template = `
+			<h1>Hello, this is my name {{ name }}.</h1>
+		`;
+
+		init($) {
+			this.name = $.props.name || "world!";
+		}
+	}
+});
+</script>
+
+</body>
+</html>
