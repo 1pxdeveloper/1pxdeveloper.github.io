@@ -37,7 +37,7 @@
 		
 		disconnect() {
 			console.log("disconnect");
-
+			
 			this.disconnect$.complete();
 		}
 		
@@ -61,30 +61,17 @@
 		/// @TODO: script 가 array 면?? watch$(['a', 'b', 'c'], ...)
 		/// @TODO: script 가 template 면?? watch$(`this.dkjfksfd `) script.raw 확인....
 		/// @TODO: fn이 있던 없던 Observer로??
-		watch$(script, fn) {
-			script = String(script).trim();
-			
-			// let value;
-			// let next = typeof fn === "function" ? fn : noop;
-			//
-			// let subject = new BehaviorSubject();
-			//
-			
-			$parse(script).watch(this.thisObj, ...this.locals).takeUntil(this.disconnect$).finalize(() => {
+		watch$(script, callback) {
+			script = String(script);
 
-
-				console.warn("unwatch", script);
-
-
-			}).subscribe(fn);
+			let stmt$ = $parse(script).watch(this.thisObj, ...this.locals).takeUntil(this.disconnect$);
+			if (typeof callback === "function") {
+				return stmt$.subscribe(callback);
+			}
 			
-			
-			//
-			// if (typeof fn === "function") {
-			// 	return;
-			// }
-			//
-			// return subject.map(v => v);
+			let subject = new Subject();
+			stmt$.subscribe(subject);
+			return subject;
 		}
 		
 		on$(el, type, useCapture) {

@@ -6,7 +6,7 @@ Observable.prototype.share = function() {
 	
 	return new Observable(observer => {
 		observers.push(observer);
-
+		
 		// console.log("share??, subscription??", subscription, observers.length);
 		
 		subscription = subscription || this.subscribe({
@@ -26,12 +26,19 @@ Observable.prototype.share = function() {
 		return function() {
 			observers = observers.filter(o => o !== observer);
 			
-			console.log("shaere??", observers.length);
-
-			// if (observers.length === 0) {
-			// 	subscription.unsubscribe();
-			// 	subscription = null;
-			// }
+			// console.log("shaere??", observers.length);
+			
+			if (observers.length === 0) {
+				subscription.unsubscribe();
+				subscription = null;
+			}
 		}
 	});
+};
+
+
+Observable.prototype.startWith = function(value) {
+	return this.pipe(observer => {
+		observer.next(value);
+	})
 };

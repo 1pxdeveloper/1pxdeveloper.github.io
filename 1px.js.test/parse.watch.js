@@ -1,6 +1,6 @@
 (function() {
 	"use strict";
-
+	
 	const {Observable} = require();
 	
 	/// WATCH
@@ -38,19 +38,17 @@
 	function mutationObservable$(object) {
 		if (Array.isArray(object)) return mutationObservableFromClass$(object, ARRAY_METHODS);
 		if (object instanceof Date) return mutationObservableFromClass$(object, DATE_METHODS);
-		return Observable.never();
+		return Observable.NEVER;
 	}
 	
-	
-	let ops = 0;
-	
 	function watch$$(object, prop) {
+		
 		if (Object(object) !== object) {
-			return Observable.never();
+			return Observable.NEVER;
 		}
 		
 		if (Array.isArray(object) && +prop === prop) {
-			return Observable.never();
+			return Observable.NEVER;
 		}
 		
 		let desc = Object.getOwnPropertyDescriptor(object, prop);
@@ -65,8 +63,12 @@
 		}
 		
 		let observable$ = new Observable(observer => {
-			console.log("init: watch$$", ++ops, object, prop);
-
+			
+			let desc = Object.getOwnPropertyDescriptor(object, prop);
+			if (desc && desc.set && desc.set.observable$) {
+				return desc.set.observable$.subscribe(observer);
+			}
+			
 			let value = object[prop];
 			let subscription = mutationObservable$(value).subscribe(observer);
 			
@@ -89,8 +91,6 @@
 			});
 			
 			return () => {
-				console.log("finalize: watch$$", --ops);
-				
 				subscription.unsubscribe();
 				delete set.observable$;
 				delete object[prop];
