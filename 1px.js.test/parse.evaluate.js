@@ -202,18 +202,17 @@
 		let arrayLike = evaluate(a) || [];
 		
 		let name_of_item = b.value;
-		let name_of_index = c.value || "";
+		let name_of_index = c.value;
 		
-		let ret = Array.from(arrayLike).map((value, index) => {
+		return Array.from(arrayLike).map((value, index) => {
 			let r = Object.create(null);
-			r[name_of_index] = index;
 			r[name_of_item] = value;
+			if (name_of_index) r[name_of_index] = index;
+			
+			/// @FIXME:.. 이거 없애는 방법을 찾자.
 			r["@@entries"] = [value, index];
 			return r;
 		});
-		
-		ret["@@keys"] = [name_of_item, name_of_index];
-		return ret;
 	});
 	
 	
@@ -250,7 +249,7 @@
 					for (let token of tokens) {
 						token.thisObj = thisObj;
 						token.locals = locals;
-
+						
 						token.watch = (object, prop) => {
 							if (Object(object) !== object) return;
 							watchers.push(watch$$(object, prop));
@@ -258,10 +257,8 @@
 					}
 					
 					const nextValue = () => {
-						
-						// console.log("watchers", watchers);
-						
 						watchers = [];
+						
 						console.warn("[script]", script);
 						
 						let value = evaluate(root);
@@ -270,8 +267,23 @@
 						}
 						
 						subscription = Observable.merge(...watchers).take(1).subscribe(() => {
+							console.warn("changed! [script]", script);
+
 							subscription.unsubscribe();
-							Promise.resolve().then(nextValue);
+							
+							
+							for (let token of tokens) {
+								if (token.prop && Object(token.object) === token.object) {
+									let v = token.object[token.prop];
+									if (Array.isArray(v) && v.reverse.observable$) {
+										v.splice();
+									}
+								}
+							}
+							
+							
+							/// @TODO: nextTick? commit?
+							nextTick(nextValue);
 						});
 					};
 					
@@ -286,5 +298,40 @@
 		}
 	}
 	
+	
+	const nextTick = function() {
+		
+		let index = 0;
+		let queue = [];
+		
+		function nextTick(callback) {
+			if (callback && typeof callback !== "function") throw TypeError("argument is must be function.");
+			
+			if (queue.length === 0) {
+				Promise.resolve().then(() => nextTick.commit());
+			}
+
+			queue.push(callback);
+		}
+		
+		nextTick.commit = function() {
+			console.log("");
+			console.log("--- commit ---");
+			console.log("");
+			
+			for (let callback; (callback = queue[index++]);) {
+				callback();
+			}
+			
+			index = 0;
+			queue.length = 0;
+		};
+		
+		return nextTick;
+	}();
+	
+	
 	exports.$parse = $parse;
+	exports.nextTick = nextTick;
+	
 }());

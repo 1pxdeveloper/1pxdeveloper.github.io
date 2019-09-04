@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="1px.js"></script>
+</head>
+<body>
+
+
+<test-app></test-app>
+
+
+<script>
+$module.component("test-app", function() {
+
+	return class HTMLElement {
+		static template = `
+			<ul>
+				<li *foreach="todos as todo">{{ todo.title }} {{ todo.o.checked }}</li>
+			</ul>
+		`;
+
+		init($) {
+			let o = {checked: true};
+
+			this.todos = [];
+			this.todos.push({title: "Hello", o});
+			this.todos.push({title: "World", o});
+
+			$`todos.forEach(todo => todo.title)`;
+		}
+	}
+})
+
+
+</script>
+
+
+
+
+</body>
+</html>

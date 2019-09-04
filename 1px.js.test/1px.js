@@ -22,8 +22,8 @@
 		
 		"compile.js",
 		
-		"directives.foreach.js",
-		"directives.if.js",
+		"directive.foreach.js",
+		"directive.if.js",
 		
 		"batch.js",
 	

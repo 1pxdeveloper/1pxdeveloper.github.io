@@ -58,20 +58,12 @@
 		}
 		
 		/// @FIXME: 고급스럽게 전환하기
-		function createRepeatNode(repeatNode, context, $row, $index, value, index) {
+		function createRepeatNode(repeatNode, context, local) {
 			let node = repeatNode.cloneNode(true);
-			
-			let local = Object.create(null);
-			$row && (local[$row] = value);
-			$index && (local[$index] = index);
-			
-			console.log("local", local);
-			
-			
 			context = context.fork(local);
 			$compile(node, context);
 			
-			return {index, value, node, context, local}
+			return {node, context, local}
 		}
 		
 		return function(context, el, script) {
@@ -91,17 +83,12 @@
 			let prevArray = [];
 			
 			context.watch$(script, array => {
-
-				console.warn("[foreach]", script, array);
-
-
-
+				
+				let locals = array.slice();
+				
 				/// @FIXME: 고급스럽게 전환하기
-				let [$row, $index] = array["@@keys"];
 				array = array.map(v => v["@@entries"][0]);
 				
-
-
 				
 				/// LCS 알고리즘을 통해 삭제할 노드와 남길 노드를 분리한다.
 				let [d, e] = LCS(prevArray, array);
@@ -135,7 +122,7 @@
 							delete container[idx];
 						}
 						else {
-							r = createRepeatNode(repeatNode, context, $row, $index, value, index);
+							r = createRepeatNode(repeatNode, context, locals[index]);
 							placeholder.before(r.node);
 							
 							/// @FIXME...
@@ -155,11 +142,6 @@
 					let r = fixed_container[placeholder_index];
 					placeholder = fixed_container[++placeholder_index].node;
 					return r;
-				});
-				
-				container.forEach((data, index) => {
-					$row && (data.local[$row] = data.value);
-					$index && (data.local[$index] = index);
 				});
 				
 				prevArray = array.slice();

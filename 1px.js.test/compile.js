@@ -41,6 +41,16 @@
 				return false;
 		}
 		
+		/// Directive: "is"
+		/// @TODO: is="app-component as b"
+		context = _createComponentIfDefined(context, el);
+		
+		if (el.hasAttribute("inline-template")) {
+			$compile(el.childNodes, context);
+			return false;
+		}
+		
+		
 		let ret;
 		
 		to = to || el;
@@ -78,8 +88,6 @@
 			return false;
 		}
 		
-		let props = Object.create(null);
-		
 		/// Attribute directive
 		for (let attr of Array.from(el.attributes)) {
 			
@@ -107,47 +115,40 @@
 			if (syntax(context, to, attr, "[show.", _transition, "]")) continue;
 			if (syntax(context, to, attr, "[visible.", _visible2, "]")) continue;
 			if (syntax(context, to, attr, "[visible", _visible, "]")) continue;
-			if (syntax(context, to, attr, "[", _prop(props), "]")) continue;
+			if (syntax(context, to, attr, "[", _prop, "]")) continue;
 			if (syntax(context, to, attr, ".", _call, ")")) continue;
-		}
-		
-		
-		/// Directive: "is"
-		/// @TODO: is="app-component as b"
-		
-		let Component = $module.get(el.getAttribute("is") || el.tagName);
-		if (Component) {
-			
-			console.log(el.getAttribute("is"), Component);
-			console.warn("is", context, el);
-			console.log(Component.template);
-			
-			
-			let controller = new Component();
-			let _context = JSContext.connect(controller, ...context.locals);
-			_context.props = Object.create(null);
-			controller.init && controller.init(_context);
-			
-			
-			if (Component.template) {
-				let template = document.createElement("template");
-				template.innerHTML = Component.template;
-				$compile(template, _context);
-				el.innerHTML = "";
-				el.appendChild(template.content);
-			}
-			else {
-				
-				$compile(el.childNodes, _context);
-			}
-			
-			
-			console.warn("controller", controller);
-			return false;
 		}
 		
 		return ret;
 	}
+	
+	
+	function _createComponentIfDefined(context, el) {
+		
+		let Component = $module.get(el.getAttribute("is") || el.tagName);
+		if (!Component) {
+			return context;
+		}
+		
+		// console.log(el.getAttribute("is"), Component);
+		// console.warn("is", context, el);
+		// console.log(Component.template);
+		
+		let controller = new Component();
+		context = JSContext.connect(controller, ...context.locals);
+		controller.init && controller.init(context);
+		
+		if (Component.template) {
+			let template = document.createElement("template");
+			template.innerHTML = Component.template;
+			$compile(template, context);
+			el.innerHTML = "";
+			el.appendChild(template.content);
+		}
+		
+		return context;
+	}
+	
 	
 	/// @FIXME...
 	function syntax(context, el, attr, start, callback, end) {
@@ -169,8 +170,6 @@
 	function _visible2(context, el, script, prop) {
 		
 		context.watch$(script, value => {
-			
-			
 			if (value) {
 				el.hidden = false;
 			}
@@ -180,10 +179,8 @@
 		});
 	}
 	
-	function _prop(props) {
-		return function(context, el, script, prop) {
-			context.watch$(script, value => el[prop] = value);
-		}
+	function _prop(context, el, script, prop) {
+		context.watch$(script, value => el[prop] = value);
 	}
 	
 	
@@ -288,10 +285,6 @@
 		context.on$(el, eventType || "input").subscribe(function() {
 			context.assign(script, el[prop]);
 		});
-		
-		/// @TODO: INPUT이 아닌 경우에는 watch two-way를 고려해보자.
-		// console.log("@@@@@@@@@@@@@@@", prop);
-		// JSContext.parse(prop).watch$(el).subscribe(value => context.assign(script, value));
 	}
 	
 	function _attr(context, el, script, attr) {
@@ -336,11 +329,6 @@
 	}
 	
 	function _ref2(context, el, script, name) {
-		
-		
-		console.log("xxxxxxxxx", el, script, name);
-		
-		
 		context.thisObj["$" + name] = el;
 	}
 	
@@ -499,10 +487,8 @@
 		
 		return el;
 	}
-	
-	// $module.compile = $compile;
-	
-	exports.$compile = $compile;
+
 	exports.traverseDOM = traverseDOM;
+	exports.$compile = $compile;
 })();
 
