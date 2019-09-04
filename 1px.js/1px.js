@@ -11,9 +11,17 @@
 		"observable.js",
 		"1px.module.js",
 		"utils.js",
-		"parse.js",
+
+		"parse.expression.js",
+		"parse.watch.js",
+		"parse.evaluate.js",
+		"parse.context.js",
+
 		"compile.js",
-		"directives.js",
+
+		"directive.foreach.js",
+		"directive.if.js",
+
 		"component.js",
 		"batch.js",
 		"1px.touch.js",

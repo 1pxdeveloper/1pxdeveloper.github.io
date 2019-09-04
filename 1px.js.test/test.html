@@ -8,93 +8,36 @@
 <body>
 
 
+<!--<main is="todo">-->
+	<!--<div>{{ arr }}</div>-->
+
+	<!--<ul>-->
+		<!--<li *foreach="arr.filter(filter) as row">{{ row }}</li>-->
+	<!--</ul>-->
+<!--</main>-->
+
+
 <script>
-const {Subject, BehaviorSubject} = require();
+
+const {$parse, watch$$} = require();
 
 
-const $timeout = function(delay, value) {
-	return new Promise(resolve => {
-		setTimeout(() => {
-			console.log(value);
-			resolve(value);
-		}, delay);
-	});
-};
+let o = {};
+//
+// watch$$(o, "a").subscribe(console.log);
 
 
-class Test {
-	constructor() {
-		this.pause$ = new BehaviorSubject(false);
-		this.pauseSwitch$$ = (callback) => this.pause$.switchMap(paused => paused ? Observable.NEVER : callback());
+$parse("a + b").watch(o).subscribe(console.log);
 
-		this.actions$ = new Subject();
-
-		this.actionsSubscription = this.actions$.concatMap(action => {
-
-			console.log(action);
-
-			return action;
-
-		}).subscribe();
-	}
-
-	begin() {
-		this.seq = Observable.empty();
-	}
-
-	block(callback) {
-
-		this.seq = this.seq.concat(this.pauseSwitch$$(callback));
+$parse("a").watch(o).subscribe(console.log);
 
 
-		return this.seq;
 
 
-		// let o = this.pauseSwitch$$(callback);
-		//
-		// this.actions$.next(o);
-		//
-		// return o;
-	}
-
-	run() {
-
-		console.log("run");
-
-
-		Observable.of(0)
-			.concatMap(() => {
-				return Observable.timeout(1000, "h")
-					.concatMap(h => {
-						console.log("_h", h);
-
-						return $timeout(1000, "h2");
-					})
-			})
-			.concatMap(h => {
-				console.log("h", h);
-
-				return $timeout(1000, "b");
-			})
-			.concatMap(() => {
-				return $timeout(1000, "c");
-			})
-			.concatMap(() => {
-				return $timeout(1000, "d");
-			})
-			.concatMap(() => {
-				return $timeout(1000, "e");
-			})
-			.subscribe();
-	}
-}
-
-
-let t = new Test();
-t.run();
 
 
 </script>
+
 
 </body>
 </html>

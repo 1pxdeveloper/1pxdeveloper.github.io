@@ -44,10 +44,6 @@
 		this.locals.forEach(local => this.watch(local, prop));
 		this.watch(this.thisObj, prop);
 
-
-		// console.warn("@@@@@@@@@ [setProp]", object, prop);
-
-
 		return object && object[prop];
 	}
 
@@ -60,7 +56,7 @@
 
 	/// Evaluate
 	const $evaluateRules = {};
-	
+
 	function evaluate(token) {
 		return $evaluateRules[token.id][token.length].apply(token, token);
 	}
@@ -254,18 +250,13 @@
 					const nextValue = () => {
 						watchers = [];
 
-						console.warn("[script]", script);
-
 						let value = evaluate(root);
 						if (root.ifcondition !== false) {
 							observer.next(value);
 						}
 
 						subscription = Observable.merge(...watchers).take(1).subscribe(() => {
-							console.warn("changed! [script]", script);
-
 							subscription.unsubscribe();
-
 
 							for (let token of tokens) {
 								if (token.prop && Object(token.object) === token.object) {
@@ -275,7 +266,6 @@
 									}
 								}
 							}
-
 
 							/// @TODO: nextTick? commit?
 							nextTick(nextValue);
@@ -310,10 +300,6 @@
 		}
 
 		nextTick.commit = function() {
-			console.log("");
-			console.log("--- commit ---");
-			console.log("");
-
 			for (let callback; (callback = queue[index++]);) {
 				callback();
 			}

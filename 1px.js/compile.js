@@ -115,25 +115,13 @@
 
 		let Component = el.hasAttribute("is") && $module.get(el.getAttribute("is"));// || el.tagName);
 		if (Component) {
-
-
-			console.log(el.getAttribute("is"), Component);
-
-
-			console.warn("is", context, el);
 			let controller = new Component();
 
 			/// @FIXME:...
-			let _context = JSContext.connect(controller, [controller].concat([context.global, ...context.locals]));
+			let _context = JSContext.connect(controller, [controller].concat([context.thisObj, ...context.locals]));
 
 			// let _context = context.fork(controller);
 			controller.init && controller.init(_context);
-
-
-			console.log(_context);
-
-			window._context = _context;
-
 
 			$compile(el.childNodes, _context);
 
@@ -348,12 +336,7 @@
 	}
 
 	function _ref2(context, el, script, name) {
-
-
-		console.log("xxxxxxxxx", el, script, name);
-
-
-		context.global["$" + name] = el;
+		context.thisObj["$" + name] = el;
 	}
 
 	function _transition(context, el, script, name) {
