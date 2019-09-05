@@ -77,14 +77,10 @@
 <script src="js/app.js"></script>
 
 <script>
-const {$module} = require();
-
-$module.controller("app-todo", function() {
+Mimosa.controller("app-todo", function() {
 
 	return class {
 		init($) {
-			window.a = this;
-
 			this.todos = [];
 			this.editingTodo = null;
 
@@ -118,9 +114,7 @@ $module.controller("app-todo", function() {
 			title = title.trim();
 			if (!title) return;
 
-			this.todos.push({
-				title, completed,
-			})
+			this.todos.push({title, completed});
 		}
 
 		saveTodo(todo, title) {
@@ -133,8 +127,8 @@ $module.controller("app-todo", function() {
 			todo.title = title;
 		}
 
-		toggleAll(flag) {
-			this.todos.forEach(todo => todo.completed = flag);
+		toggleAll(completed) {
+			this.todos.forEach(todo => todo.completed = completed);
 		}
 
 		removeTodo(todo) {

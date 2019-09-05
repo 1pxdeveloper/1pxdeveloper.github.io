@@ -176,6 +176,8 @@
 	}
 	
 	
+	const just = v => v;
+	
 	/// Operators
 	Observable.prototype.pipe = function(fn) {
 		return new Observable(observer => {
@@ -233,11 +235,25 @@
 	};
 	
 	
+	Observable.prototype.doOnce = function(callback) {
+		return this.pipe(observer => {
+			let flag = true;
+			return {
+				next(value) {
+					flag && callback(value);
+					flag = false;
+					observer.next(value);
+				},
+			}
+		});
+	};
+
+
 	Observable.prototype.concat = function(observable) {
 		return this.pipe(observer => {
 			return {
 				complete() {
-					observable.subscribe(observer);
+					Observable.castAsync(observable).subscribe(observer);
 				},
 			}
 		});
@@ -256,10 +272,13 @@
 		});
 	};
 	
-	Observable.prototype.finalize = function(fn) {
+	Observable.prototype.finalize = function(callback) {
 		return new Observable(observer => {
-			this.subscribe(observer);
-			return fn;
+			let s = this.subscribe(observer);
+			return () => {
+				s.unsubscribe();
+				callback();
+			}
 		});
 	};
 	
@@ -364,6 +383,7 @@
 			};
 			
 			observable$.subscribe(stop, stop, stop);
+			return s;
 		});
 	};
 	
@@ -371,19 +391,20 @@
 	Observable.prototype.toPromise = function() {
 		return new Promise((resolve, reject) => {
 			let _value;
+			let s;
 			
-			let s = this.subscribe({
+			s = this.subscribe({
 				next(value) {
 					_value = value;
 				},
 				
 				error(error) {
-					if (s.closed) return;
+					if (s && s.closed) return;
 					reject(error);
 				},
 				
 				complete() {
-					if (s.closed) return;
+					if (s && s.closed) return;
 					resolve(_value);
 				},
 			})
@@ -535,11 +556,11 @@
 		if (value instanceof Observable) {
 			return value;
 		}
-
+		
 		if (value instanceof Promise) {
 			return Observable.fromPromise(value);
 		}
-
+		
 		return Observable.of(value);
 	};
 	
@@ -683,8 +704,8 @@
 	};
 	
 	
-	Observable.prototype.concatMap = function(callback) {
-		
+	Observable.prototype.concatMap = function(callback = just) {
+
 		return this.pipe(observer => {
 			
 			let queue = [];

@@ -95,4 +95,5 @@
 	
 	exports.$module = $module;
 	window.$module = $module;
+	window.Mimosa = $module;
 })();

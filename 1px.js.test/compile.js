@@ -24,7 +24,7 @@
 				continue;
 			}
 			
-			// Walk ChildNodes
+			// Traverse ChildNodes
 			if (node.childNodes) {
 				let childNodes = Array.from(node.childNodes);
 				if (typeof ret === "function") childNodes.push(ret);
@@ -40,16 +40,6 @@
 			case "SCRIPT":
 				return false;
 		}
-		
-		/// Directive: "is"
-		/// @TODO: is="app-component as b"
-		context = _createComponentIfDefined(context, el);
-		
-		if (el.hasAttribute("inline-template")) {
-			$compile(el.childNodes, context);
-			return false;
-		}
-		
 		
 		let ret;
 		
@@ -119,15 +109,20 @@
 			if (syntax(context, to, attr, ".", _call, ")")) continue;
 		}
 		
+		
+		/// Directive: "is"
+		/// @TODO: is="app-component as b"
+		ret = _createComponentIfDefined(context, el);
+		
 		return ret;
 	}
 	
 	
 	function _createComponentIfDefined(context, el) {
 		
-		let Component = $module.get(el.getAttribute("is") || el.tagName);
+		let Component = $module.get(el.getAttribute("is") || el.tagName.toLowerCase());
 		if (!Component) {
-			return context;
+			return;
 		}
 		
 		// console.log(el.getAttribute("is"), Component);
@@ -137,6 +132,11 @@
 		let controller = new Component();
 		context = JSContext.connect(controller, ...context.locals);
 		controller.init && controller.init(context);
+		
+		if (el.hasAttribute("inline-template")) {
+			$compile(el.childNodes, context);
+			return false;
+		}
 		
 		if (Component.template) {
 			let template = document.createElement("template");
@@ -487,7 +487,7 @@
 		
 		return el;
 	}
-
+	
 	exports.traverseDOM = traverseDOM;
 	exports.$compile = $compile;
 })();
