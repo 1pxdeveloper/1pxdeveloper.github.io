@@ -247,9 +247,27 @@
 			}
 		});
 	};
-
-
+	
+	
 	Observable.prototype.concat = function(observable) {
+		
+		// @FIXME: function concat
+		if (typeof observable === "function") {
+			let callback = observable;
+			return this.pipe(observer => {
+				let _value;
+				return {
+					next(value) {
+						_value = value;
+					},
+					
+					complete() {
+						Observable.defer(callback.bind(null, _value)).subscribe(observer);
+					},
+				}
+			});
+		}
+		
 		return this.pipe(observer => {
 			return {
 				complete() {
@@ -260,12 +278,12 @@
 	};
 	
 	
-	Observable.prototype.complete = function(fn) {
+	Observable.prototype.onComplete = Observable.prototype.complete = function(callback) {
 		
 		return this.pipe(observer => {
 			return {
 				complete() {
-					fn();
+					callback();
 					observer.complete();
 				},
 			}
@@ -387,6 +405,21 @@
 		});
 	};
 	
+	
+	/// @TODO: inclusive
+	Observable.prototype.takeWhile = function(callback = just, inclusive) {
+		return this.pipe(observer => {
+			let index = 0;
+			return {
+				next(value) {
+					Observable.castAsync(callback(value, index++)).subscribe(cond => {
+						observer.next(value);
+						if (!cond) observer.complete();
+					});
+				},
+			}
+		});
+	};
 	
 	Observable.prototype.toPromise = function() {
 		return new Promise((resolve, reject) => {
@@ -561,8 +594,18 @@
 			return Observable.fromPromise(value);
 		}
 		
-		return Observable.of(value);
+		return new Observable(observer => {
+			observer.next(value);
+			observer.complete();
+		})
 	};
+	
+	Observable.defer = function(callback) {
+		return new Observable(observer => {
+			return Observable.castAsync(callback()).subscribe(observer);
+		});
+	};
+	
 	
 	Observable.just = function(value) {
 		return new Observable(observer => {
@@ -705,7 +748,7 @@
 	
 	
 	Observable.prototype.concatMap = function(callback = just) {
-
+		
 		return this.pipe(observer => {
 			
 			let queue = [];
@@ -732,14 +775,23 @@
 						running = true;
 						
 						let observable = Observable.castAsync(callback(value));
-						subscriptions.push(observable.subscribe(
+						
+						let subscription = observable.subscribe(
 							value => observer.next(value),
 							err => observer.error(err),
 							() => {
-								running = false;
-								doQueue();
+								
+								/// @FIXME: 임시 조치 complate() -> 이후 callback()이 되어야 함.
+								
+								Promise.resolve().then(() => {
+									running = false;
+									doQueue();
+									
+								})
 							},
-						));
+						);
+						
+						subscriptions.push(subscription);
 					});
 					
 					doQueue();
