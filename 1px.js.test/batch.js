@@ -15,7 +15,7 @@
 	
 	
 	window.Observable = Observable;
-	window.$module = $module;
+	window.mimosa = window.$module = $module;
 	
 	$module.value("Observable", Observable);
 	$module.value("Subject", Subject);

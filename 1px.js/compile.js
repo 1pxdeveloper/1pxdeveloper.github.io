@@ -113,7 +113,7 @@
 		/// Directive: "is"
 		/// @TODO: is="app-component as b"
 
-		let Component = el.hasAttribute("is") && $module.get(el.getAttribute("is"));// || el.tagName);
+		let Component = el.hasAttribute("is") && $module.get(el.getAttribute("is"));
 		if (Component) {
 			let controller = new Component();
 
@@ -182,6 +182,11 @@
 
 	function _prop(context, el, script, prop) {
 
+		switch (prop) {
+			case "inner-html":
+				prop = "innerHTML";
+				break;
+		}
 
 		context.watch$(script, value => el[prop] = value);
 	}

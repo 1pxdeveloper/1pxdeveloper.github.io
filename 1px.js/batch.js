@@ -7,6 +7,8 @@
 	const {$module} = require("./1px.module");
 	const {Observable, Subject, AsyncSubject, BehaviorSubject} = require("./observable");
 	const {WebComponent} = require("./component");
+	const {JSContext, $compile, traverseDOM} = require("./compile");
+
 
 	function DOMReady(callback) {
 		if (document.body) return callback();
@@ -15,7 +17,7 @@
 
 
 	window.Observable = Observable;
-	window.$module = $module;
+	window.mimosa = window.$module = $module;
 
 	$module.value("Observable", Observable);
 	$module.value("Subject", Subject);
@@ -23,6 +25,10 @@
 	$module.value("BehaviorSubject", BehaviorSubject);
 
 	$module.value("WebComponent", WebComponent);
+	$module.value("traverseDOM", traverseDOM);
+
+
+	let componentsList = [];
 
 	$module.component = function(name, block) {
 		if (!name) {
@@ -50,14 +56,12 @@
 			delete WebComponent.template.lastTemplate;
 
 			$module.value(tagName, component);
-
-			DOMReady(() => window.customElements.define(name, component));
+			componentsList.push({name, component});
 		});
 	};
 
 
 	/// 이건 너무 별론데...
-	const {JSContext, $compile, traverseDOM} = require("./compile");
 
 	$module.value("JSContext", JSContext);
 	$module.compile = $compile;
@@ -67,8 +71,11 @@
 	};
 
 
-	/// BootStrap
-	DOMReady(function() {
+	let bootstraped = false;
+	$module.bootstrap = function() {
+		if (bootstraped) return;
+		bootstraped = true;
+
 		traverseDOM(document.body, node => {
 			if (node.nodeType !== 1) return false;
 
@@ -80,10 +87,15 @@
 				$compile(node, null);
 				return false;
 			}
+		});
 
+		componentsList.forEach(({name, component}) => {
+			window.customElements.define(name, component)
+		});
+	};
 
-		})
-	});
+	/// BootStrap
+	DOMReady($module.bootstrap);
 
 
 })();
