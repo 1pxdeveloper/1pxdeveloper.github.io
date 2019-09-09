@@ -254,7 +254,7 @@
 					const nextValue = () => {
 						watchers = [];
 
-						console.warn("[script]", script);
+						// console.warn("[script]", script);
 
 						let value = evaluate(root);
 						if (root.ifcondition !== false) {
@@ -262,7 +262,7 @@
 						}
 
 						subscription = Observable.merge(...watchers).take(1).subscribe(() => {
-							console.warn("changed! [script]", script);
+							// console.warn("changed! [script]", script);
 
 							subscription.unsubscribe();
 
@@ -285,7 +285,7 @@
 					nextValue();
 
 					return () => {
-						console.warn("unwatch [script]", script);
+						// console.warn("unwatch [script]", script);
 						if (subscription) subscription.unsubscribe();
 					}
 				});
@@ -310,9 +310,9 @@
 		}
 
 		nextTick.commit = function() {
-			console.log("");
-			console.log("--- commit ---");
-			console.log("");
+			// console.log("");
+			// console.log("--- commit ---");
+			// console.log("");
 
 			for (let callback; (callback = queue[index++]);) {
 				callback();

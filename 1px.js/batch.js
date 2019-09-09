@@ -79,8 +79,15 @@
 		traverseDOM(document.body, node => {
 			if (node.nodeType !== 1) return false;
 
-			/// component tag or *[is]
-			// if (node.hasAttribute("is") || $module.get(node.tagName)) {
+			if (node.hasAttribute("inline-template")) {
+				let attr = node.getAttributeNode("inline-template");
+				attr.template = document.createElement("template");
+				attr.template.innerHTML = node.innerHTML;
+			}
+
+			if ($module.get(node.tagName)) {
+				return false;
+			}
 
 			if (node.hasAttribute("is")) {
 				console.warn(node.tagName);
@@ -88,6 +95,21 @@
 				return false;
 			}
 		});
+
+
+		// traverseDOM(document.body, node => {
+		// 	if (node.nodeType !== 1) return false;
+		//
+		// 	/// component tag or *[is]
+		// 	// if (node.hasAttribute("is") || $module.get(node.tagName)) {
+		//
+		// 	if (node.hasAttribute("is")) {
+		// 		console.warn(node.tagName);
+		// 		$compile(node, null);
+		// 		return false;
+		// 	}
+		// });
+
 
 		componentsList.forEach(({name, component}) => {
 			window.customElements.define(name, component)

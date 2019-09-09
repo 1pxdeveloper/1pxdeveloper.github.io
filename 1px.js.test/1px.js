@@ -9,6 +9,7 @@
 	
 	[
 		"observable.js",
+		"observable.single.js",
 		"observable.static.js",
 		"observable.operators.js",
 		

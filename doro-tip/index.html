@@ -23,11 +23,13 @@
 			</ul>
 		</nav>
 
-
 		<app-editor-content flex>
 			<section class="doro-mock">
 				<article class="doro-tip">
 					<div class="doro-top-mark"></div>
+
+					<template is="app-editor-document"></template>
+
 					<div $editor class="contenteditable" contenteditable="true" spellcheck="false" [inner-html]="currentTip.body">여기를 클릭해서 컨텐츠를 입력하세요.</div>
 				</article>
 			</section>
@@ -50,12 +52,59 @@
 </app-editor>
 
 <script>
+mimosa.controller("app-editor-document", function() {
+
+	//language=HTML
+	const template = `
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<title>Title</title>
+			<link rel="stylesheet" href="editor.css"/>
+			<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+		</head>
+		<body>
+		<div $editor class="contenteditable" contenteditable="true" spellcheck="false" [inner-html]="currentTip.body">여기를 클릭해서 컨텐츠를 입력하세요.</div>
+		</body>
+		</html>
+	`;
+
+	return class {
+		init($, element) {
+
+			console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+
+			setTimeout(() => {
+
+				let iframe = document.createElement("iframe");
+				element.replaceWith(iframe);
+				iframe.contentDocument.innerHTML = template;
+			})
+
+			//
+			//
+			//
+			// console.log(iframe.contentDocument);//.documentElement "<h1>sadklfjaklsdjfkasd</h1>";
+			//
+			//
+			// console.log(iframe.contentWindow);
+
+
+		}
+	}
+});
+
+
 mimosa.component("app-editor", function(WebComponent, traverseDOM, sampleContent) {
 
 	const INLINE_LELVEL = "B,BIG,I,SMALL,TT,ABBR,ACRONYM,CITE,CODE,DFN,EM,KBD,STRONG,SAMP,VAR,A,BDO,BR,IMG,MAP,OBJECT,Q,SCRIPT,SPAN,SUB,SUP,BUTTON,INPUT,LABEL,SELECT,TEXTAREA".split(",");
 
 	return class extends WebComponent {
 		init($) {
+
+			console.log("app-editor");
 
 			window.self = this;
 
@@ -452,6 +501,9 @@ mimosa.factory("sampleContent", function() {
 
 
 </script>
+
+
+<script>mimosa.bootstrap()</script>
 
 
 </body>

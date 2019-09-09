@@ -10,7 +10,9 @@
 	let bp = 1000;
 
 	function precedence(type, ...operators) {
-		operators.forEach(operator => type[operator] = bp);
+		for (let operator of operators) {
+			type[operator] = bp;
+		}
 		bp -= 10;
 	}
 
@@ -87,7 +89,8 @@
 			throw SyntaxError("Missing Operator " + this.id);
 		},
 
-		push(token) {
+		push() {
+			let token;
 			for (token of arguments) {
 				this[this.length++] = token;
 			}

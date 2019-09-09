@@ -10,7 +10,7 @@
 		let queue = ("length" in node) ? Array.from(node) : [node];
 
 		while (queue.length) {
-			node = queue.shift();
+			node = queue.pop();
 
 			// Option: Closing,
 			if (typeof node === "function") {
@@ -24,11 +24,10 @@
 				continue;
 			}
 
-			// Walk ChildNodes
+			// Traverse ChildNodes
 			if (node.childNodes) {
-				let childNodes = Array.from(node.childNodes);
-				if (typeof ret === "function") childNodes.push(ret);
-				queue = childNodes.concat(queue);
+				if (typeof ret === "function") queue.push(ret);
+				queue.push.apply(queue, node.childNodes);
 			}
 		}
 	}
@@ -121,7 +120,7 @@
 			let _context = JSContext.connect(controller, [controller].concat([context.thisObj, ...context.locals]));
 
 			// let _context = context.fork(controller);
-			controller.init && controller.init(_context);
+			controller.init && controller.init(_context, el);
 
 			$compile(el.childNodes, _context);
 

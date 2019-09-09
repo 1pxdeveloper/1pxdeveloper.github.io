@@ -40,8 +40,8 @@
 
 			/// inline-template 기능
 			if (this.hasAttribute("inline-template")) {
-				template = document.createElement("template");
-				template.innerHTML = this.innerHTML;
+				let attr = this.getAttributeNode("inline-template");
+				template = attr.template;
 				for (let attr of this.attributes) {
 					template.setAttributeNode(attr.cloneNode(true));
 				}
@@ -54,7 +54,6 @@
 
 			if (template) {
 				template = template.cloneNode(true);
-				$compile(template, context, this);
 
 				for (let slot of template.content.querySelectorAll("slot[name]")) {
 					let slotName = slot.getAttribute("name");
@@ -70,6 +69,7 @@
 
 				this.innerHTML = "";
 				this.appendChild(template.content);
+				$compile(this.childNodes, context, this);
 			}
 
 			this.$ = context;
