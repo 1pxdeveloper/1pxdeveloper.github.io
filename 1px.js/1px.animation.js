@@ -156,7 +156,7 @@ $module.factory("Transform", function() {
 $module.factory("FLIP", function() {
 	
 	return {
-		translateY: function(el, first) {
+		translateY: function(el, first, duration) {
 			let last = el.getBoundingClientRect();
 			let invert = (first.top - last.top);
 			
@@ -164,7 +164,7 @@ $module.factory("FLIP", function() {
 				{transform: `translateY(${invert}px)`},
 				{transform: 'translateY(0)'},
 			], {
-				duration: 1000,
+				duration: duration,
 				easing: "ease",
 			});
 		}
