@@ -216,25 +216,30 @@
 		});
 	};
 	
-	Observable.prototype.do = function(fn) {
+	Observable.prototype.do = function(onNext, onComplete = noop) {
 		return this.pipe(observer => {
+			let index = 0;
 			return {
 				next(value) {
-					fn(value);
+					onNext(value, index++);
 					observer.next(value);
+				},
+				
+				complete() {
+					onComplete();
+					observer.complete();
 				},
 			}
 		});
 	};
 	
 	
-	Observable.prototype.doOnce = function(callback) {
+	Observable.prototype.doWhile = function(callback) {
 		return this.pipe(observer => {
 			let flag = true;
 			return {
 				next(value) {
-					flag && callback(value);
-					flag = false;
+					flag && (flag = callback(value));
 					observer.next(value);
 				},
 			}
@@ -252,6 +257,7 @@
 				return {
 					next(value) {
 						_value = value;
+						observer.next(value);
 					},
 					
 					complete() {
@@ -333,8 +339,8 @@
 	
 	
 	Observable.prototype.last = function() {
-		let ret;
 		return this.pipe(observer => {
+			let ret;
 			return {
 				next(value) {
 					ret = value;
@@ -346,6 +352,26 @@
 				},
 			}
 		});
+	};
+	
+	
+	/// @TODO: count
+	Observable.prototype.retry = function(count) {
+		return new Observable(observer => {
+			const next = observer.next.bind(observer);
+			const complete = observer.complete.bind(observer);
+			
+			let s1, s2;
+			s1 = this.subscribe(next, (err) => {
+				s1 && s1.unsubscribe();
+				s2 = this.retry(--count).subscribe(observer);
+			}, complete);
+			
+			return () => {
+				s1 && s1.unsubscribe();
+				s2 && s2.unsubscribe();
+			};
+		})
 	};
 	
 	
@@ -533,41 +559,82 @@
 	};
 	
 	
-	Observable.prototype.toArray = function() {
-		let ret = [];
-		
-		return this.pipe(observer => Object({
-			next(value) {
-				ret.push(value);
-			},
-			complete() {
-				observer.next(ret);
-				observer.complete();
-			},
-		}));
-	};
-	
-	Observable.prototype.push = function(...args) {
-		return new Observable(observer => {
-			return this.subscribe({
+	Observable.prototype.switchMap = function(callback) {
+		return this.pipe(observer => {
+			let subscription;
+			
+			return {
 				next(value) {
-				
+					if (subscription) subscription.unsubscribe();
+					let observable = Observable.castAsync(callback(value));
+					subscription = observable.subscribe(observer);
 				},
 				
-				error(error) {
-					// reject(error);
+				complete() {},
+			}
+		});
+	};
+	
+	
+	Observable.prototype.concatMap = function(callback = just) {
+		
+		return this.pipe(observer => {
+			
+			let queue = [];
+			let running = false;
+			let completed = false;
+			let subscriptions = [];
+			
+			function doQueue() {
+				if (running) return;
+				
+				let nextJob = queue.shift();
+				if (nextJob) {
+					return nextJob();
+				}
+				
+				if (completed) {
+					observer.complete();
+				}
+			}
+			
+			return {
+				next(value) {
+					queue.push(() => {
+						running = true;
+						
+						let observable = Observable.castAsync(callback(value));
+						
+						let subscription = observable.subscribe(
+							value => observer.next(value),
+							err => observer.error(err),
+							() => {
+								
+								/// @FIXME: 임시 조치 complate() -> 이후 callback()이 되어야 함.
+								
+								Promise.resolve().then(() => {
+									running = false;
+									doQueue();
+									
+								})
+							},
+						);
+						
+						subscriptions.push(subscription);
+					});
+					
+					doQueue();
 				},
 				
 				complete() {
-				
+					completed = true;
 				},
-			});
-			
-			return () => {
-				console.log("cancel");
-				if (s) s.unsubscribe();
+				
+				finalize() {
+					subscriptions.forEach(subscription => subscription.unsubscribe());
+				},
 			}
-		});
+		})
 	};
 	
 	
@@ -672,6 +739,10 @@
 		})
 	};
 	
+	Observable.concat = function(...observables) {
+		return Observable.from(observables).concatMap();
+	};
+	
 	Observable.zip = function(...observables) {
 		
 		let stack = new Array(observables.length).fill(null).map(() => []);
@@ -720,85 +791,6 @@
 				s.forEach(s => s.unsubscribe());
 			}
 		});
-	};
-	
-	
-	Observable.prototype.switchMap = function(callback) {
-		return this.pipe(observer => {
-			let subscription;
-			
-			return {
-				next(value) {
-					if (subscription) subscription.unsubscribe();
-					let observable = Observable.castAsync(callback(value));
-					subscription = observable.subscribe(observer);
-				},
-				
-				complete() {},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.concatMap = function(callback = just) {
-		
-		return this.pipe(observer => {
-			
-			let queue = [];
-			let running = false;
-			let completed = false;
-			let subscriptions = [];
-			
-			function doQueue() {
-				if (running) return;
-				
-				let nextJob = queue.shift();
-				if (nextJob) {
-					return nextJob();
-				}
-				
-				if (completed) {
-					observer.complete();
-				}
-			}
-			
-			return {
-				next(value) {
-					queue.push(() => {
-						running = true;
-						
-						let observable = Observable.castAsync(callback(value));
-						
-						let subscription = observable.subscribe(
-							value => observer.next(value),
-							err => observer.error(err),
-							() => {
-								
-								/// @FIXME: 임시 조치 complate() -> 이후 callback()이 되어야 함.
-								
-								Promise.resolve().then(() => {
-									running = false;
-									doQueue();
-									
-								})
-							},
-						);
-						
-						subscriptions.push(subscription);
-					});
-					
-					doQueue();
-				},
-				
-				complete() {
-					completed = true;
-				},
-				
-				finalize() {
-					subscriptions.forEach(subscription => subscription.unsubscribe());
-				},
-			}
-		})
 	};
 	
 	
