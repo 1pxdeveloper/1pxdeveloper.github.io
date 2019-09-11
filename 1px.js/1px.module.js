@@ -2,12 +2,12 @@
 	"use strict";
 	
 	const {Observable, AsyncSubject} = require("./observable");
-
+	
 	function noop() {}
 	
 	function _makeInjectable(callback) {
 		if (Array.isArray(callback)) {
-			let array = callback;
+			const array = callback;
 			callback = array[array.length - 1];
 			callback.$inject = array.slice(0, -1);
 		}
@@ -17,8 +17,8 @@
 		}
 		
 		if (!callback.$inject) {
-			let s = callback.toString();
-			callback.$inject = s.slice(s.indexOf("(") + 1, s.indexOf(")")).split(/\s*,\s*/).filter(x => x);
+			const string = callback.toString();
+			callback.$inject = string.slice(string.indexOf("(") + 1, string.indexOf(")")).split(/\s*,\s*/).filter(x => x);
 		}
 		
 		return callback;
@@ -44,54 +44,49 @@
 	
 	
 	function createModule() {
-		let values = Object.create(null);
+		const values = Object.create(null);
 		
 		function get(name) {
 			return values[name] && values[name].value;
 		}
 		
 		function value(name, _value) {
-			let v = values[name] = values[name] || new AsyncSubject();
-			
+			const subject = values[name] || (values[name] = new AsyncSubject());
 			if (arguments.length === 1) {
-				return v;
+				return subject;
 			}
 			
-			v.next(_value);
-			v.complete();
+			subject.next(_value);
+			subject.complete();
 		}
 		
-		function require(callback, resolve) {
-			resolve = resolve || noop;
+		function require(callback, resolve = noop) {
 			callback = _makeInjectable(callback);
-			
-			let args$ = callback.$inject.map(name => value(name));
-			
-			Observable.forkjoin(...args$).subscribe(args => {
-				// @TODO: decorator(callback, args)
+			Observable.forkjoin(...callback.$inject.map(name => value(name))).subscribe(args => {
 				resolve(callback.apply(null, args));
-			})
+			});
 		}
 		
 		function factory(name, callback) {
-			require(callback, result => value(name, result))
+			require(callback, result => value(name, result));
 		}
 		
 		let $module = {};
-		$module._values = values;
 		$module.get = get;
 		$module.value = value;
 		$module.factory = factory;
 		$module.require = require;
+		
 		$module.directive = _makePrefixModuleProvider($module, "directive.");
 		$module.service = _makePrefixModuleProvider($module, "service.");
 		$module.pipe = _makePrefixModuleProvider($module, "pipe.");
 		
+		/// @FIXME: for DEBUG
+		$module._values = values;
 		return $module;
 	}
-	
-	let $module = createModule();
-	$module._makeInjectable = _makeInjectable;
-	
-	exports.$module = $module;
+
+	// @TODO: 1module? or multiple module??
+	exports.$module = createModule();
+	exports._makeInjectable = _makeInjectable;
 })();

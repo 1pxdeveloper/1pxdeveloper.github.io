@@ -129,7 +129,7 @@ mimosa.component("app-editor", function(WebComponent, traverseDOM, sampleContent
 			$.on$(this.$editor, "keydown").subscribe(e => {
 
 				let key = "";
-				if (e.ctrl || e.metaKey) key += "cmd+";
+				if (e.ctrlKey || e.metaKey) key += "cmd+";
 				key += e.key;
 				key = key.toUpperCase();
 

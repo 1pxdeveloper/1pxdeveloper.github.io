@@ -32,7 +32,6 @@
 		}
 		
 		disconnect() {
-			console.log("disconnect");
 			this.disconnect$.complete();
 		}
 		
@@ -74,7 +73,7 @@
 		/// @FIXME: .. 기능 확대 필요!!! ex) /users/:id
 		route(handler, _default, fallback) {
 			fallback = fallback || "/*";
-
+			
 			let route = () => {
 				let hash = location.hash || _default;
 				(handler[hash] && handler[hash]()) || (handler[fallback] && handler[fallback]());

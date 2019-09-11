@@ -1,123 +1,123 @@
 (function() {
 	"use strict";
-
+	
 	/// @TODO:: 여기는 엔진 코드와 실제 사용 코드간의 인터페이스를 억지로라도 맞춰주는 코드
 	/// @TODO: 아직 인터페이스에 대한 확신이 안 듬..
-
-	const {$module} = require("./1px.module");
+	
+	const {$module, _makeInjectable} = require("./1px.module");
 	const {Observable, Subject, AsyncSubject, BehaviorSubject} = require("./observable");
 	const {WebComponent} = require("./component");
 	const {JSContext, $compile, traverseDOM} = require("./compile");
-
-
-	function DOMReady(callback) {
-		if (document.body) return callback();
-		window.addEventListener("DOMContentLoaded", callback);
-	}
-
-
+	
 	window.Observable = Observable;
 	window.mimosa = window.$module = $module;
-
+	
 	$module.value("Observable", Observable);
 	$module.value("Subject", Subject);
 	$module.value("AsyncSubject", AsyncSubject);
 	$module.value("BehaviorSubject", BehaviorSubject);
-
 	$module.value("WebComponent", WebComponent);
-	$module.value("traverseDOM", traverseDOM);
-
-
-	let componentsList = [];
-
+	
+	$module.value("JSContext", JSContext);
+	
+	
+	/// WebComponent
+	let componentRegistry = Object.create(null);
+	
 	$module.component = function(name, block) {
-		if (!name) {
+		console.warn("$module.component", name);
+		
+		if (typeof name !== "string") {
 			throw TypeError("name must be string.")
 		}
-
-		let tagName = name.toUpperCase();
-		block = $module._makeInjectable(block);
-
+		
+		block = _makeInjectable(block);
+		
 		function preload() {
-			WebComponent.template.tagName = tagName;
+			console.warn("preload", name);
+			
+			WebComponent.template.tagName = name;
 			let ret = block.apply(null, arguments);
 			delete WebComponent.template.tagName;
 			return ret;
 		}
-
+		
 		preload.$inject = block.$inject;
-
-
+		
+		
 		$module.require(preload, component => {
-			// console.log(component);
+			console.warn("[$module.component] resolved.", name);
+			
 			component = component || class extends WebComponent {};
-
-			component.template = WebComponent.template.lastTemplate;
-			delete WebComponent.template.lastTemplate;
-
-			$module.value(tagName, component);
-			componentsList.push({name, component});
+			componentRegistry[name] = component;
 		});
 	};
-
-
+	
+	
 	/// 이건 너무 별론데...
-
-	$module.value("JSContext", JSContext);
 	$module.compile = $compile;
-
+	
 	$module.controller = function(name, block) {
-		$module.factory(name, block);
+		$module.require(block, controller => {
+			DOMReady(() => {
+				for (const element of Array.from(document.querySelectorAll(`*[is="${name}"]`))) {
+					Object.assign(element, controller);
+					
+					const context = JSContext.connect(element);
+					$compile(element, context);
+					element.init && element.init(context);
+				}
+			})
+		})
 	};
-
-
+	
+	
+	function DOMReady(callback) {
+		if (document.body) return callback();
+		document.addEventListener("DOMContentLoaded", callback);
+	}
+	
 	let bootstraped = false;
 	$module.bootstrap = function() {
 		if (bootstraped) return;
 		bootstraped = true;
-
+		
 		traverseDOM(document.body, node => {
 			if (node.nodeType !== 1) return false;
-
+			
 			if (node.hasAttribute("inline-template")) {
 				let attr = node.getAttributeNode("inline-template");
 				attr.template = document.createElement("template");
 				attr.template.innerHTML = node.innerHTML;
 			}
-
-			if ($module.get(node.tagName)) {
+			
+			if (componentRegistry[node.tagName.toLowerCase()]) {
 				return false;
 			}
-
+			
 			if (node.hasAttribute("is")) {
 				console.warn(node.tagName);
 				$compile(node, null);
 				return false;
 			}
 		});
-
-
-		// traverseDOM(document.body, node => {
-		// 	if (node.nodeType !== 1) return false;
-		//
-		// 	/// component tag or *[is]
-		// 	// if (node.hasAttribute("is") || $module.get(node.tagName)) {
-		//
-		// 	if (node.hasAttribute("is")) {
-		// 		console.warn(node.tagName);
-		// 		$compile(node, null);
-		// 		return false;
-		// 	}
-		// });
-
-
-		componentsList.forEach(({name, component}) => {
-			window.customElements.define(name, component)
-		});
+		
+		
+		/// Define WebComponent as Custom Element
+		for (const [name, component] of Object.entries(componentRegistry)) {
+			console.log("window.customElements.define", name);
+			window.customElements.define(name, component);
+		}
+		
+		
+		/// 정의되지 않은 module 경고
+		for (const [name, v] of Object.entries($module._values)) {
+			if (!v.closed) {
+				console.warn(name + " is not defined.");
+			}
+		}
 	};
-
+	
 	/// BootStrap
 	DOMReady($module.bootstrap);
-
-
 })();

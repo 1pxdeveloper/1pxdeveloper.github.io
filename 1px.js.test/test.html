@@ -7,33 +7,40 @@
 </head>
 <body>
 
-
-<!--<main is="todo">-->
-	<!--<div>{{ arr }}</div>-->
-
-	<!--<ul>-->
-		<!--<li *foreach="arr.filter(filter) as row">{{ row }}</li>-->
-	<!--</ul>-->
-<!--</main>-->
-
-
 <script>
 
-const {$parse, watch$$} = require();
 
-
-let o = {};
+// Observable.prototype.map = function(callback) {
 //
-// watch$$(o, "a").subscribe(console.log);
+// 	return new Observable(observer => {
+//
+// 		return this.subscribe()
+// 	})
+// }
 
 
-$parse("a + b").watch(o).subscribe(console.log);
+let o = {
+	next: function() {
+		console.log("o.next");
+	},
 
-$parse("a").watch(o).subscribe(console.log);
+	error: function() {
+		console.error("o.error");
+	}
+};
+
+let o2 = {
+	...o,
+	next(value) {
+		console.log("o2");
+		o.next();
+	},
+};
 
 
 
 
+o2.error();
 
 
 </script>

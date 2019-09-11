@@ -264,12 +264,11 @@
 		}
 		
 		/// Event Pipe
-		options.forEach(pipe => {
-			let handler = Event.pipes[pipe] || Event.pipes["*"];
+		for (const pipe of options) {
+			const handler = Event.pipes[pipe] || Event.pipes["*"];
 			if (!handler) throw new Error(pipe + " is not registered event pipe.");
 			o$ = handler(o$, el);
-		});
-		
+		}
 		
 		/// Event Handler
 		o$.subscribe(function(event) {
@@ -421,14 +420,7 @@
 				// console.log("_call", el, doScript);
 				
 				let _context = context.fork({_tmp: el});
-				
-				try {
-					_context.evaluate(doScript);
-					
-				} catch (e) {
-					
-					console.error(e);
-				}
+				_context.evaluate(doScript);
 			}
 		});
 	}
@@ -437,7 +429,7 @@
 	function _nodeValue(value) {
 		/// HTML Element
 		if (this.__node) {
-			this.__node.forEach(node => node.remove());
+			for (const node of this.__node) node.remove();
 			delete this.__node;
 		}
 		
@@ -449,7 +441,6 @@
 		}
 		
 		this.nodeValue = value === undefined ? "" : value;
-		//			domChanged(textNode.parentNode);
 	}
 	
 	function compile_text_node(node, context) {
@@ -486,7 +477,7 @@
 		}
 		
 		traverseDOM(el, node => {
-			// if (node.__compiled) return false;
+			if (node.__compiled) return false;
 			
 			switch (node.nodeType) {
 				case Node.ELEMENT_NODE:
@@ -498,7 +489,7 @@
 		});
 		
 		/// @FIXME:
-		// el.__compiled = true;
+		el.__compiled = true;
 		return el;
 	}
 	
