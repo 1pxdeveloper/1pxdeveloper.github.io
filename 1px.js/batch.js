@@ -58,17 +58,7 @@
 	$module.compile = $compile;
 	
 	$module.controller = function(name, block) {
-		$module.require(block, controller => {
-			DOMReady(() => {
-				for (const element of Array.from(document.querySelectorAll(`*[is="${name}"]`))) {
-					Object.assign(element, controller);
-					
-					const context = JSContext.connect(element);
-					$compile(element, context);
-					element.init && element.init(context);
-				}
-			})
-		})
+		$module.factory(name, block);
 	};
 	
 	

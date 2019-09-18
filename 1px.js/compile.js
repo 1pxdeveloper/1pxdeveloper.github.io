@@ -113,8 +113,14 @@
 		/// @TODO: is="app-component as b"
 
 		let Component = el.hasAttribute("is") && $module.get(el.getAttribute("is"));
+
+			console.log(Component);
+
+
 		if (Component) {
 			let controller = new Component();
+
+
 
 			/// @FIXME:...
 			let _context = JSContext.connect(controller, [controller].concat([context.thisObj, ...context.locals]));
