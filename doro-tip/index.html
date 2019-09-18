@@ -30,7 +30,7 @@
 
 					<template is="app-editor-document"></template>
 
-					<div $editor class="contenteditable" contenteditable="true" spellcheck="false" [inner-html]="currentTip.body">여기를 클릭해서 컨텐츠를 입력하세요.</div>
+					<div $editor class="contenteditable" contenteditable="true" spellcheck="false" [inner-html]="currentTip.body" (input)="currentTip.body = el.innerHTML">여기를 클릭해서 컨텐츠를 입력하세요.</div>
 				</article>
 			</section>
 		</app-editor-content>
@@ -129,7 +129,7 @@ mimosa.component("app-editor", function(WebComponent, traverseDOM, sampleContent
 			$.on$(this.$editor, "keydown").subscribe(e => {
 
 				let key = "";
-				if (e.ctrl || e.metaKey) key += "cmd+";
+				if (e.ctrlKey || e.metaKey) key += "cmd+";
 				key += e.key;
 				key = key.toUpperCase();
 

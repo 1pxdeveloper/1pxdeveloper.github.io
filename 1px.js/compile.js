@@ -10,7 +10,7 @@
 		let queue = ("length" in node) ? Array.from(node) : [node];
 
 		while (queue.length) {
-			node = queue.pop();
+			node = queue.shift();
 
 			// Option: Closing,
 			if (typeof node === "function") {
@@ -26,8 +26,8 @@
 
 			// Traverse ChildNodes
 			if (node.childNodes) {
-				if (typeof ret === "function") queue.push(ret);
-				queue.push.apply(queue, node.childNodes);
+				if (typeof ret === "function") queue.unshift(ret);
+				queue.unshift.apply(queue, node.childNodes);
 			}
 		}
 	}

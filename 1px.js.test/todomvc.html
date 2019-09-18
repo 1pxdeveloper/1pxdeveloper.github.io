@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+
+<script>
+
+function html() {
+	console.log(arguments);
+	return arguments;
+}
+
+
+const appTodo = () => {
+
+	const title = "askldfjaslkdsa";
+
+	const todos = (todos, action) => {
+		return action(todos);
+	};
+
+
+	const addTodo = (todos) => (title, completed) => {
+		return [...todos, {title, completed}];
+	};
+
+
+	const dispatch = (action) => {
+
+	};
+
+
+	//language=HTML
+	return html`
+		<section (click)=${event => addTodo("hello")}>My name is ${() => title}</section>
+	`
+};
+
+
+const s = appTodo();
+
+
+console.log(s);
+
+
+</script>
+</body>
+</html>
