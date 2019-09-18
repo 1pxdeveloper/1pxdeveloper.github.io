@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="1px.js"></script>
+</head>
+<body>
+
+
+<script>
+let o = Observable.of(1, 2, 3, 100, 5);
+
+
+Observable.prototype.pipe = function(...operators) {
+	return operators.reduce((observable, operator) => operator(observable), this);
+};
+
+const map = callback => $ => new Observable(observer => {
+	let index = 0;
+	return $.subscribe(Object.setPrototypeOf({
+		next: value => observer.next(callback(value, index++)),
+	}, observer));
+});
+
+const filter = callback => $ => new Observable(observer => {
+	let index = 0;
+	return $.subscribe(Object.setPrototypeOf({
+		next: value => callback(value, index++) && observer.next(value),
+	}, observer));
+});
+
+const take = length => $ => new Observable(observer => {
+	return $.subscribe(Object.setPrototypeOf({
+		start: () => (length <= 0) && observer.complete(),
+		next: value => observer.next(value) || ((--length <= 0) && observer.complete()),
+	}, observer));
+});
+
+const then = resolve => $ => new Observable(observer => {
+	let s1, s2, _value;
+
+	s1 = $.subscribe(Object.setPrototypeOf({
+		next: value => _value = value,
+		complete: () => Observable.castAsync(resolve(_value)).subscribe(observer),
+	}, observer));
+
+	return () => {
+		s1.unsubscribe();
+		s2 && s2.unsubscribe();
+	}
+});
+
+
+o.pipe(
+	map(v => v * 10),
+	filter(x => x > 10),
+	take(3),
+	then(x => x + 100),
+	then(x => x + 200),
+).subscribe(console.log);
+
+
+// let t = {
+// 	next: function(x) { console.log(this.v, x) },
+// 	error: function(x) { console.error(this.v) },
+// };
+//
+// t.__proto__.v = 42;
+//
+//
+// t.error();
+//
+//
+// let p = {
+// 	...t,
+// 	next: (v) => {
+// 		t.next(10 + v);
+// 	},
+// };
+//
+//
+// p.next(100);
+// p.error();
+
+
+// // const filter = callback => observable => new Observable(observer => observable.subscribe({
+// // 	next: value => callback(value) && observer.next(value),
+// // 	error: observer.error.bind(observer),
+// // 	complete: observer.complete.bind(observer),
+// // }));
+// //
+// //
+// // const take = length => observable => new Observable(observer => {
+// // 	let count = 0;
+// // 	return observable.subscribe({
+// // 		next: value => (++count === length) ? observer.complete() : observer.next(value),
+// // 		error: observer.error.bind(observer),
+// // 		complete: observer.complete.bind(observer),
+// // 	})
+// // })
+//
+//
+// let o = {a: 42, b: 52};
+//
+//
+// Object.assign(Object.create(o), {
+// 	next: value => o.next(value),
+// });
+
+
+</script>
+
+
+</body>
+</html>

@@ -8,12 +8,12 @@
 	class Observable {
 		constructor(subscriber) {
 			if (typeof subscriber !== "function") {
-				throw new TypeError("Observable initializer must be a function");
+				throw new TypeError("Observable initializer must be a function.");
 			}
-
+			
 			this._subscriber = subscriber;
 		}
-
+		
 		subscribe(observer, error, complete) {
 			if (typeof observer === "function") {
 				observer = {next: observer, error, complete};
@@ -21,97 +21,96 @@
 			else if (typeof observer !== "object") {
 				observer = {};
 			}
-
+			
 			return new Subscription(observer, this._subscriber);
 		}
-
+		
 		[Symbol.observable]() {
 			return this;
 		}
-
+		
 		static from(x) {
 			if (Object(x) !== x) {
 				throw new TypeError(x + " is not an object");
 			}
-
-			let cls = typeof this === "function" ? this : Observable;
-
+			
+			const cls = typeof this === "function" ? this : Observable;
+			
 			// observable
 			let method = x[Symbol.observable];
 			if (method) {
 				let observable = method.call(x);
-
+				
 				if (Object(observable) !== observable) {
 					throw new TypeError(observable + " is not an object");
 				}
-
+				
 				if (observable instanceof cls) {
 					return observable;
 				}
-
+				
 				return new cls(observer => observable.subscribe(observer));
 			}
-
-
+			
+			
 			// iteratorable
 			method = x[Symbol.iterator];
 			if (!method) {
 				throw new TypeError(x + " is not observable");
 			}
-
+			
 			return new cls(observer => {
-
-				for (let item of method.call(x)) {
+				for (const item of method.call(x)) {
 					observer.next(item);
 					if (observer.closed) {
 						return;
 					}
 				}
-
+				
 				observer.complete();
 			});
 		}
-
+		
 		static of(...items) {
-			let cls = typeof this === "function" ? this : Observable;
-
+			const cls = typeof this === "function" ? this : Observable;
+			
 			return new cls(observer => {
-				for (let item of items) {
+				for (const item of items) {
 					observer.next(item);
 					if (observer.closed) {
 						return;
 					}
 				}
-
+				
 				observer.complete();
 			});
 		}
 	}
-
+	
 	function cleanupSubscription(subscription) {
 		delete subscription._observer;
-
+		
 		let cleanup = subscription._cleanup;
 		delete subscription._cleanup;
-
+		
 		if (cleanup) cleanup();
 	}
-
+	
 	class Subscription {
 		constructor(observer, subscriber) {
 			this._cleanup = undefined;
 			this._observer = observer;
-
+			
 			observer.start && observer.start(this);
 			if (this.closed) {
 				return;
 			}
-
+			
 			observer = new SubscriptionObserver(this);
-
+			
 			try {
 				let cleanup = subscriber.call(undefined, observer);
-
+				
 				if (cleanup instanceof Subscription) {
 					this._cleanup = () => cleanup.unsubscribe();
 				}
@@ -123,44 +122,47 @@
 				observer.error(e);
 				return;
 			}
-
+			
 			if (this.closed) {
 				cleanupSubscription(this);
 			}
 		}
-
+		
 		get closed() {
 			return this._observer === undefined;
 		}
-
+		
 		unsubscribe() {
 			if (this.closed) return;
 			cleanupSubscription(this);
 		}
 	}
-
-
+	
+	
 	class SubscriptionObserver {
 		constructor(subscription) {
 			this._subscription = subscription;
 		}
-
+		
 		get closed() {
 			return this._subscription.closed;
 		}
-
+		
 		next(value) {
 			if (this.closed) return;
-			this._subscription._observer.next && this._subscription._observer.next(value);
+			try {
+				this._subscription._observer.next && this._subscription._observer.next(value);
+			} catch (error) {
+				this.error(error);
+			}
 		}
-
-		error(err) {
+		
+		error(error) {
 			if (this.closed) return;
-			console.error(err);
-			this._subscription._observer.error && this._subscription._observer.error(err);
+			this._subscription._observer.error ? this._subscription._observer.error(error) : console.error(error);
 			cleanupSubscription(this._subscription);
 		}
-
+		
 		complete() {
 			if (this.closed) return;
 			this._subscription._observer.complete && this._subscription._observer.complete();
@@ -169,9 +171,96 @@
 	}
 	
 	
+	/// -------------------------------------------------------------------------------------------
+	/// Subject
+	/// -------------------------------------------------------------------------------------------
+	class Subject extends Observable {
+		constructor() {
+			super(observer => {
+				if (this.closed) return;
+				this.observers.push(observer);
+				return () => this.observers = this.observers.filter(o => o !== observer);
+			});
+			
+			this.observers = [];
+		}
+		
+		get closed() {
+			return this.observers === undefined;
+		}
+		
+		next(value) {
+			if (this.closed) return;
+			for (const observer of this.observers) observer.next(value);
+		}
+		
+		error(error) {
+			if (this.closed) return;
+			for (const observer of this.observers) observer.error(error);
+			delete this.observers;
+		}
+		
+		complete() {
+			if (this.closed) return;
+			for (const observer of this.observers) observer.complete();
+			delete this.observers;
+		}
+	}
+	
+	
+	class BehaviorSubject extends Subject {
+		constructor(value) {
+			super();
+			this.value = value;
+			
+			let _subscriber = this._subscriber;
+			this._subscriber = (observer) => {
+				if (this.closed) return;
+				observer.next(this.value);
+				return _subscriber.call(null, observer);
+			}
+		}
+		
+		next(value) {
+			this.value = value;
+			super.next(value);
+		}
+	}
+	
+	class AsyncSubject extends Subject {
+		constructor() {
+			super();
+			
+			this._subscriber = (_subscriber => (observer) => {
+				if (this.closed) {
+					observer.next(this.value);
+					observer.complete();
+					return;
+				}
+				
+				return _subscriber.call(null, observer);
+			})(this._subscriber)
+		}
+		
+		next(value) {
+			if (this.closed) return;
+			this.value = value;
+		}
+		
+		complete() {
+			if (this.closed) return;
+			for (const observer of this.observers) observer.next(this.value);
+			super.complete();
+		}
+	}
+	
+	
+	/// -------------------------------------------------------------------------------------------
+	/// Operators
+	/// -------------------------------------------------------------------------------------------
+	const noop = () => {};
 	const just = v => v;
 	
-	/// Operators
 	Observable.prototype.pipe = function(fn) {
 		return new Observable(observer => {
 			let o = fn(observer) || {};
@@ -181,93 +270,83 @@
 			
 			let s = this.subscribe(o);
 			return () => {
-				o.finalize && o.finalize();
 				s.unsubscribe();
+				o.finalize && o.finalize();
 			}
 		});
 	};
 	
 	
-	Observable.prototype.count = function(fn) {
-		let count = 0;
-		
-		return this.pipe(observer => {
-			return {
-				next() {
-					count++;
+	Observable.prototype.count = function() {
+		return new Observable(observer => {
+			let count = 0;
+			return this.subscribe({
+				...observer,
+				next: () => count++,
+				complete: () => observer.next(count),
+			})
+		});
+	};
+	
+	Observable.prototype.map = function(callback) {
+		return new Observable(observer => {
+			return this.subscribe({
+				...observer,
+				next: (value) => observer.next(callback(value)),
+			})
+		});
+	};
+	
+	Observable.prototype.do = function(onNext, onComplete = noop) {
+		return new Observable(observer => {
+			return this.subscribe({
+				...observer,
+				next: (value) => {
+					onNext(value, index++);
+					observer.next(value)
 				},
-				
-				complete() {
-					observer.next(count);
-					count = 0;
+				complete: () => {
+					onComplete();
+					observer.complete();
 				},
-			}
+			})
 		});
 	};
 	
 	
-	Observable.prototype.map = function(fn) {
-		return this.pipe(observer => {
-			return {
-				next() {
-					observer.next(fn(...arguments));
-				},
-			}
-		});
-	};
-	
-	Observable.prototype.do = function(fn) {
-		return this.pipe(observer => {
-			return {
-				next(value) {
-					fn(value);
-					observer.next(value);
-				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.doOnce = function(callback) {
-		return this.pipe(observer => {
+	Observable.prototype.doWhile = function(callback) {
+		return new Observable(observer => {
 			let flag = true;
-			return {
-				next(value) {
-					flag && callback(value);
-					flag = false;
-					observer.next(value);
+			return this.subscribe({
+				...observer,
+				next: (value) => {
+					flag && (flag = callback(value));
+					observer.next(value)
 				},
-			}
+			})
 		});
 	};
-	
 	
 	Observable.prototype.concat = function(observable) {
-		
-		// @FIXME: function concat
-		if (typeof observable === "function") {
-			let callback = observable;
-			return this.pipe(observer => {
-				let _value;
-				return {
-					next(value) {
-						_value = value;
-					},
-					
-					complete() {
-						Observable.defer(callback.bind(null, _value)).subscribe(observer);
-					},
-				}
-			});
-		}
-		
-		return this.pipe(observer => {
-			return {
-				complete() {
-					Observable.castAsync(observable).subscribe(observer);
-				},
+		return new Observable(observer => {
+			
+			let s1, s2, _value;
+			let completed = false;
+			
+			const next = value => (_value = observer.next(value) || value);
+			const error = observer.error.bind(observer);
+			const complete = () => completed = true;
+			const nextObserver = typeof observable === "function"
+				? () => s2 = completed && Observable.defer(observable.bind(null, _value)).subscribe(observer)
+				: () => s2 = completed && observable.subscribe(observer);
+			
+			s1 = this.finalize(nextObserver).subscribe(next, error, complete);
+			
+			return () => {
+				s1.unsubscribe();
+				s2 && s2.unsubscribe();
 			}
-		});
+		})
 	};
 	
 	
@@ -321,11 +400,11 @@
 	};
 	
 	
-	Observable.prototype.filter = function(fn) {
+	Observable.prototype.filter = function(callback) {
 		return this.pipe(observer => {
 			return {
 				next() {
-					fn.apply(observer, arguments) && observer.next(...arguments);
+					callback.apply(observer, arguments) && observer.next(...arguments);
 				},
 			}
 		});
@@ -333,8 +412,8 @@
 	
 	
 	Observable.prototype.last = function() {
-		let ret;
 		return this.pipe(observer => {
+			let ret;
 			return {
 				next(value) {
 					ret = value;
@@ -346,6 +425,26 @@
 				},
 			}
 		});
+	};
+	
+	
+	/// @TODO: count
+	Observable.prototype.retry = function(count) {
+		return new Observable(observer => {
+			const next = observer.next.bind(observer);
+			const complete = observer.complete.bind(observer);
+			
+			let s1, s2;
+			s1 = this.subscribe(next, (err) => {
+				s1 && s1.unsubscribe();
+				s2 = this.retry(--count).subscribe(observer);
+			}, complete);
+			
+			return () => {
+				s1 && s1.unsubscribe();
+				s2 && s2.unsubscribe();
+			};
+		})
 	};
 	
 	
@@ -372,7 +471,7 @@
 			return {
 				next(value) {
 					res.push(value);
-					res.slice(-num);
+					res = res.slice(-num);
 				},
 				
 				complete() {
@@ -447,20 +546,24 @@
 			
 			subscription = subscription || this.subscribe({
 				next(value) {
-					observers.slice().forEach(observer => observer.next(value));
+					for (const observer of observers) observer.next(value);
 				},
 				
-				error(err) {
-					observers.slice().forEach(observer => observer.error(err));
+				error(error) {
+					for (const observer of observers) observer.error(error);
 				},
 				
 				complete() {
-					observers.slice().forEach(observer => observer.complete());
+					for (const observer of observers) observer.complete();
 				},
 			});
 			
 			return function() {
-				observers.splice(observers.indexOf(observer), 1);
+				observers = observers.filter(o => o !== observer);
+				if (observers.length === 0) {
+					subscription.unsubscribe();
+					subscription = null;
+				}
 			}
 		});
 	};
@@ -485,239 +588,6 @@
 				complete() {
 					index = 0;
 				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.then = function(resolve, reject) {
-		let lastValue;
-		let s;
-		
-		let self = this;
-		return new Observable(observer => {
-			let x = this.subscribe({
-				next(value) {
-					
-					let res = resolve(value);
-					if (res instanceof Observable) {
-						res.toPromise().then(value => {
-							observer.next(value);
-							observer.complete();
-							
-						});
-						return;
-					}
-					
-					Promise.resolve(res).then(value => {
-						observer.next(value);
-						observer.complete();
-					});
-					
-					
-				},
-				
-				error(error) {
-					// reject(error);
-				},
-				
-				complete() {
-				
-				},
-			});
-			
-			return () => {
-				if (s) s.unsubscribe();
-			}
-		});
-	};
-	
-	
-	Observable.prototype.toArray = function() {
-		let ret = [];
-		
-		return this.pipe(observer => Object({
-			next(value) {
-				ret.push(value);
-			},
-			complete() {
-				observer.next(ret);
-				observer.complete();
-			},
-		}));
-	};
-	
-	Observable.prototype.push = function(...args) {
-		return new Observable(observer => {
-			return this.subscribe({
-				next(value) {
-				
-				},
-				
-				error(error) {
-					// reject(error);
-				},
-				
-				complete() {
-				
-				},
-			});
-			
-			return () => {
-				console.log("cancel");
-				if (s) s.unsubscribe();
-			}
-		});
-	};
-	
-	
-	/// Static
-	function noop() {}
-	
-	Observable.NEVER = new Observable(noop);
-	Observable.empty = () => new Observable(observer => observer.complete());
-	
-	// @FIXME: 내가 만든거
-	Observable.castAsync = function(value) {
-		if (value instanceof Observable) {
-			return value;
-		}
-		
-		if (value instanceof Promise) {
-			return Observable.fromPromise(value);
-		}
-		
-		return new Observable(observer => {
-			observer.next(value);
-			observer.complete();
-		})
-	};
-	
-	Observable.defer = function(callback) {
-		return new Observable(observer => {
-			return Observable.castAsync(callback()).subscribe(observer);
-		});
-	};
-	
-	
-	Observable.just = function(value) {
-		return new Observable(observer => {
-			observer.next(value);
-			observer.complete();
-		});
-	};
-	
-	Observable.interval = function(timeout) {
-		return new Observable(observer => {
-			let i = 0;
-			let id = setInterval(() => observer.next(i++), timeout);
-			return () => clearInterval(id);
-		});
-	};
-	
-	Observable.timeout = function(timeout, value) {
-		return new Observable(observer => {
-			let id = setTimeout(() => {
-				observer.next(value);
-				observer.complete();
-			}, timeout);
-			return () => clearTimeout(id);
-		});
-	};
-	
-	
-	Observable.fromPromise = function(promise) {
-		return new Observable(observer => {
-			promise.then(res => {
-				observer.next(res);
-				observer.complete();
-			}, err => {
-				observer.error(err);
-			})
-		});
-	};
-	
-	Observable.fromEvent = function(el, type, useCapture) {
-		return new Observable(observer => {
-			function handler(event) {
-				observer.next(event);
-			}
-			
-			el.addEventListener(type, handler, useCapture);
-			return () => el.removeEventListener(type, handler, useCapture);
-		});
-	};
-	
-	Observable.forkjoin = function(...observables) {
-		
-		let ret = new Array(observables.length);
-		let count = 0;
-		
-		return new Observable(observer => {
-			if (ret.length === 0) {
-				observer.next(ret);
-				observer.complete();
-				return;
-			}
-			
-			observables.forEach((observable, index) => {
-				observable.last().subscribe(value => {
-					ret[index] = value;
-					if (++count === ret.length) {
-						observer.next(ret);
-						observer.complete();
-					}
-				});
-			})
-		})
-	};
-	
-	Observable.zip = function(...observables) {
-		
-		let stack = new Array(observables.length).fill(null).map(() => []);
-		
-		return new Observable(observer => {
-			let s = observables.map((observable, index) => {
-				
-				return observable.subscribe(value => {
-					stack[index].push(value);
-					console.log(JSON.stringify(stack), index);
-					
-					if (stack.every(v => v.length > 0)) {
-						let ret = [];
-						stack.forEach(v => ret.push(v.shift()));
-						observer.next(ret);
-					}
-				});
-			});
-			
-			return function() {
-				s.forEach(subscription => subscription.unsubscribe());
-			}
-		});
-	};
-	
-	Observable.merge = function(...observables) {
-		
-		return new Observable(observer => {
-			
-			let len = observables.length;
-			let count = 0;
-			
-			let s = observables.map(observable => {
-				return observable.subscribe({
-					next(value) { observer.next(value) },
-					error(err) { observer.error(err) },
-					complete() {
-						if (++count === len) {
-							observer.complete();
-						}
-					},
-				});
-			});
-			
-			return function() {
-				s.forEach(s => s.unsubscribe());
 			}
 		});
 	};
@@ -795,105 +665,171 @@
 				},
 				
 				finalize() {
-					subscriptions.forEach(subscription => subscription.unsubscribe());
+					for (const subscription of subscriptions) subscription.unsubscribe();
 				},
 			}
 		})
 	};
 	
 	
-	class Subject extends Observable {
-		constructor() {
-			super(observer => {
-				if (this.closed) return;
-				this.observers.push(observer);
-				
-				let _cleanup = observer._subscription._cleanup;
-				observer._subscription._cleanup = () => {
-					this.observers.splice(this.observers.indexOf(observer), 1);
-					_cleanup && _cleanup();
-				};
-			});
-			
-			this.observers = [];
+	/// -------------------------------------------------------------------------------------------
+	/// Static Operators
+	/// -------------------------------------------------------------------------------------------
+	Observable.NEVER = new Observable(noop);
+	Observable.EMPTY = new Observable(observer => observer.complete());
+	
+	Observable.empty = () => new Observable(observer => observer.complete());
+	
+	// @FIXME: 내가 만든거
+	Observable.castAsync = function(value) {
+		if (value instanceof Observable) {
+			return value;
 		}
 		
-		get closed() {
-			return this.observers === undefined;
+		if (value instanceof Promise) {
+			return Observable.fromPromise(value);
 		}
 		
-		next(value) {
-			if (this.closed) return;
-			this.observers.slice().forEach(observer => observer.next(value));
-		}
-		
-		error(err) {
-			if (this.closed) return;
-			this.observers.slice().forEach(observer => observer.error(err));
-			delete this.observers;
-		}
-		
-		complete() {
-			if (this.closed) return;
-			this.observers.slice().forEach(observer => observer.complete());
-			delete this.observers;
-		}
-	}
+		return new Observable(observer => {
+			observer.next(value);
+			observer.complete();
+		})
+	};
+	
+	Observable.defer = function(callback) {
+		return new Observable(observer => {
+			return Observable.castAsync(callback()).subscribe(observer);
+		});
+	};
 	
 	
-	class BehaviorSubject extends Subject {
-		constructor(value) {
-			super();
-			this.value = value;
-			
-			let _subscriber = this._subscriber;
-			this._subscriber = (observer) => {
-				if (this.closed) return;
-				observer.next(this.value);
-				return _subscriber.call(null, observer);
-			}
-		}
-		
-		next(value) {
-			this.value = value;
-			super.next(value);
-		}
-	}
+	Observable.just = function(value) {
+		return new Observable(observer => {
+			observer.next(value);
+			observer.complete();
+		});
+	};
 	
-	class AsyncSubject extends Subject {
-		constructor() {
-			super();
-			let _subscriber = this._subscriber;
-			this._subscriber = (observer) => {
-				if (this.closed) {
-					observer.next(this.value);
-					observer.complete();
-					return;
-				}
-				return _subscriber.call(null, observer);
-			}
-		}
-		
-		next(value) {
-			if (this.closed) return;
-			this.value = value;
-		}
-		
-		error(err) {
-			if (this.closed) return;
-			this.observers.slice().forEach(observer => observer.error(err));
-			delete this.observers;
-		}
-		
-		complete() {
-			if (this.closed) return;
-			this.observers.slice().forEach(observer => {
-				observer.next(this.value);
+	Observable.interval = function(timeout) {
+		return new Observable(observer => {
+			let i = 0;
+			let id = setInterval(() => observer.next(i++), timeout);
+			return () => clearInterval(id);
+		});
+	};
+	
+	Observable.timeout = function(timeout, value) {
+		return new Observable(observer => {
+			let id = setTimeout(() => {
+				observer.next(value);
 				observer.complete();
-			});
-			delete this.observers;
+			}, timeout);
+			return () => clearTimeout(id);
+		});
+	};
+	
+	
+	Observable.fromPromise = function(promise) {
+		return new Observable(observer => {
+			promise.then(res => {
+				observer.next(res);
+				observer.complete();
+			}, err => {
+				observer.error(err);
+			})
+		});
+	};
+	
+	Observable.fromEvent = function(el, type, useCapture) {
+		return new Observable(observer => {
+			function handler(event) {
+				observer.next(event);
+			}
+			
+			el.addEventListener(type, handler, useCapture);
+			return () => el.removeEventListener(type, handler, useCapture);
+		});
+	};
+	
+	Observable.forkjoin = function(...observables) {
+		return new Observable(observer => {
+			let ret = new Array(observables.length);
+			let count = 0;
+			
+			if (ret.length === 0) {
+				observer.next(ret);
+				observer.complete();
+				return;
+			}
+			
+			// console.log(Observable.forkjoin);
+			
+			observables.forEach((observable, index) => {
+				observable.last().subscribe(value => {
+					ret[index] = value;
+					if (++count === ret.length) {
+						observer.next(ret);
+						observer.complete();
+					}
+				});
+			})
+		})
+	};
+	
+	Observable.concat = function(...observables) {
+		let [observable, ...rest] = observables;
+		
+		for (const o of rest) {
+			observable = observable.concat(o);
 		}
-	}
+		return observable;
+	};
+	
+	Observable.zip = function(...observables) {
+		return new Observable(observer => {
+			const stack = new Array(observables.length).fill(null).map(() => []);
+			const subscriptions = observables.map((observable, index) => {
+				
+				return observable.subscribe(value => {
+					stack[index].push(value);
+					// console.log(JSON.stringify(stack), index);
+					
+					if (stack.every(v => v.length > 0)) {
+						const ret = [];
+						stack.forEach(v => ret.push(v.shift()));
+						observer.next(ret);
+					}
+				});
+			});
+			
+			return function() {
+				for (const s of subscriptions) s.unsubscribe();
+			}
+		});
+	};
+	
+	Observable.merge = function(...observables) {
+		return new Observable(observer => {
+			const length = observables.length;
+			let count = 0;
+			
+			const merge = observable => observable.subscribe({
+				next(value) { observer.next(value) },
+				error(error) { observer.error(error) },
+				complete() {
+					if (++count === length) {
+						observer.complete();
+					}
+				},
+			});
+			
+			const subscriptions = observables.map(merge);
+			
+			return function() {
+				for (const s of subscriptions) s.unsubscribe();
+			}
+		});
+	};
 	
 	
 	exports.Observable = Observable;
