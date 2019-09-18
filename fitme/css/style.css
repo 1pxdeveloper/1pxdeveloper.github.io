@@ -127,6 +127,14 @@ space.header {
   display: block;
   padding-top: 200%;
 }
+.main-photo.rect {
+  position: relative;
+}
+.main-photo.rect:before {
+  content: " ";
+  display: block;
+  padding-top: 100%;
+}
 .main-photo > div {
   position: absolute;
   right: 2rem;

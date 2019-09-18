@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>FIT:ME :: fit in to once body</title>
+	<link rel="stylesheet" href="css/style.css"/>
+	<script src="../1px.js/1px.js"></script>
+</head>
+<body>
+
+<wrap is="fit-me">
+	<!--<header id="header" style="height: 5rem; background-color: rgba(255,255,255,.62); background-position: center center;"></header>-->
+	<header id="header" ></header>
+
+	<main>
+		<!--<space class="header"></space>-->
+
+		<section>
+			<article class="main-photo rect" [style.background-image.url]="array[index]">
+				<div>
+					<h1>{{ text[index][0] }}</h1>
+					<h2>{{ text[index][1] }}</h2>
+				</div>
+			</article>
+
+			<div class="indigators">
+				<space flex></space>
+				<div class="indigator"></div>
+				<div class="indigator"></div>
+				<div class="indigator"></div>
+				<div class="indigator"></div>
+				<div class="indigator"></div>
+				<space flex></space>
+			</div>
+		</section>
+
+
+		<section>
+			<div style="min-height: 5rem; text-align: center; line-height: 5rem; font-weight: normal; font-size: 1.38rem">
+				<h1>FIT IN TO ONCE BODY</h1>
+			</div>
+
+			<section class="grid-items" grid="2">
+				<article *foreach="array as img, index" class="list-item">
+					<div class="list-photo" [style.background-image.url]="img"></div>
+					<footer>
+						<h1>{{ text[index][0] }}</h1>
+						<h2 [attr.del]="text[index][2]">{{ text[index][1] }}</h2>
+						<h2 color="accent">{{ text[index][2] }}</h2>
+					</footer>
+				</article>
+			</section>
+		</section>
+
+
+		<section>
+			<div style="min-height: 5rem; text-align: center; line-height: 5rem; font-weight: normal; font-size: 1.38rem">
+				<h1>FIT IN TO TWICE BODY</h1>
+			</div>
+
+			<section class="grid-items" grid="3">
+				<article *foreach="array as img, index" class="list-item">
+					<div class="list-photo" [style.background-image.url]="img"></div>
+					<footer>
+						<h1>{{ text[index][0] }}</h1>
+						<h2 [attr.del]="text[index][2]">{{ text[index][1] }}</h2>
+						<h2 color="accent">{{ text[index][2] }}</h2>
+					</footer>
+				</article>
+			</section>
+		</section>
+
+
+		<section>
+			<div style="min-height: 5rem; text-align: center; line-height: 5rem; font-weight: normal; font-size: 1.38rem">
+				<h1>FIT IN TO TRIPLE BODY</h1>
+			</div>
+
+			<section class="grid-items" grid="4">
+				<article *foreach="array as img, index" class="list-item">
+					<div class="list-photo" [style.background-image.url]="img"></div>
+					<footer>
+						<h1>{{ text[index][0] }}</h1>
+						<h2 [attr.del]="text[index][2]">{{ text[index][1] }}</h2>
+						<h2 color="accent">{{ text[index][2] }}</h2>
+					</footer>
+				</article>
+			</section>
+		</section>
+
+
+		<space style="min-height: 7rem"></space>
+
+
+		<footer id="footer">
+			회사명 : 부건에프엔씨(주) 대표이사 : 박준성 사업자등록번호 : 204-86-18595 통신판매업신고 : 2011-서울금천-0450(서울 금천구청)
+			주소: (우) 08511 서울시 금천구 디지털로 173 (가산동,엘리시아 8~9층) 전화 : 1688-6745 팩스 : 02-921-1766
+			개인정보 보호책임자 : 현기환 이메일 : help@bugunfnc.com 제휴문의 : biz@bugunfnc.com
+		</footer>
+	</main>
+</wrap>
+
+
+<script>
+$module.controller("fit-me", function(WebComponent) {
+
+	return class WebComponent {
+		init() {
+
+			console.log("!!!!!");
+
+			this.array = Array(22).fill(0).map((v, index) => "list/" + (index + 1) + ".jpg");
+			this.array.sort(() => Math.random() - 0.5);
+
+			// this.img = "http://m.imvely.com/web/upload/category/editor/2019/09/18/190918_nt_mo.jpg";//this.array[0];
+
+
+			this.index = parseInt(Math.random() * this.array.length);
+			this.img = this.array[this.index];
+
+
+			this.text = [["꾸안꾸절개팬츠", "19,000"], ["단단단가라티셔츠", "42,000"], ["데이트니트 베스트", "42,000", "35,000"], ["데일리단가라세트", "34,000"], ["라이더절개스커트", "86,000"], ["러블리랩블라우스", "59,000"], ["베이직트렌치", "128,000", "98,000"], ["브루클린원피스", "89,000"], ["어깨패드 유넥 이너티셔츠", "34,000"], ["여리여리 여신티셔츠", "49,000"], ["플리츠원피스스커트", "99,000"], ["하객룩원피스", "97,000"], ["허리밴딩절개팬츠", "39,000"], ["꾸안꾸절개팬츠", "19,000"], ["단단단가라티셔츠", "42,000"], ["데이트니트 베스트", "42,000", "35,000"], ["데일리단가라세트", "34,000"], ["라이더절개스커트", "86,000", "76,000"], ["러블리랩블라우스", "59,000"], ["베이직트렌치", "128,000"], ["브루클린원피스", "89,000"], ["어깨패드 유넥 이너티셔츠", "34,000"], ["여리여리 여신티셔츠", "49,000"], ["플리츠원피스스커트", "99,000"], ["하객룩원피스", "97,000"], ["허리밴딩절개팬츠", "39,000"], ["꾸안꾸절개팬츠", "19,000"], ["단단단가라티셔츠", "42,000"], ["데이트니트 베스트", "42,000", "35,000"], ["데일리단가라세트", "34,000"], ["라이더절개스커트", "86,000"], ["러블리랩블라우스", "59,000"], ["베이직트렌치", "128,000"], ["브루클린원피스", "89,000"], ["어깨패드 유넥 이너티셔츠", "34,000"], ["여리여리 여신티셔츠", "49,000"], ["플리츠원피스스커트", "99,000"], ["하객룩원피스", "97,000"], ["허리밴딩절개팬츠", "39,000"], ["꾸안꾸절개팬츠", "19,000"], ["단단단가라티셔츠", "42,000"], ["데이트니트 베스트", "42,000", "35,000"], ["데일리단가라세트", "34,000"], ["라이더절개스커트", "86,000"], ["러블리랩블라우스", "59,000"], ["베이직트렌치", "128,000"], ["브루클린원피스", "89,000"], ["어깨패드 유넥 이너티셔츠", "34,000"], ["여리여리 여신티셔츠", "49,000"], ["플리츠원피스스커트", "99,000"], ["하객룩원피스", "97,000"], ["허리밴딩절개팬츠", "39,000"]];
+
+
+			setInterval(() => {
+				this.index = parseInt(Math.random() * this.array.length);
+
+
+			}, 5000)
+		}
+	}
+})
+</script>
+</body>
+</html>
