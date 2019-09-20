@@ -55,20 +55,20 @@
 			
 			// iteratorable
 			method = x[Symbol.iterator];
-			if (!method) {
-				throw new TypeError(x + " is not observable");
-			}
-			
-			return new cls(observer => {
-				for (const item of method.call(x)) {
-					observer.next(item);
-					if (observer.closed) {
-						return;
+			if (method) {
+				return new cls(observer => {
+					for (const item of method.call(x)) {
+						observer.next(item);
+						if (observer.closed) {
+							return;
+						}
 					}
-				}
-				
-				observer.complete();
-			});
+					
+					observer.complete();
+				});
+			}
+
+			throw new TypeError(x + " is not observable");
 		}
 		
 		static of(...items) {
@@ -171,650 +171,15 @@
 	}
 	
 	
-	const just = v => v;
-	
-	/// Operators
-	Observable.prototype.pipe = function(fn) {
-		return new Observable(observer => {
-			let o = fn(observer) || {};
-			o.next = o.next || observer.next.bind(observer);
-			o.error = o.error || observer.error.bind(observer);
-			o.complete = o.complete || observer.complete.bind(observer);
-			
-			let s = this.subscribe(o);
-			return () => {
-				o.finalize && o.finalize();
-				s.unsubscribe();
-			}
-		});
-	};
-	
-	
-	Observable.prototype.count = function(fn) {
-		let count = 0;
-		
-		return this.pipe(observer => {
-			return {
-				next() {
-					count++;
-				},
-				
-				complete() {
-					observer.next(count);
-					count = 0;
-				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.map = function(fn) {
-		return this.pipe(observer => {
-			return {
-				next() {
-					observer.next(fn(...arguments));
-				},
-			}
-		});
-	};
-	
-	Observable.prototype.do = function(fn) {
-		return this.pipe(observer => {
-			return {
-				next(value) {
-					fn(value);
-					observer.next(value);
-				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.doOnce = function(callback) {
-		return this.pipe(observer => {
-			let flag = true;
-			return {
-				next(value) {
-					flag && callback(value);
-					flag = false;
-					observer.next(value);
-				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.concat = function(observable) {
-		
-		// @FIXME: function concat
-		if (typeof observable === "function") {
-			let callback = observable;
-			return this.pipe(observer => {
-				let _value;
-				return {
-					next(value) {
-						_value = value;
-					},
-					
-					complete() {
-						Observable.defer(callback.bind(null, _value)).subscribe(observer);
-					},
-				}
-			});
-		}
-		
-		return this.pipe(observer => {
-			return {
-				complete() {
-					Observable.castAsync(observable).subscribe(observer);
-				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.onComplete = Observable.prototype.complete = function(callback) {
-		
-		return this.pipe(observer => {
-			return {
-				complete() {
-					callback();
-					observer.complete();
-				},
-			}
-		});
-	};
-	
-	Observable.prototype.finalize = function(callback) {
-		return new Observable(observer => {
-			let s = this.subscribe(observer);
-			return () => {
-				s.unsubscribe();
-				callback();
-			}
-		});
-	};
-	
-	Observable.prototype.flatMap = Observable.prototype.mergeMap = function(callback) {
-		return this.map(callback).pipe(observer => {
-			return {
-				next(value) {
-					value.subscribe(observer.next.bind(observer), observer.error.bind(observer), noop);
-				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.mergeAll = function() {
-		return new Observable(observer => {
-			let ret = [];
-			
-			this.subscribe({
-				next(value) {
-					ret.push(value)
-				},
-				
-				complete() {
-					observer.next(ret);
-				},
-			})
-		});
-	};
-	
-	
-	Observable.prototype.filter = function(fn) {
-		return this.pipe(observer => {
-			return {
-				next() {
-					fn.apply(observer, arguments) && observer.next(...arguments);
-				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.last = function() {
-		let ret;
-		return this.pipe(observer => {
-			return {
-				next(value) {
-					ret = value;
-				},
-				
-				complete() {
-					observer.next(ret);
-					observer.complete();
-				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.take = function(num) {
-		
-		let count = 0;
-		return this.pipe(observer => {
-			return {
-				next(value) {
-					observer.next(value);
-					if (++count >= num) {
-						observer.complete();
-					}
-				},
-			}
-		});
-	};
-	
-	Observable.prototype.takeLast = function(num) {
-		num = num || 1;
-		let res = [];
-		
-		return this.pipe(observer => {
-			return {
-				next(value) {
-					res.push(value);
-					res.slice(-num);
-				},
-				
-				complete() {
-					observer.next(res);
-					observer.complete();
-				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.takeUntil = function(observable$) {
-		return new Observable(observer => {
-			let s = this.subscribe(observer);
-			
-			const stop = () => {
-				s.unsubscribe();
-				observer.complete();
-			};
-			
-			observable$.subscribe(stop, stop, stop);
-			return s;
-		});
-	};
-	
-	
-	/// @TODO: inclusive
-	Observable.prototype.takeWhile = function(callback = just, inclusive) {
-		return this.pipe(observer => {
-			let index = 0;
-			return {
-				next(value) {
-					Observable.castAsync(callback(value, index++)).subscribe(cond => {
-						observer.next(value);
-						if (!cond) observer.complete();
-					});
-				},
-			}
-		});
-	};
-	
-	Observable.prototype.toPromise = function() {
-		return new Promise((resolve, reject) => {
-			let _value;
-			let s;
-			
-			s = this.subscribe({
-				next(value) {
-					_value = value;
-				},
-				
-				error(error) {
-					if (s && s.closed) return;
-					reject(error);
-				},
-				
-				complete() {
-					if (s && s.closed) return;
-					resolve(_value);
-				},
-			})
-		});
-	};
-	
-	
-	Observable.prototype.share = function() {
-		let observers = [];
-		let subscription;
-		
-		return new Observable(observer => {
-			observers.push(observer);
-			
-			subscription = subscription || this.subscribe({
-				next(value) {
-					observers.slice().forEach(observer => observer.next(value));
-				},
-				
-				error(err) {
-					observers.slice().forEach(observer => observer.error(err));
-				},
-				
-				complete() {
-					observers.slice().forEach(observer => observer.complete());
-				},
-			});
-			
-			return function() {
-				observers.splice(observers.indexOf(observer), 1);
-			}
-		});
-	};
-	
-	
-	Observable.prototype.skip = function(count) {
-		let index = 0;
-		
-		return this.pipe(observer => {
-			return {
-				next(value) {
-					if (index++ < count) {
-						return;
-					}
-					observer.next(value);
-				},
-				
-				error() {
-					index = 0;
-				},
-				
-				complete() {
-					index = 0;
-				},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.then = function(resolve, reject) {
-		let lastValue;
-		let s;
-		
-		let self = this;
-		return new Observable(observer => {
-			let x = this.subscribe({
-				next(value) {
-					
-					let res = resolve(value);
-					if (res instanceof Observable) {
-						res.toPromise().then(value => {
-							observer.next(value);
-							observer.complete();
-							
-						});
-						return;
-					}
-					
-					Promise.resolve(res).then(value => {
-						observer.next(value);
-						observer.complete();
-					});
-					
-					
-				},
-				
-				error(error) {
-					// reject(error);
-				},
-				
-				complete() {
-				
-				},
-			});
-			
-			return () => {
-				if (s) s.unsubscribe();
-			}
-		});
-	};
-	
-	
-	Observable.prototype.toArray = function() {
-		let ret = [];
-		
-		return this.pipe(observer => Object({
-			next(value) {
-				ret.push(value);
-			},
-			complete() {
-				observer.next(ret);
-				observer.complete();
-			},
-		}));
-	};
-	
-	Observable.prototype.push = function(...args) {
-		return new Observable(observer => {
-			return this.subscribe({
-				next(value) {
-				
-				},
-				
-				error(error) {
-					// reject(error);
-				},
-				
-				complete() {
-				
-				},
-			});
-			
-			return () => {
-				console.log("cancel");
-				if (s) s.unsubscribe();
-			}
-		});
-	};
-	
-	
-	/// Static
-	function noop() {}
-	
-	Observable.NEVER = new Observable(noop);
-	Observable.empty = () => new Observable(observer => observer.complete());
-	
-	// @FIXME: 내가 만든거
-	Observable.castAsync = function(value) {
-		if (value instanceof Observable) {
-			return value;
-		}
-		
-		if (value instanceof Promise) {
-			return Observable.fromPromise(value);
-		}
-		
-		return new Observable(observer => {
-			observer.next(value);
-			observer.complete();
-		})
-	};
-	
-	Observable.defer = function(callback) {
-		return new Observable(observer => {
-			return Observable.castAsync(callback()).subscribe(observer);
-		});
-	};
-	
-	
-	Observable.just = function(value) {
-		return new Observable(observer => {
-			observer.next(value);
-			observer.complete();
-		});
-	};
-	
-	Observable.interval = function(timeout) {
-		return new Observable(observer => {
-			let i = 0;
-			let id = setInterval(() => observer.next(i++), timeout);
-			return () => clearInterval(id);
-		});
-	};
-	
-	Observable.timeout = function(timeout, value) {
-		return new Observable(observer => {
-			let id = setTimeout(() => {
-				observer.next(value);
-				observer.complete();
-			}, timeout);
-			return () => clearTimeout(id);
-		});
-	};
-	
-	
-	Observable.fromPromise = function(promise) {
-		return new Observable(observer => {
-			promise.then(res => {
-				observer.next(res);
-				observer.complete();
-			}, err => {
-				observer.error(err);
-			})
-		});
-	};
-	
-	Observable.fromEvent = function(el, type, useCapture) {
-		return new Observable(observer => {
-			function handler(event) {
-				observer.next(event);
-			}
-			
-			el.addEventListener(type, handler, useCapture);
-			return () => el.removeEventListener(type, handler, useCapture);
-		});
-	};
-	
-	Observable.forkjoin = function(...observables) {
-		
-		let ret = new Array(observables.length);
-		let count = 0;
-		
-		return new Observable(observer => {
-			if (ret.length === 0) {
-				observer.next(ret);
-				observer.complete();
-				return;
-			}
-			
-			observables.forEach((observable, index) => {
-				observable.last().subscribe(value => {
-					ret[index] = value;
-					if (++count === ret.length) {
-						observer.next(ret);
-						observer.complete();
-					}
-				});
-			})
-		})
-	};
-	
-	Observable.zip = function(...observables) {
-		
-		let stack = new Array(observables.length).fill(null).map(() => []);
-		
-		return new Observable(observer => {
-			let s = observables.map((observable, index) => {
-				
-				return observable.subscribe(value => {
-					stack[index].push(value);
-					console.log(JSON.stringify(stack), index);
-					
-					if (stack.every(v => v.length > 0)) {
-						let ret = [];
-						stack.forEach(v => ret.push(v.shift()));
-						observer.next(ret);
-					}
-				});
-			});
-			
-			return function() {
-				s.forEach(subscription => subscription.unsubscribe());
-			}
-		});
-	};
-	
-	Observable.merge = function(...observables) {
-		
-		return new Observable(observer => {
-			
-			let len = observables.length;
-			let count = 0;
-			
-			let s = observables.map(observable => {
-				return observable.subscribe({
-					next(value) { observer.next(value) },
-					error(err) { observer.error(err) },
-					complete() {
-						if (++count === len) {
-							observer.complete();
-						}
-					},
-				});
-			});
-			
-			return function() {
-				s.forEach(s => s.unsubscribe());
-			}
-		});
-	};
-	
-	
-	Observable.prototype.switchMap = function(callback) {
-		return this.pipe(observer => {
-			let subscription;
-			
-			return {
-				next(value) {
-					if (subscription) subscription.unsubscribe();
-					let observable = Observable.castAsync(callback(value));
-					subscription = observable.subscribe(observer);
-				},
-				
-				complete() {},
-			}
-		});
-	};
-	
-	
-	Observable.prototype.concatMap = function(callback = just) {
-		
-		return this.pipe(observer => {
-			
-			let queue = [];
-			let running = false;
-			let completed = false;
-			let subscriptions = [];
-			
-			function doQueue() {
-				if (running) return;
-				
-				let nextJob = queue.shift();
-				if (nextJob) {
-					return nextJob();
-				}
-				
-				if (completed) {
-					observer.complete();
-				}
-			}
-			
-			return {
-				next(value) {
-					queue.push(() => {
-						running = true;
-						
-						let observable = Observable.castAsync(callback(value));
-						
-						let subscription = observable.subscribe(
-							value => observer.next(value),
-							err => observer.error(err),
-							() => {
-								
-								/// @FIXME: 임시 조치 complate() -> 이후 callback()이 되어야 함.
-								
-								Promise.resolve().then(() => {
-									running = false;
-									doQueue();
-									
-								})
-							},
-						);
-						
-						subscriptions.push(subscription);
-					});
-					
-					doQueue();
-				},
-				
-				complete() {
-					completed = true;
-				},
-				
-				finalize() {
-					subscriptions.forEach(subscription => subscription.unsubscribe());
-				},
-			}
-		})
-	};
-	
-	
+	/// -------------------------------------------------------------------------------------------
+	/// Subject
+	/// -------------------------------------------------------------------------------------------
 	class Subject extends Observable {
 		constructor() {
 			super(observer => {
 				if (this.closed) return;
 				this.observers.push(observer);
-				
-				let _cleanup = observer._subscription._cleanup;
-				observer._subscription._cleanup = () => {
-					this.observers.splice(this.observers.indexOf(observer), 1);
-					_cleanup && _cleanup();
-				};
+				return () => this.observers = this.observers.filter(o => o !== observer);
 			});
 			
 			this.observers = [];
@@ -826,18 +191,18 @@
 		
 		next(value) {
 			if (this.closed) return;
-			this.observers.slice().forEach(observer => observer.next(value));
+			for (const observer of this.observers) observer.next(value);
 		}
 		
-		error(err) {
+		error(error) {
 			if (this.closed) return;
-			this.observers.slice().forEach(observer => observer.error(err));
+			for (const observer of this.observers) observer.error(error);
 			delete this.observers;
 		}
 		
 		complete() {
 			if (this.closed) return;
-			this.observers.slice().forEach(observer => observer.complete());
+			for (const observer of this.observers) observer.complete();
 			delete this.observers;
 		}
 	}
@@ -865,15 +230,16 @@
 	class AsyncSubject extends Subject {
 		constructor() {
 			super();
-			let _subscriber = this._subscriber;
-			this._subscriber = (observer) => {
+			
+			this._subscriber = (_subscriber => (observer) => {
 				if (this.closed) {
 					observer.next(this.value);
 					observer.complete();
 					return;
 				}
+				
 				return _subscriber.call(null, observer);
-			}
+			})(this._subscriber)
 		}
 		
 		next(value) {
@@ -881,27 +247,15 @@
 			this.value = value;
 		}
 		
-		error(err) {
-			if (this.closed) return;
-			this.observers.slice().forEach(observer => observer.error(err));
-			delete this.observers;
-		}
-		
 		complete() {
 			if (this.closed) return;
-			this.observers.slice().forEach(observer => {
-				observer.next(this.value);
-				observer.complete();
-			});
-			delete this.observers;
+			for (const observer of this.observers) observer.next(this.value);
+			super.complete();
 		}
 	}
-	
 	
 	exports.Observable = Observable;
 	exports.Subject = Subject;
 	exports.AsyncSubject = AsyncSubject;
 	exports.BehaviorSubject = BehaviorSubject;
-	
-	window.Observable = Observable;
 })();

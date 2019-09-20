@@ -21,7 +21,7 @@
 
 	<!-- This section should be hidden by default and shown when there are todos -->
 	<section class="main" hidden [hidden]="!todos.length">
-		<input id="toggle-all" class="toggle-all" type="checkbox" (change)="toggleAll(el.checked)" [checked]="all_checked">
+		<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked" (input)="toggleAll(el.checked)">
 		<label for="toggle-all">Mark all as complete</label>
 		<ul class="todo-list">
 			<!-- These are here just to show the structure of the list items -->
@@ -32,11 +32,13 @@
 					<label (dblclick)="editingTodo = todo">{{ todo.title }}</label>
 					<button class="destroy" (click)="removeTodo(todo)"></button>
 				</div>
-				<input class="edit" [value]="todo.title if editingTodo !== todo"
-						.focus()="editingTodo === todo"
+				<input class="edit"
+						[value]="todo.title if editingTodo !== todo"
 						(blur)="saveTodo(todo, el.value) if editingTodo === todo; editingTodo = null"
 						(keydown.enter)="el.blur()"
-						(keydown.escape)="editingTodo = null">
+						(keydown.escape)="editingTodo = null"
+						.focus()="editingTodo === todo"
+				>
 			</li>
 		</ul>
 	</section>
@@ -77,69 +79,67 @@
 <script src="js/app.js"></script>
 
 <script>
-Mimosa.controller("app-todo", function() {
+Mimosa.controller("app-todo", () => class AppTodo {
 
-	return class {
-		init($) {
-			this.todos = [];
-			this.editingTodo = null;
+	init($) {
+		this.todos = [];
+		this.editingTodo = null;
 
-			this.addTodo("Hello");
-			this.addTodo("World");
+		this.filter = this.allFilter = (todo) => todo;
+		this.activeFilter = (todo) => !todo.completed;
+		this.completedFilter = (todo) => todo.completed;
 
-			this.filter = this.allFilter = (todo) => todo;
-			this.activeFilter = (todo) => !todo.completed;
-			this.completedFilter = (todo) => todo.completed;
+		$`this.num_items_left = this.todos.length - this.todos.filter(todo => todo.completed).length`;
+		$`this.all_checked = this.todos.every(todo => todo.completed)`;
 
-			$`num_items_left = todos.length - todos.filter(todo => todo.completed).length`;
-			$`all_checked = todos.every(todo => todo.completed)`;
+		$.route(this, "#/");
 
-			$.route(this, "#/");
-		}
-
-		"#/"() {
-			this.filter = this.allFilter;
-		}
-
-		"#/active"() {
-			this.filter = this.activeFilter;
-		}
-
-		"#/completed"() {
-			this.filter = this.completedFilter;
-		}
-
-		addTodo(title, completed = false) {
-			if (typeof title !== "string") return;
-			title = title.trim();
-			if (!title) return;
-
-			this.todos.push({title, completed});
-		}
-
-		saveTodo(todo, title) {
-			if (typeof title !== "string") return;
-			title = title.trim();
-			if (!title.length) {
-				return this.removeTodo(todo);
-			}
-
-			todo.title = title;
-		}
-
-		toggleAll(completed) {
-			this.todos.forEach(todo => todo.completed = completed);
-		}
-
-		removeTodo(todo) {
-			this.todos = this.todos.filter(t => t !== todo);
-		}
-
-		clearCompleted() {
-			this.todos = this.todos.filter(todo => !todo.completed);
-		}
+		this.addTodo("Hello");
+		this.addTodo("World");
 	}
-})
+
+	"#/"() {
+		this.filter = this.allFilter;
+	}
+
+	"#/active"() {
+		this.filter = this.activeFilter;
+	}
+
+	"#/completed"() {
+		this.filter = this.completedFilter;
+	}
+
+	addTodo(title, completed = false) {
+		if (typeof title !== "string") return;
+		title = title.trim();
+		if (!title) return;
+
+		this.todos.push({title, completed});
+	}
+
+	saveTodo(todo, title) {
+		if (typeof title !== "string") return;
+		title = title.trim();
+		if (!title.length) {
+			return this.removeTodo(todo);
+		}
+
+		todo.title = title;
+	}
+
+	toggleAll(completed) {
+		this.todos.forEach(todo => todo.completed = completed);
+	}
+
+	removeTodo(todo) {
+		this.todos = this.todos.filter(t => t !== todo);
+	}
+
+	clearCompleted() {
+		this.todos = this.todos.filter(todo => !todo.completed);
+	}
+});
 </script>
 </body>
 </html>

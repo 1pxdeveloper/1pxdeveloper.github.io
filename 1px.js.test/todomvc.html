@@ -8,42 +8,33 @@
 
 <script>
 
-function html() {
-	console.log(arguments);
-	return arguments;
-}
+const $module = {store: function() {}};
 
 
-const appTodo = () => {
+$module.store("counter", (WebComponent, Module, Action) => new class Counter extends Store {
 
-	const title = "askldfjaslkdsa";
+	static actions = ["inc", "dec"];
 
-	const todos = (todos, action) => {
-		return action(todos);
-	};
+	init($) {
+		this.count = 0;
+	}
 
+	inc() {
+		this.count++;
+	}
 
-	const addTodo = (todos) => (title, completed) => {
-		return [...todos, {title, completed}];
-	};
-
-
-	const dispatch = (action) => {
-
-	};
-
-
-	//language=HTML
-	return html`
-		<section (click)=${event => addTodo("hello")}>My name is ${() => title}</section>
-	`
-};
+	dec() {
+		this.count--;
+	}
+});
 
 
-const s = appTodo();
+// console.log(b.b);
 
 
-console.log(s);
+// b.b = 400;
+
+// console.log(b.b);
 
 
 </script>
