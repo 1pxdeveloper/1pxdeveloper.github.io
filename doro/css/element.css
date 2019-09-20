@@ -1,0 +1,364 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font: inherit;
+  color: inherit;
+}
+html {
+  background: #e2e2e2;
+}
+body {
+  font-weight: bold;
+  font-family: "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  line-height: 1.43;
+  letter-spacing: -0.84px;
+  width: 414px;
+  margin: auto;
+  color: #2f2f2f;
+}
+body > h1 {
+  font-size: 20px;
+  margin: 1em 0;
+  margin-top: 5rem;
+}
+body > * {
+  margin: 1.62rem 0;
+}
+[flex] {
+  flex: 1;
+}
+[color="green"] {
+  color: #29be9b;
+}
+space {
+  display: block;
+}
+space[size="safe-zone"] {
+  padding: 24px 24px 0 0;
+}
+space[size="gap"] {
+  padding: 24px 24px 0 0;
+}
+doro-header {
+  display: block;
+  width: 414px;
+  object-fit: contain;
+  box-shadow: 0 10px 6px 0 rgba(0,0,0,0.16);
+  background-image: linear-gradient(102deg, #1dd87b, #11cbc4);
+  color: #fff;
+  font-size: 18px;
+  padding: 0 11px;
+}
+doro-header > header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 56px;
+}
+doro-header h1 {
+  font-size: 18px;
+  letter-spacing: -1.08px;
+}
+doro-header p {
+  font-size: 14px;
+  line-height: 1.43;
+  letter-spacing: -0.84px;
+  padding: 0 17px;
+  text-align: center;
+  margin: auto;
+}
+doro-header[type="dark"] {
+  opacity: 0.95;
+  box-shadow: 0 10px 10px 0 rgba(0,0,0,0.16);
+  background-image: linear-gradient(102deg, #393a41, #2f2f34);
+}
+doro-todo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 55px;
+}
+doro-todo .km {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.46;
+  letter-spacing: -0.78px;
+  color: #ffaa21;
+  padding: 0 11px;
+}
+doro-todo .todo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  color: #fff;
+  width: 317px;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 3px 4px 0 rgba(0,0,0,0.27);
+  background-image: linear-gradient(125deg, #ef6837, #ffaa21);
+  padding-right: 11px;
+  overflow: hidden;
+}
+doro-todo .todo .icon {
+  display: flex;
+  width: 42px;
+  height: 100%;
+  text-align: center;
+}
+doro-todo .todo .icon > * {
+  margin: auto;
+}
+doro-todo .todo h1 {
+  font-size: 14px;
+  line-height: 1.21;
+  letter-spacing: -0.84px;
+  color: #fffcfc;
+  padding: 0 7px;
+}
+doro-todo .todo h2 {
+  opacity: 0.9;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: -0.72px;
+  text-align: right;
+}
+doro-todo .toast {
+  display: flex;
+  width: 295px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 20px;
+  background-image: linear-gradient(99deg, #1dd8d1, #33a1ff);
+  font-size: 13px;
+  line-height: 1.46;
+  letter-spacing: -0.78px;
+  color: #fff;
+  text-align: center;
+}
+doro-todo .toast > * {
+  margin: auto;
+}
+doro-todo[type="outline"] .todo {
+  background: transparent;
+  border: 1px solid #ff9d00;
+  border-left: 0;
+}
+doro-todo[type="outline"] .icon {
+  background-image: linear-gradient(125deg, #ef6837, #ffaa21);
+}
+doro-todo[type="outline"] h1,
+doro-todo[type="outline"] h2 {
+  color: #2f2f2f;
+}
+doro-todo[type="white"] .todo {
+  background: #fff;
+}
+doro-todo[type="white"] .icon {
+  color: #ff9d00;
+}
+doro-todo[type="white"] h1,
+doro-todo[type="white"] h2 {
+  color: #2f2f2f;
+}
+doro-todo[type="warn"] .km {
+  color: #818181;
+}
+doro-todo[type="warn"] .todo {
+  background-image: linear-gradient(109deg, #ff628c, #e04d39);
+}
+doro-log-date {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  letter-spacing: -1.08px;
+  text-align: right;
+  color: #fff;
+}
+doro-log {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+doro-log .km {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.46;
+  letter-spacing: -0.78px;
+  color: #ffaa21;
+  padding: 0 11px;
+  align-self: flex-end;
+}
+doro-log .log {
+  width: 317px;
+  border-radius: 4px;
+  box-shadow: 0 3px 4px 0 rgba(0,0,0,0.27);
+  background-color: #fff;
+  padding: 24px 11px;
+}
+doro-log .log > section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 11px 0;
+}
+doro-log .log .icon {
+  width: 48px;
+}
+doro-log .log h2 {
+  color: #29be9b;
+}
+doro-log .log h3 {
+  opacity: 0.3;
+  font-size: 12px;
+  line-height: 1.42;
+  letter-spacing: -0.72px;
+  text-align: right;
+}
+doro-tip,
+doro-report {
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  width: 392px;
+  object-fit: contain;
+  box-shadow: 0 9px 10px 0 rgba(0,0,0,0.46);
+  background-color: #fff;
+  margin: auto;
+  border-radius: 3px;
+  overflow: hidden;
+}
+doro-tip .top,
+doro-report .top {
+  height: 10px;
+  background-image: linear-gradient(101deg, #1dd8d1, #33a1ff);
+}
+doro-tip > section,
+doro-report > section {
+  flex: 1;
+  padding: 44px 46px;
+}
+doro-tip > section h1,
+doro-report > section h1 {
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -1.2px;
+  color: #2f2f2f;
+}
+doro-tip > section h2,
+doro-report > section h2,
+doro-tip > section p,
+doro-report > section p {
+  font-size: 13px;
+  line-height: 1.54;
+  letter-spacing: -0.78px;
+}
+doro-tip > section h2,
+doro-report > section h2 {
+  margin-bottom: 5px;
+}
+doro-tip > section space,
+doro-report > section space {
+  height: 31px;
+}
+doro-report {
+  text-align: center;
+}
+doro-report .top {
+  background-image: linear-gradient(101deg, #14ffa4, #11cbc4);
+}
+doro-report .grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+doro-report .grid > div {
+  padding: 11px;
+}
+doro-report .grid > div h2 {
+  font-family: Roboto;
+  font-size: 13px;
+  line-height: 1.54;
+  letter-spacing: -0.78px;
+  color: #29be9b;
+}
+doro-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 50px;
+  object-fit: contain;
+  border: solid 1px #ededed;
+  padding: 0 37px;
+}
+doro-bar[type="black"] {
+  width: 414px;
+  height: 60px;
+  object-fit: contain;
+  box-shadow: 0 4px 10px 0 rgba(0,0,0,0.1);
+  background-image: linear-gradient(99deg, #393a41, #2f2f34);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.33;
+  letter-spacing: -0.72px;
+  text-align: center;
+}
+doro-para {
+  display: block;
+  width: 340px;
+  margin: auto;
+  object-fit: contain;
+  border-radius: 4px;
+  border: solid 1px #e0e0e0;
+  background-color: #fcfcfc;
+  padding: 33px;
+  font-size: 12px;
+  line-height: 1.33;
+  letter-spacing: -0.72px;
+}
+doro-big-date {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 80px;
+  border: solid 1px #efefef;
+}
+doro-big-date h1 {
+  font-size: 20px;
+  line-height: 1.3;
+  letter-spacing: normal;
+  text-align: center;
+  color: #4a4e52;
+  margin: auto;
+}
+doro-title {
+  display: block;
+  height: 126px;
+  object-fit: contain;
+  border: solid 1px #f0f0f0;
+  padding: 0 37px;
+}
+doro-title h1 {
+  font-size: 24px;
+  line-height: 0.58;
+  letter-spacing: -1.44px;
+}
+doro-input-field {
+  display: block;
+  height: 77px;
+  border: solid 1px #ededed;
+  padding: 0 37px;
+}
+doro-check-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 44px;
+  border: solid 1px #f5f5f5;
+  background-color: #fff;
+  padding: 0 37px;
+}
+doro-check-field h2 {
+  color: #29be9b;
+}
