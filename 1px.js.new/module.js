@@ -36,11 +36,26 @@
 			return ($value[name] = callback.apply(null, callback.$inject.map(_dependencyInjectionOf)));
 		}
 
-		throw TypeError(name + " is not defined.");
+		throw TypeError("[module]" + name + " is not defined.");
 	}
 
+	function _makePrefixModuleProvider($module, prefix) {
+		function factory(name, callback) {
+			$module.factory(prefix + name, callback);
+		}
+
+		factory.get = function(name) {
+			return $module.get(prefix + name);
+		};
+
+		return factory;
+	}
+
+	/// -----------------------------------------------------------------------
+	/// Public
+	/// -----------------------------------------------------------------------
 	function get(name) {
-		return $value[name];
+		return _dependencyInjectionOf(name);
 	}
 
 	function exist(name) {
@@ -66,6 +81,13 @@
 	}
 
 	const $module = {get, exist, value, factory, require, bootstrap};
+
+	/// @FIXME:
+	$module.directive = _makePrefixModuleProvider($module, "directive.");
+
+	/// @DEBUG
+	$module.$value = $value;
+
 	exports.$module = $module;
 	exports._makeInjectable = _makeInjectable;
 

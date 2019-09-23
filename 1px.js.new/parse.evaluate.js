@@ -19,6 +19,8 @@
 	}
 
 	function setProp(prop) {
+
+
 		this.prop = prop;
 
 		/// @TODO; locals
@@ -60,7 +62,7 @@
 
 	/// Evaluate
 	const $evaluateRules = {};
-	
+
 	function evaluate(token) {
 		return $evaluateRules[token.id][token.length].apply(token, token);
 	}
@@ -130,6 +132,11 @@
 	/// foo[bar]
 	evaluateRule("[", function(a, b) {
 		return setObjectProp.call(this, evaluate(a), evaluate(b));
+	});
+
+	/// @foo : @NOTE: link Store Object..
+	evaluateRule("@", function(a) {
+		return setObjectProp.call(this, this.globalObj, a.value);
 	});
 
 
@@ -219,23 +226,24 @@
 		let tokens = root.tokens;
 
 		return {
-			evaluate(thisObj, ...locals) {
+			evaluate(thisObj, globalObj, ...locals) {
 				for (let token of tokens) {
 					token.thisObj = thisObj;
+					token.globalObj = globalObj;
 					token.locals = locals;
 				}
 				return evaluate(root);
 			},
 
-			assign(value, thisObj, ...locals) {
-				this.evaluate(thisObj, ...locals);
+			assign(value, thisObj, globalObj, ...locals) {
+				this.evaluate(thisObj, globalObj, ...locals);
 
 				if (root.object && root.object) {
 					root.object[root.prop] = value;
 				}
 			},
 
-			watch(thisObj, ...locals) {
+			watch(thisObj, globalObj, ...locals) {
 				return new Observable(observer => {
 
 					let watchers;
@@ -243,6 +251,7 @@
 
 					for (let token of tokens) {
 						token.thisObj = thisObj;
+						token.globalObj = globalObj;
 						token.locals = locals;
 
 						token.watch = (object, prop) => {
@@ -257,7 +266,12 @@
 						// console.warn("[script]", script);
 
 						let value = evaluate(root);
-						if (root.ifcondition !== false) {
+
+						if (value instanceof Observable) {
+							value.subscribe(observer);
+						}
+
+						else if (root.ifcondition !== false) {
 							observer.next(value);
 						}
 

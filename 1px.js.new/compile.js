@@ -4,10 +4,13 @@
 	const {$module} = require("./1px.module");
 	const {JSContext} = require("./parse");
 
+	/// -----------------------------------------------------------------------
+	/// traverseDOM
+	/// -----------------------------------------------------------------------
 	function traverseDOM(node, callback) {
 		if (!node) return;
 
-		let queue = ("length" in node) ? Array.from(node) : [node];
+		const queue = ("length" in node) ? Array.from(node) : [node];
 
 		while (queue.length) {
 			node = queue.shift();
@@ -32,7 +35,9 @@
 		}
 	}
 
+	/// -----------------------------------------------------------------------
 	/// ELEMENT_NODE
+	/// -----------------------------------------------------------------------
 	function compile_element_node(el, context, to) {
 		switch (el.tagName) {
 			case "STYLE":
@@ -42,9 +47,11 @@
 
 		let ret;
 
+
+		const attributes = Array.from(el.attributes);
 		to = to || el;
 		if (to !== el) {
-			for (let attr of Array.from(el.attributes)) {
+			for (const attr of attributes) {
 				to.setAttributeNode(attr.cloneNode(true));
 			}
 		}
@@ -63,24 +70,31 @@
 
 
 		/// @FIXME:... default template directive
+		/// Default Template Directives
 		let hasTemplateDirective = ["*foreach", "*if", "*else"].some(attrName => {
-			let hasAttr = el.hasAttribute(attrName);
-			if (hasAttr) {
-				let attrValue = el.getAttribute(attrName);
-				$module.directive.require([attrName, directive => directive(context, el, attrValue)]);
+			const attr = el.getAttributeNode(attrName);
+			if (!attr) {
+				return false;
 			}
-			return false;
-		});
 
+			const directive = $module.directive.get(attr.nodeName);
+			directive(context, to, attr.nodeValue, attr.nodeName);
+			return true;
+		});
 
 		if (hasTemplateDirective) {
 			return false;
 		}
 
-		/// Attribute directive
-		for (let attr of Array.from(el.attributes)) {
 
-			// /// Custom directives
+		/// Directive: "is"
+		/// @TODO: is="app-component as b"
+		ret = _createComponentIfDefined(context, to);
+
+		/// Attribute directive
+		for (const attr of attributes) {
+			// /// Custom Directives
+			// /// @TODO: custom-directive 등록할때 아래처럼 syntax를 등록하는건 어떨까?
 			// let customDefaultPrevent = false;
 			// $module.directive.require([attr.nodeName, directive => {
 			// 	if (typeof directive === "function") {
@@ -91,68 +105,29 @@
 			// if (customDefaultPrevent) continue;
 
 
-			/// Basic directives
-			/// @TODO: custom-directive 등록할때 아래처럼 syntax를 등록하는건 어떨까?
-
-			if (syntax(context, to, attr, "#", _ref, "")) continue;
-			if (syntax(context, to, attr, "$", _ref2, "")) continue;
-			if (syntax(context, to, attr, "(", _event, ")")) continue;
-			if (syntax(context, to, attr, "[(", _twoway, ")]")) continue;
-			if (syntax(context, to, attr, "[attr.", _attr, "]")) continue;
-			if (syntax(context, to, attr, "[style.", _style, "]")) continue;
-			if (syntax(context, to, attr, "[class.", _class, "]")) continue;
-			if (syntax(context, to, attr, "[show.", _transition, "]")) continue;
-			if (syntax(context, to, attr, "[visible.", _visible2, "]")) continue;
-			if (syntax(context, to, attr, "[visible", _visible, "]")) continue;
-			if (syntax(context, to, attr, "[", _prop, "]")) continue;
-			if (syntax(context, to, attr, ".", _call, ")")) continue;
+			/// Basic Directives
+			if (templateSyntax(context, to, attr, "#", _ref, "")) continue;
+			if (templateSyntax(context, to, attr, "$", _ref2, "")) continue;
+			if (templateSyntax(context, to, attr, "(", _event, ")")) continue;
+			if (templateSyntax(context, to, attr, "[(", _twoway, ")]")) continue;
+			if (templateSyntax(context, to, attr, "[attr.", _attr, "]")) continue;
+			if (templateSyntax(context, to, attr, "[style.", _style, "]")) continue;
+			if (templateSyntax(context, to, attr, "[class.", _class, "]")) continue;
+			if (templateSyntax(context, to, attr, "[visible.", _visible2, "]")) continue;
+			if (templateSyntax(context, to, attr, "[visible", _visible, "]")) continue;
+			if (templateSyntax(context, to, attr, "[show.", _transition, "]")) continue;
+			if (templateSyntax(context, to, attr, "[", _prop, "]")) continue;
+			if (templateSyntax(context, to, attr, ".", _call, ")")) continue;
 		}
-
-
-		/// Directive: "is"
-		/// @TODO: is="app-component as b"
-		ret = _createComponentIfDefined(context, el);
 
 		return ret;
 	}
 
 
-	function _createComponentIfDefined(context, el) {
-
-		let Component = $module.get(el.getAttribute("is") || el.tagName.toLowerCase());
-		if (!Component) {
-			return;
-		}
-
-		// console.log(el.getAttribute("is"), Component);
-		// console.warn("is", context, el);
-		// console.log(Component.template);
-
-		let controller = new Component();
-		context = JSContext.connect(controller, ...context.locals);
-		controller.init && controller.init(context);
-
-		if (el.hasAttribute("inline-template")) {
-			$compile(el.childNodes, context);
-			return false;
-		}
-
-		if (Component.template) {
-			let template = document.createElement("template");
-			template.innerHTML = Component.template;
-			$compile(template, context);
-			el.innerHTML = "";
-			el.appendChild(template.content);
-		}
-
-		return context;
-	}
-
-
 	/// @FIXME...
-	function syntax(context, el, attr, start, callback, end) {
-		let name = attr.nodeName;
-		let value = attr.nodeValue;
+	function templateSyntax(context, el, attr, start, callback, end) {
+		const name = attr.nodeName;
+		const value = attr.nodeValue;
 
 		if (name.startsWith(start) && name.endsWith(end)) {
 			callback(context, el, value, name.slice(start.length, -end.length));
@@ -160,6 +135,38 @@
 			return true;
 		}
 	}
+
+	function _createComponentIfDefined(context, el) {
+
+		// let Component = ($module.exist(el.getAttribute("is") && $module.get(el.getAttribute("is")) || el.tagName.toLowerCase());
+		// if (!Component) {
+		// 	return;
+		// }
+		//
+		// // console.log(el.getAttribute("is"), Component);
+		// // console.warn("is", context, el);
+		// // console.log(Component.template);
+		//
+		// let controller = new Component();
+		// context = JSContext.connect(controller, ...context.locals);
+		// controller.init && controller.init(context);
+		//
+		// if (el.hasAttribute("inline-template")) {
+		// 	$compile(el.childNodes, context);
+		// 	return false;
+		// }
+		//
+		// if (Component.template) {
+		// 	let template = document.createElement("template");
+		// 	template.innerHTML = Component.template;
+		// 	$compile(template, context);
+		// 	el.innerHTML = "";
+		// 	el.appendChild(template.content);
+		// }
+		//
+		// return context;
+	}
+
 
 	function _visible(context, el, script, prop) {
 		prop = "hidden";
@@ -191,54 +198,22 @@
 	// }
 
 	Event.pipes = {
-
-		prevent($) {
-			return $.do(e => e.preventDefault());
-		},
-
-		stop($) {
-			return $.do(e => e.stopPropagation());
-		},
-
-		capture($) {
-			return $;
-		},
-
-		self($, element) {
-			return $.filter(e => e.target === element);
-		},
-
-		once($) {
-			return $.take(1);
-		},
-
-		shift($) {
-			return $.filter(e => e.shiftKey);
-		},
-
-		alt($) {
-			return $.filter(e => e.altKey);
-		},
-
-		ctrl($) {
-			return $.filter(e => e.ctrlKey);
-		},
-
-		meta($) {
-			return $.filter(e => e.metaKey);
-		},
-
-		/// @FIXMEE..
-		cmd($) {
-			return $.filter(e => e.metaKey);
-		},
+		prevent: $ => $.do(e => e.preventDefault()),
+		stop: $ => $.do(e => e.stopPropagation()),
+		capture: $ => $,
+		self: ($, element) => $.filter(e => e.target === element),
+		once: $ => $.take(1),
+		shift: $ => $.filter(e => e.shiftKey),
+		alt: $ => $.filter(e => e.altKey),
+		ctrl: $ => $.filter(e => e.ctrlKey),
+		meta: $ => $.filter(e => e.metaKey),
+		cmd: $ => $.filter(e => e.ctrlKey || e.metaKey),
 	};
 
 	function _event(context, el, script, value) {
 
 		let [type, ...options] = value.split("|");
 		let useCapture = options.indexOf("capture") >= 0;
-
 
 		/// Keyboard Event
 		let keys = [];
@@ -261,7 +236,6 @@
 			if (!handler) throw new Error(pipe + " is not registered event pipe.");
 			o$ = handler(o$, el);
 		});
-
 
 		/// Event Handler
 		o$.subscribe(function(event) {
@@ -287,14 +261,7 @@
 	}
 
 	function _attr(context, el, script, attr) {
-		context.watch$(script, value => {
-			if (!value && value !== 0) {
-				el.removeAttribute(attr);
-			}
-			else {
-				el.setAttribute(attr, value)
-			}
-		});
+		context.watch$(script, value => (!value && value !== 0) ? el.removeAttribute(attr) : el.setAttribute(attr, value))
 	}
 
 	function _style(context, el, script, name) {
@@ -318,9 +285,7 @@
 	}
 
 	function _class(context, el, script, name) {
-		context.watch$(script, value => {
-			value ? el.classList.add(name) : el.classList.remove(name);
-		});
+		context.watch$(script, value => value ? el.classList.add(name) : el.classList.remove(name));
 	}
 
 	function _ref(context, el, script, name) {
@@ -329,6 +294,27 @@
 
 	function _ref2(context, el, script, name) {
 		context.thisObj["$" + name] = el;
+	}
+
+	function _call(context, el, script, name) {
+		context.watch$(script, value => {
+			if (value === true) {
+
+				/// @FIXME:...
+				let doScript = "_tmp." + name + ")";
+				// console.log("_call", el, doScript);
+
+				let _context = context.fork({_tmp: el});
+
+				try {
+					_context.evaluate(doScript);
+
+				} catch (e) {
+
+					console.error(e);
+				}
+			}
+		});
 	}
 
 	function _transition(context, el, script, name) {
@@ -400,28 +386,10 @@
 		});
 	}
 
-	function _call(context, el, script, name) {
-		context.watch$(script, value => {
-			if (value === true) {
 
-				/// @FIXME:...
-				let doScript = "_tmp." + name + ")";
-				// console.log("_call", el, doScript);
-
-				let _context = context.fork({_tmp: el});
-
-				try {
-					_context.evaluate(doScript);
-
-				} catch (e) {
-
-					console.error(e);
-				}
-			}
-		});
-	}
-
+	/// -----------------------------------------------------------------------
 	/// TEXT_NODE
+	/// -----------------------------------------------------------------------
 	function _nodeValue(value) {
 		/// HTML Element
 		if (this.__node) {
@@ -449,6 +417,7 @@
 
 			let next = node.splitText(index + 2);
 			let script = node.nodeValue.slice(2, -2);
+			node.nodeValue = "";
 			context.watch$(script, _nodeValue.bind(node));
 
 			node = next;
@@ -457,14 +426,17 @@
 	}
 
 
-	function $compile(el, context, if_template_to) {
+	/// -----------------------------------------------------------------------
+	/// $compile
+	/// -----------------------------------------------------------------------
+	function $compile(el, context, globalObj, if_template_to) {
 		if_template_to = if_template_to || el;
 
 		if (arguments.length === 1) {
-			context = context || new JSContext(el);
+			context = context || new JSContext(el, globalObj);
 		}
 		if (!(context instanceof JSContext)) {
-			context = new JSContext(context);
+			context = new JSContext(context, globalObj);
 		}
 
 		if (el.tagName === "TEMPLATE") {
@@ -484,7 +456,7 @@
 			}
 		});
 
-		return el;
+		return context.thisObj;
 	}
 
 	exports.traverseDOM = traverseDOM;

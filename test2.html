@@ -5,13 +5,42 @@
 	<title>Title</title>
 	<script src="1px.js.new/1px.js"></script>
 </head>
-<body>
+<body *is="AppTodo">
 
 <h1>{{ title }}</h1>
-
+<h2>{{ title$ }}</h2>
 
 <script>
-console.log($module);
+const {$compile} = require();
+
+class Store {
+	constructor() {
+		this.name = 10;
+		this.hello = "ASdfasdfdaf";
+	}
+
+	init($) {
+
+	}
+
+	test(name) {
+		this.name = name;
+	}
+}
+
+class App {
+	constructor() {
+		this.title = "aksdjkljasdlkadas";
+		this.title$ = Observable.interval(1000).take(10).map(v => v * 10);
+
+
+		window.a = this;
+	}
+}
+
+
+let store = new Store();
+$compile(document.body, new App(), store);
 </script>
 
 

@@ -20,6 +20,7 @@
 	const INFIX = precedence.INFIX = Object.create(null);
 
 	precedence(PREFIX, "(");
+	precedence(PREFIX, "@");
 	precedence(INFIX, ".", "[", "(");
 	precedence(PREFIX, "!", "-", "+", "[", "{");
 	precedence(INFIX, "**");
@@ -188,6 +189,11 @@
 
 
 	/// foo.bar
+	prefix("@", function() {
+		this.push(next("(name)"));
+	});
+
+	/// foo.bar
 	infix(".", function(left) {
 		this.push(left, next("(name)"));
 	});
@@ -337,7 +343,7 @@
 		["(name)", /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)/],
 		["(number)", /((?:\d*\.\d+)|\d+)/],
 		["(string)", /('[^']*'|"[^"]*")/],
-		["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!?:;.,<>=\[\]\(\){}])/],
+		["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!@?:;.,<>=\[\]\(\){}])/],
 		["(ws)", /(\s)/],
 		["(unknown)", /./],
 	];
