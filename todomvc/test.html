@@ -122,7 +122,8 @@ Mimosa.controller("app-todo", () => class AppTodo {
 		if (typeof title !== "string") return;
 		title = title.trim();
 		if (!title.length) {
-			return this.removeTodo(todo);
+			this.removeTodo(todo);
+			return;
 		}
 
 		todo.title = title;
@@ -133,7 +134,7 @@ Mimosa.controller("app-todo", () => class AppTodo {
 	}
 
 	removeTodo(todo) {
-		this.todos = this.todos.filter(t => t !== todo);
+		this.todos = this.todos.filter(_todo => _todo !== todo);
 	}
 
 	clearCompleted() {

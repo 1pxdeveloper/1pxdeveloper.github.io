@@ -22,8 +22,8 @@
 
 		// "directive.foreach.js",
 		// "directive.if.js",
-		//
-		// "batch.js",
+
+		"batch.js",
 
 	].forEach(src => {
 		document.write(`<script src="${pref}${src}"></script>`);

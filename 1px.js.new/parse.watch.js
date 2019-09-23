@@ -8,17 +8,17 @@
 	const DATE_METHODS = ["setDate", "setFullYear", "setHours", "setMilliseconds", "setMonth", "setSeconds", "setTime", "setUTCDate", "setUTCFullYear", "setUTCHours", "setUTCMilliseconds", "setUTCMinutes", "setUTCSeconds", "setYear"];
 	
 	function mutationObservableFromClass$(object, methods) {
-		let key = methods[0];
-		let observable$ = object[key].observable$;
+		let observable$;
+		const key = methods[0];
 		
-		return observable$ = observable$ || new Observable(observer => {
-			let prototype = Object.getPrototypeOf(object);
-			let wrap = Object.create(prototype);
+		return observable$ = object[key].observable$ || new Observable(observer => {
+			const prototype = Object.getPrototypeOf(object);
+			const wrap = Object.create(prototype);
 			Object.setPrototypeOf(object, wrap);
 			
-			for (let method of methods) {
+			for (const method of methods) {
 				wrap[method] = function() {
-					let result = prototype[method].apply(this, arguments);
+					const result = prototype[method].apply(this, arguments);
 					observer.next(this);
 					observer.complete();
 					return result;
@@ -51,7 +51,7 @@
 			return Observable.NEVER;
 		}
 		
-		let desc = Object.getOwnPropertyDescriptor(object, prop);
+		const desc = Object.getOwnPropertyDescriptor(object, prop);
 		if (desc) {
 			if (desc.set && desc.set.observable$) {
 				return desc.set.observable$;
@@ -62,15 +62,11 @@
 			}
 		}
 		
-		let observable$ = new Observable(observer => {
-			
-			let desc = Object.getOwnPropertyDescriptor(object, prop);
-			if (desc && desc.set && desc.set.observable$) {
-				return desc.set.observable$.subscribe(observer);
-			}
-			
+		let observable$;
+		return (observable$ = new Observable(observer => {
 			let value = object[prop];
-			let subscription = mutationObservable$(value).subscribe(observer);
+			
+			const subscription = mutationObservable$(value).subscribe(observer);
 			
 			function set(newValue) {
 				if (Object.is(value, newValue)) {
@@ -92,14 +88,12 @@
 			
 			return () => {
 				subscription.unsubscribe();
-				delete set.observable$;
-				delete object[prop];
-				object[prop] = value;
+				
+				desc.value = value;
+				Object.defineProperty(object, prop, desc);
 			}
 			
-		}).share();
-		
-		return observable$;
+		}).share());
 	}
 	
 	exports.watch$$ = watch$$;

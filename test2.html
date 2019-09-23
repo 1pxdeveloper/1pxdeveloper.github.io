@@ -1,17 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
 	<meta charset="UTF-8">
 	<title>Title</title>
 	<script src="1px.js.new/1px.js"></script>
 </head>
-<body>
+
+<body is="App">
 
 <h1>{{ title }}</h1>
 
 
 <script>
-console.log($module);
+$module.factory("App", () => class App {
+
+	constructor() {
+		window.app = this;
+
+		this.title = 0;
+	}
+});
+
+
+
+
 </script>
 
 
