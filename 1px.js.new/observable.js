@@ -67,7 +67,7 @@
 					observer.complete();
 				});
 			}
-
+			
 			throw new TypeError(x + " is not observable");
 		}
 
@@ -151,21 +151,22 @@
 		next(value) {
 			if (this.closed) return;
 			try {
-				this._subscription._observer.next && this._subscription._observer.next(value);
+				if (this._subscription._observer.next) this._subscription._observer.next(value);
 			} catch (error) {
+				console.error(error);
 				this.error(error);
 			}
 		}
 
 		error(error) {
 			if (this.closed) return;
-			this._subscription._observer.error ? this._subscription._observer.error(error) : console.error(error);
+			if (this._subscription._observer.error) this._subscription._observer.error(error);
 			cleanupSubscription(this._subscription);
 		}
 
 		complete() {
 			if (this.closed) return;
-			this._subscription._observer.complete && this._subscription._observer.complete();
+			if (this._subscription._observer.complete) this._subscription._observer.complete();
 			cleanupSubscription(this._subscription);
 		}
 	}

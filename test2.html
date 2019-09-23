@@ -1,46 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
 	<meta charset="UTF-8">
 	<title>Title</title>
 	<script src="1px.js.new/1px.js"></script>
 </head>
-<body *is="AppTodo">
+
+<body is="App">
 
 <h1>{{ title }}</h1>
-<h2>{{ title$ }}</h2>
+
 
 <script>
-const {$compile} = require();
+$module.factory("App", () => class App {
 
-class Store {
 	constructor() {
-		this.name = 10;
-		this.hello = "ASdfasdfdaf";
+		window.app = this;
+
+		this.title = 0;
 	}
-
-	init($) {
-
-	}
-
-	test(name) {
-		this.name = name;
-	}
-}
-
-class App {
-	constructor() {
-		this.title = "aksdjkljasdlkadas";
-		this.title$ = Observable.interval(1000).take(10).map(v => v * 10);
+});
 
 
-		window.a = this;
-	}
-}
 
 
-let store = new Store();
-$compile(document.body, new App(), store);
 </script>
 
 

@@ -61,6 +61,7 @@
 
 			let subject = new BehaviorSubject();
 			script$.subscribe(subject);
+			
 			return subject;
 		}
 

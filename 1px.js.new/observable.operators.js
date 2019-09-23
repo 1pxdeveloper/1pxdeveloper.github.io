@@ -13,10 +13,10 @@
 		return operators.reduce((observable, operator) => operator(observable), this);
 	};
 	
-	Observable.prototype.lift = function(fn) {
+	Observable.prototype.lift = function(callback) {
 		return new Observable(observer => {
-			let o = fn(observer) || {};
-			let s = this.subscribe(Object.setPrototypeOf(o, observer));
+			const o = callback(observer) || {};
+			const s = this.subscribe(Object.setPrototypeOf(o, observer));
 			return () => {
 				s.unsubscribe();
 				o.finalize && o.finalize();
@@ -24,21 +24,17 @@
 		});
 	};
 	
-	const tap = (onNext, onComplete = noop) => $ => new Observable(observer => {
-		let index = 0;
+	const tap = (onNext, onComplete = noop) => $ => $.lift((observer, index = 0) => ({
+		next(value) {
+			onNext(value, index++);
+			observer.next(value);
+		},
 		
-		return $.subscribe(Object.setPrototypeOf({
-			next(value) {
-				onNext(value, index++);
-				observer.next(value);
-			},
-			complete() {
-				onComplete();
-				observer.complete();
-			},
-		}, observer));
-	});
-	
+		complete() {
+			onComplete();
+			observer.complete();
+		},
+	}));
 	
 	Observable.operators = {tap};
 	
@@ -120,9 +116,16 @@
 	};
 	
 	Observable.prototype.flatMap = Observable.prototype.mergeMap = function(callback) {
-		return this.map(callback).lift(observer => ({
+		return this.lift((observer, subscriptions = []) => ({
 			next(value) {
-				value.subscribe(observer.next.bind(observer), observer.error.bind(observer), noop);
+				value = callback(value);
+				subscriptions.push(value.subscribe(observer.next.bind(observer), observer.error.bind(observer)));
+			},
+			
+			complete() {},
+			
+			finalize() {
+				for (const subscription of subscriptions) subscription.unsubscribe();
 			},
 		}));
 	};
@@ -184,6 +187,7 @@
 			start() {
 				(num <= 0) && observer.complete();
 			},
+			
 			next(value) {
 				observer.next(value);
 				(--num <= 0) && observer.complete();
@@ -223,17 +227,14 @@
 	
 	/// @TODO: inclusive
 	Observable.prototype.takeWhile = function(callback = just, inclusive) {
-		return this.lift(observer => {
-			let index = 0;
-			return {
-				next(value) {
-					Observable.castAsync(callback(value, index++)).subscribe(cond => {
-						observer.next(value);
-						if (!cond) observer.complete();
-					});
-				},
-			}
-		});
+		return this.lift((observer, index = 0) => ({
+			next(value) {
+				Observable.castAsync(callback(value, index++)).subscribe(cond => {
+					observer.next(value);
+					if (!cond) observer.complete();
+				});
+			},
+		}));
 	};
 	
 	Observable.prototype.toPromise = function() {
@@ -283,6 +284,7 @@
 			
 			return function() {
 				observers = observers.filter(o => o !== observer);
+				
 				if (observers.length === 0) {
 					subscription.unsubscribe();
 					subscription = null;
@@ -539,5 +541,40 @@
 			}
 		});
 	};
+	
+	
+	Observable.combine = function(...observables) {
+		return new Observable(observer => {
+			let arr = Array(observables.length);
+			
+			const merge = (observable, index) => observable.subscribe({
+				next(value) {
+					arr[index] = value;
+					
+					let count = 0;
+					arr.forEach(() => count++);
+					
+					if (count === arr.length) {
+						observer.next(arr);
+					}
+				},
+				
+				error(error) {
+					observer.error(error);
+				},
+				
+				complete() {
+				
+				},
+			});
+			
+			const subscriptions = observables.map(merge);
+			
+			return function() {
+				for (const s of subscriptions) s.unsubscribe();
+			}
+		});
+	};
+	
 	
 })();

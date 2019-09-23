@@ -4,88 +4,76 @@
 	<meta charset="UTF-8">
 	<title>Title</title>
 	<script>window.exports = window;</script>
-	<!--<script src="1px.js/1px.js"></script>-->
+	<script src="1px.js.new/1px.js"></script>
 </head>
 <body>
 
 <script>
-/// Tokenizer
-tokenize.re = /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)|((?:\d*\.\d+)|\d+)|('[^']*'|"[^"]*")|(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!?:;.,<>=\[\]\(\){}])|(\s)|./g;
+const {Observable} = require();
 
-tokenize.types = [
-	"",
-	"(name)",
-	"(number)",
-	"(string)",
-	"(operator)",
-	"(ws)",
-	"(unknown)",
-];
 
-tokenize.lex = [
-	["(name)", /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)/],
-	["(number)", /((?:\d*\.\d+)|\d+)/],
-	["(string)", /('[^']*'|"[^"]*)"/],
-	["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!?:;.,<>=\[\]\(\){}])/],
-	["(ws)", /(\s)/],
-	["(unknown)", /./]
-];
+function watch$$(object, prop) {
 
-let re = tokenize.lex.map(v => v[1].source).join("|");
+	if (Object(object) !== object) {
+		return Observable.NEVER;
+	}
 
-function tokenize(script) {
-	/// assert: typeof script === "string";
-	let tokens = [];
+	if (Array.isArray(object) && +prop === prop) {
+		return Observable.NEVER;
+	}
 
-	script.replace(tokenize.re, function(value) {
+	const desc = Object.getOwnPropertyDescriptor(object, prop);
+	if (desc && desc.set && desc.set.observable$) {
+		return desc.set.observable$;
+	}
 
-		/// Parse Type
-		let type;
-		for (let i = 1; i < arguments.length; i++) {
-			if (arguments[i]) {
-				type = tokenize.types[i];
-				break;
-			}
+	let observable$;
+
+	return (observable$ = new Observable(observer => {
+		const desc = Object.getOwnPropertyDescriptor(object, prop);
+		if (desc && desc.set && desc.set.observable$) {
+			return desc.set.observable$.subscribe(observer);
 		}
 
-		/// Create Token
-		let token;
-		switch (type) {
-			case "(name)":
-				token = Object.create($symbol_table[value] || $symbol_table["(name)"]);
-				token.value = "value" in token ? token.value : value;
-				tokens.push(token);
-				break;
+		let value = object[prop];
 
-			case "(number)":
-				token = Object.create($symbol_table["(literal)"]);
-				token.value = +value;
-				tokens.push(token);
-				break;
-
-			case "(string)":
-				token = Object.create($symbol_table["(literal)"]);
-				token.value = value.slice(1, -1);
-				tokens.push(token);
-				break;
-
-			case "(operator)":
-				token = Object.create($symbol_table[value]);
-				token.value = value;
-				tokens.push(token);
-				break;
-
-			case "(unknown)":
-				throw SyntaxError("Unexpected token " + value);
+		function set(newValue) {
+			if (Object.is(value, newValue)) return;
+			value = newValue;
+			observer.next(value);
+			// observer.complete();
 		}
 
-		return value;
-	});
+		set.observable$ = observable$;
 
-	tokens.forEach(token => token.script = script);
-	tokens.index = 0;
-	return tokens;
+		Object.defineProperty(o, prop, {
+			get: () => value,
+			set: set,
+			configurable: desc.configurable,
+			enumerable: desc.enumerable,
+		});
+
+		return () => {
+			desc.value = value;
+			Object.defineProperty(o, prop, desc);
+		}
+
+	}).share());
 }
+
+
+
+let o = {};
+let s = watch$$(o, "a");
+let s2 = watch$$(o, "a").subscribe(console.warn);
+
+o.a = 300;
+
+
+s.subscribe(console.warn);
+
+
+o.a = 500;
 
 </script>
 
