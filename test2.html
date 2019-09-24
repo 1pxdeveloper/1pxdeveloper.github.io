@@ -12,20 +12,39 @@
 
 
 <script>
-$module.factory("App", () => class App {
+// $module.factory("App", () => class App {
+//
+// 	constructor() {
+// 		window.app = this;
+//
+// 		this.title = 0;
+// 	}
+// });
+//
+//
+// function App() {
+// 	const arr = [1, 2, 3, 4];
+// 	return {arr};
+// }
+//
 
-	constructor() {
-		window.app = this;
 
-		this.title = 0;
-	}
-});
+let o = {a: function() {}};
 
 
-function App() {
-	const arr = [1, 2, 3, 4];
-	return {arr};
-}
+let b = Object.setPrototypeOf({}, o);
+
+
+b.a = function() { super.a(); }
+
+
+
+console.log(b.a);
+
+
+
+
+Observable.of(1, 2, 3, 4, 5).skip(2).subscribe(console.warn);
 
 
 </script>

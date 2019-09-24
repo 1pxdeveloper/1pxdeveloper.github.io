@@ -24,36 +24,10 @@
 		});
 	};
 	
-	const tap = (onNext, onComplete = noop) => $ => $.lift((observer, index = 0) => ({
-		next(value) {
-			onNext(value, index++);
-			observer.next(value);
-		},
-		
-		complete() {
-			onComplete();
-			observer.complete();
-		},
-	}));
 	
-	Observable.operators = {tap};
-	
-	
-	// const operator = callback => $ => $.lift(callback);
-	//
-	// const count = () => operator((observer, count = 0) => ({
-	// 	next: () => count++,
-	// 	complete: () => observer.next(count),
-	// }));
-	
-	
-	Observable.prototype.count = function() {
-		return this.lift((observer, count = 0) => ({
-			next() { count++ },
-			complete() { observer.next(count) },
-		}));
-	};
-	
+	/// -------------------------------------------------------------------------------------------
+	/// Utils
+	/// -------------------------------------------------------------------------------------------
 	Observable.prototype.map = function(callback) {
 		return this.lift(observer => ({
 			next(value) { observer.next(callback(value)) },
@@ -65,6 +39,24 @@
 			next() { observer.next(value) },
 		}));
 	};
+	
+	Observable.prototype.filter = function(callback) {
+		return this.lift((observer, index = 0) => ({
+			next(value) {
+				if (callback(value, index++)) observer.next(value);
+			},
+		}));
+	};
+	
+	
+	Observable.prototype.scan = function(accumulator, seed) {
+		return this.lift(observer => ({
+			next(value) {
+				observer.next((seed = accumulator(seed, value)))
+			},
+		}));
+	};
+	
 	
 	Observable.prototype.tap = Observable.prototype.do = function(onNext, onComplete = noop) {
 		return this.lift((observer, index = 0) => ({
@@ -79,6 +71,22 @@
 		}));
 	};
 	
+	Observable.prototype.finalize = function(finalize) {
+		return this.lift(() => ({finalize}));
+	};
+	
+	Observable.prototype.initialize = function(initialize) {
+		return new Observable(observer => {
+			const next = observer.next;
+			observer.next = value => {
+				initialize(value);
+				observer.next(value);
+				observer.next = next;
+			};
+			return this.subscribe(observer);
+		});
+	};
+	
 	
 	Observable.prototype.doWhile = function(callback) {
 		return this.lift((observer, index = 0, flag = true) => ({
@@ -91,7 +99,6 @@
 	
 	Observable.prototype.concat = function(observable) {
 		return new Observable(observer => {
-			
 			let s1, s2, _value;
 			let completed = false;
 			
@@ -111,15 +118,6 @@
 		})
 	};
 	
-	Observable.prototype.finalize = function(callback) {
-		return new Observable(observer => {
-			let s = this.subscribe(observer);
-			return () => {
-				s.unsubscribe();
-				callback();
-			}
-		});
-	};
 	
 	Observable.prototype.mergeAll = function() {
 		return this.lift((observer, ret = []) => ({
@@ -129,14 +127,16 @@
 	};
 	
 	
-	Observable.prototype.filter = function(callback) {
-		return this.lift(observer => ({
-			next(value) {
-				callback(value) && observer.next(value);
-			},
+	Observable.prototype.count = function() {
+		return this.lift((observer, count = 0) => ({
+			next() { count++ },
+			complete() { observer.next(count) },
 		}));
 	};
 	
+	Observable.prototype.skip = function(count) {
+		return this.filter((value, index) => index >= count);
+	};
 	
 	Observable.prototype.last = function() {
 		return this.lift((observer, ret) => ({
@@ -149,26 +149,6 @@
 				observer.complete();
 			},
 		}));
-	};
-	
-	
-	/// @TODO: count
-	Observable.prototype.retry = function(count) {
-		return new Observable(observer => {
-			const next = observer.next.bind(observer);
-			const complete = observer.complete.bind(observer);
-			
-			let s1, s2;
-			s1 = this.subscribe(next, (err) => {
-				s1 && s1.unsubscribe();
-				s2 = this.retry(--count).subscribe(observer);
-			}, complete);
-			
-			return () => {
-				s1 && s1.unsubscribe();
-				s2 && s2.unsubscribe();
-			};
-		})
 	};
 	
 	
@@ -251,14 +231,6 @@
 	};
 	
 	
-	Observable.prototype.scan = function(accumulator, seed) {
-		return this.lift(observer => ({
-			next(value) {
-				observer.next((seed = accumulator(seed, value)))
-			},
-		}));
-	};
-	
 	Observable.prototype.share = function() {
 		let observers = [];
 		let subscription;
@@ -292,15 +264,26 @@
 	};
 	
 	
-	Observable.prototype.skip = function(count) {
-		return this.lift((observer, index = 0) => ({
-			next(value) {
-				if (index++ < count) {
-					return;
-				}
-				observer.next(value);
-			},
-		}));
+	/// -------------------------------------------------------------------------------------------
+	/// Utils
+	/// -------------------------------------------------------------------------------------------
+	/// @TODO: count
+	Observable.prototype.retry = function(count) {
+		return new Observable(observer => {
+			const next = observer.next.bind(observer);
+			const complete = observer.complete.bind(observer);
+			
+			let s1, s2;
+			s1 = this.subscribe(next, (err) => {
+				s1 && s1.unsubscribe();
+				s2 = this.retry(--count).subscribe(observer);
+			}, complete);
+			
+			return () => {
+				s1 && s1.unsubscribe();
+				s2 && s2.unsubscribe();
+			};
+		})
 	};
 	
 	
@@ -448,10 +431,11 @@
 	/// -------------------------------------------------------------------------------------------
 	/// Static Operators
 	/// -------------------------------------------------------------------------------------------
-	Observable.NEVER = new Observable(noop);
-	Observable.EMPTY = new Observable(observer => observer.complete());
-	
+	Observable.never = () => new Observable(noop);
 	Observable.empty = () => new Observable(observer => observer.complete());
+	
+	Observable.NEVER = Observable.never();
+	Observable.EMPTY = Observable.empty();
 	
 	// @FIXME: 내가 만든거
 	Observable.castAsync = function(value) {
@@ -475,21 +459,6 @@
 		});
 	};
 	
-	
-	Observable.just = function(value) {
-		return new Observable(observer => {
-			observer.next(value);
-			observer.complete();
-		});
-	};
-	
-	Observable.interval = function(timeout) {
-		return new Observable((observer, i = 0, id) => {
-			id = setInterval(() => observer.next(i++), timeout);
-			return () => clearInterval(id);
-		});
-	};
-	
 	Observable.timeout = function(timeout, value) {
 		return new Observable((observer, id) => {
 			id = setTimeout(() => {
@@ -501,6 +470,12 @@
 		});
 	};
 	
+	Observable.interval = function(timeout) {
+		return new Observable((observer, i = 0, id) => {
+			id = setInterval(() => observer.next(i++), timeout);
+			return () => clearInterval(id);
+		});
+	};
 	
 	Observable.fromPromise = function(promise) {
 		return new Observable(observer => {
@@ -510,7 +485,8 @@
 					observer.complete();
 				},
 				
-				err => observer.error(err))
+				err => observer.error(err),
+			)
 		});
 	};
 	
@@ -532,8 +508,6 @@
 				observer.complete();
 				return;
 			}
-			
-			// console.log(Observable.forkjoin);
 			
 			observables.forEach((observable, index) => {
 				observable.last().subscribe(value => {
