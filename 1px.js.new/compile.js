@@ -106,17 +106,17 @@
 
 
 			/// Basic Directives
-			if (templateSyntax(context, to, attr, "#", _ref, "")) continue;
-			if (templateSyntax(context, to, attr, "$", _ref2, "")) continue;
 			if (templateSyntax(context, to, attr, "(", _event, ")")) continue;
-			if (templateSyntax(context, to, attr, "[(", _twoway, ")]")) continue;
 			if (templateSyntax(context, to, attr, "[attr.", _attr, "]")) continue;
-			if (templateSyntax(context, to, attr, "[style.", _style, "]")) continue;
-			if (templateSyntax(context, to, attr, "[class.", _class, "]")) continue;
 			if (templateSyntax(context, to, attr, "[visible.", _visible2, "]")) continue;
 			if (templateSyntax(context, to, attr, "[visible", _visible, "]")) continue;
+			if (templateSyntax(context, to, attr, "[class.", _class, "]")) continue;
+			if (templateSyntax(context, to, attr, "[style.", _style, "]")) continue;
 			if (templateSyntax(context, to, attr, "[show.", _transition, "]")) continue;
+			if (templateSyntax(context, to, attr, "[(", _twoway, ")]")) continue;
 			if (templateSyntax(context, to, attr, "[", _prop, "]")) continue;
+			if (templateSyntax(context, to, attr, "$", _ref2, "")) continue;
+			if (templateSyntax(context, to, attr, "#", _ref, "")) continue;
 			if (templateSyntax(context, to, attr, ".", _call, ")")) continue;
 		}
 

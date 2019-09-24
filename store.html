@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="1px.js.new/1px.js"></script>
+</head>
+
+<body is="App">
+
+<h1>{{ title }}</h1>
+
+
+<script>
+Array.prototype.push$ = function(item) { return [...this, item] };
+Array.prototype.pop$ = function() { return this.slice(0, -1)};
+
+
+const click$ = Observable.fromEvent(window, "click", true).map(e => "Hello");
+const keydown$ = Observable.fromEvent(window, "keydown", true);
+
+
+const addTodo = (title, completed = false) => (todos) => todos.push$({title, completed});
+const removeTodo = () => (todos) => todos.pop$();
+
+
+const todos$ = Observable.merge(
+	click$.map(addTodo),
+	keydown$.map(removeTodo),
+	)
+	.scan((state, action) => action(state), [])
+	.tap(console.log);
+
+
+todos$.subscribe();
+
+
+</script>
+
+
+</body>
+</html>

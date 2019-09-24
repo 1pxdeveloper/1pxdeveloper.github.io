@@ -11,107 +11,124 @@
 const {BehaviorSubject} = require();
 const {tokenize, watch$$} = require();
 
+const evaluate$$ = (function() {
 
-const $evaluateRules = {};
+	const {combine, of} = Observable;
 
-function evaluate(token) {
-	console.log(token.id, token.length, token);
+	const $evaluateRules = {};
 
-	return $evaluateRules[token.id][token.length].apply(token, token);
-}
+	function evaluate(token) {
+		console.log(token.id, token.length, token);
+		return $evaluateRules[token.id][token.length].apply(token, token);
+	}
 
-function evaluateRule(id, callback) {
-	$evaluateRules[id] = $evaluateRules[id] || Object.create(null);
-	$evaluateRules[id][callback.length] = callback;
-}
+	function evaluateRule(id, callback) {
+		$evaluateRules[id] = $evaluateRules[id] || Object.create(null);
+		$evaluateRules[id][callback.length] = callback;
+	}
 
-const {combine, of} = Observable;
+	evaluateRule("(end)", () => of(undefined));
 
-evaluateRule("(end)", () => of(undefined));
+	evaluateRule("(literal)", function() { return of(this.value) });
 
-evaluateRule("(literal)", function() { return of(this.value) });
-
-evaluateRule("[", (a) => combine(...a.map(evaluate)));
-
-
-/// @TODO:
-evaluateRule("{", (a) => {
-
-	console.log(a);
-
-	// return combine(...a.map(evaluate)).map(o);
+	evaluateRule("[", (a) => combine(...a.map(evaluate)));
 
 
-	return of(a.reduce((object, o) => {
-		object[o.key] = evaluate(o);
-		return object;
-	}, {}));
-});
+	/// @TODO:
+	evaluateRule("{", (a) => {
 
-/// @TODO:///
-evaluateRule("this", function() {
-	// return this.thisObj;
-});
+		console.log(a);
+
+		// return combine(...a.map(evaluate)).map(o);
 
 
-evaluateRule("+", (a) => evaluate(a).map(a => +a));
-evaluateRule("-", (a) => evaluate(a).map(a => -a));
-evaluateRule("!", (a) => evaluate(a).map(a => !a));
+		return of(a.reduce((object, o) => {
+			object[o.key] = evaluate(o);
+			return object;
+		}, {}));
+	});
 
-evaluateRule("+", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a + b));
-evaluateRule("-", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a - b));
-evaluateRule("*", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a * b));
-evaluateRule("/", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a / b));
-evaluateRule("%", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a % b));
-
-evaluateRule("&&", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a && b));
-evaluateRule("||", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a || b));
-evaluateRule("===", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a === b));
-evaluateRule("!==", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a !== b));
-evaluateRule("==", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a == b));
-evaluateRule("!=", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a != b));
-evaluateRule("<", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a < b));
-evaluateRule("<=", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a <= b));
-evaluateRule(">", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a > b));
-evaluateRule(">=", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a >= b));
-
-evaluateRule("?", (a, b, c) => evaluate(a).switchMap(bool => bool ? evaluate(b) : evaluate(c)));
-
-evaluateRule(";", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => b));
-
-/// foo
-evaluateRule("(name)", function() {
-
-	let thisObj = window;
-
-	let a = thisObj[this.value];
-
-	// this.subject = this.subject || new BehaviorSubject;
-	//
-	// Observable.castAsync(a).subscribe(this.subject);
-	//
-	// return this.subject;
+	/// @TODO:///
+	evaluateRule("this", function() {
+		// return this.thisObj;
+	});
 
 
-	// @TODO:...
-	this.object = thisObj;
+	evaluateRule("+", (a) => evaluate(a).map(a => +a));
+	evaluateRule("-", (a) => evaluate(a).map(a => -a));
+	evaluateRule("!", (a) => evaluate(a).map(a => !a));
+
+	evaluateRule("+", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a + b));
+	evaluateRule("-", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a - b));
+	evaluateRule("*", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a * b));
+	evaluateRule("/", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a / b));
+	evaluateRule("%", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a % b));
+
+	evaluateRule("&&", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a && b));
+	evaluateRule("||", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a || b));
+	evaluateRule("===", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a === b));
+	evaluateRule("!==", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a !== b));
+	evaluateRule("==", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a == b));
+	evaluateRule("!=", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a != b));
+	evaluateRule("<", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a < b));
+	evaluateRule("<=", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a <= b));
+	evaluateRule(">", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a > b));
+	evaluateRule(">=", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a >= b));
+
+	evaluateRule("?", (a, b, c) => evaluate(a).switchMap(bool => bool ? evaluate(b) : evaluate(c)));
+
+	evaluateRule(";", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => b));
+
+	/// foo
+	evaluateRule("(name)", function() {
+
+		let thisObj = window;
+
+		let a = thisObj[this.value];
+
+		// this.subject = this.subject || new BehaviorSubject;
+		//
+		// Observable.castAsync(a).subscribe(this.subject);
+		//
+		// return this.subject;
 
 
-	return Observable.castAsync(a);
-});
+		// @TODO:...
+		this.object = thisObj;
 
 
-/// foo.bar
-evaluateRule(".", function(a, b) {
-	return evaluate(a).tap(a => this.object = a).map((a) => a && a[b.value])
-});
+		return Observable.castAsync(a);
+	});
 
-/// foo[bar]
-evaluateRule("[", function(a, b) {
-	return combine(evaluate(a).tap(a => this.object = a), evaluate(b)).map(([a, b]) => a && a[b]);
-});
 
-/// foo(bar, ...baz)
+	/// foo.bar
+	evaluateRule(".", function(a, b) {
+		return evaluate(a)
+			.tap(object => {
+				this.object = object;
+				this.prop = b.value;
+			})
+			.map(object => object && object[b.value])
+	});
+
+	/// foo[bar]
+	evaluateRule("[", function(a, b) {
+		return combine(evaluate(a), evaluate(b))
+			.tap(([object, prop]) => {
+				this.object = object;
+				this.prop = prop;
+			})
+			.map(([object, prop]) => object && object[prop]);
+	});
+
+	/// foo(bar, ...baz)
+	evaluateRule("(", function(a, b) {
+		return combine(evaluate(a), combine(...b.map(evaluate))).map(([fn, args]) => fn.apply(a.object, args));
+	});
+
+	return evaluate;
+
+}());
 
 
 window.a = Observable.interval(1000).take(5);
@@ -123,7 +140,7 @@ window.d = {
 
 	test: function() {
 		return "xxxxx" + this.x;
-	}
+	},
 };
 
 
@@ -134,7 +151,7 @@ let root = tokenize("d.test()");
 console.log(root);
 
 
-let s = evaluate(root);
+let s = evaluate$$(root);
 
 
 /// @TODO:... this + locals만 pipe해서 Parse Tree + Observable은 재사용하는 방식을 고민할것!!!!!!!!!!

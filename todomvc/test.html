@@ -79,68 +79,80 @@
 <script src="js/app.js"></script>
 
 <script>
-Mimosa.controller("app-todo", () => class AppTodo {
+const {traverseDOM} = require();
 
-	init($) {
-		this.todos = [];
-		this.editingTodo = null;
 
-		this.filter = this.allFilter = (todo) => todo;
-		this.activeFilter = (todo) => !todo.completed;
-		this.completedFilter = (todo) => todo.completed;
+const compile = (el) => {
+	traverseDOM(el, node => {
+		if (node.nodeType === 1) return compile_element(node);
+		if (node.nodeType === 3) return compile_text(node);
+	});
+};
 
-		$`this.num_items_left = this.todos.length - this.todos.filter(todo => todo.completed).length`;
-		$`this.all_checked = this.todos.every(todo => todo.completed)`;
+const compile_element = (el) => {
+	if (el.tagName === "SCRIPT") return false;
 
-		$.route(this, "#/");
+	const attributes = Array.from(el.attributes);
+	compile_attributes(el, attributes);
+};
 
-		this.addTodo("Hello");
-		this.addTodo("World");
+
+const compile_attributes = (el, attributes) => {
+	// console.log(attr);
+
+	for (const attr of attributes) {
+		// if (templateSyntax(context, to, attr, "(", _event, ")")) continue;
+		// if (templateSyntax(context, to, attr, "[attr.", _attr, "]")) continue;
+		// if (templateSyntax(context, to, attr, "[visible.", _visible2, "]")) continue;
+		// if (templateSyntax(context, to, attr, "[visible", _visible, "]")) continue;
+		// if (templateSyntax(context, to, attr, "[class.", _class, "]")) continue;
+		// if (templateSyntax(context, to, attr, "[style.", _style, "]")) continue;
+		// if (templateSyntax(context, to, attr, "[show.", _transition, "]")) continue;
+		// if (templateSyntax(context, to, attr, "[(", _twoway, ")]")) continue;
+		// if (templateSyntax(context, to, attr, "[", _prop, "]")) continue;
+		// if (templateSyntax(context, to, attr, "$", _ref2, "")) continue;
+		// if (templateSyntax(context, to, attr, "#", _ref, "")) continue;
+		// if (templateSyntax(context, to, attr, ".", _call, ")")) continue;
 	}
+};
 
-	"#/"() {
-		this.filter = this.allFilter;
+const templateSyntax = (context, to, start, callback, end) => {
+
+};
+
+
+const compile_text = (node) => {
+	for (const textNode of splitTemplateTextNode(node)) {
+		console.log(textNode.nodeValue);
 	}
+};
 
-	"#/active"() {
-		this.filter = this.activeFilter;
-	}
+const splitTemplateTextNode = (node, start = "{{", end = "}}", ret = []) => {
 
-	"#/completed"() {
-		this.filter = this.completedFilter;
-	}
-
-	addTodo(title, completed = false) {
-		if (typeof title !== "string") return;
-		title = title.trim();
-		if (!title) return;
-
-		this.todos.push({title, completed});
-	}
-
-	saveTodo(todo, title) {
-		if (typeof title !== "string") return;
-		title = title.trim();
-		if (!title.length) {
-			this.removeTodo(todo);
-			return;
+	while(true) {
+		let index = node.nodeValue.indexOf(start);
+		if (index === -1) {
+			break;
 		}
 
-		todo.title = title;
+		node = node.splitText(index);
+		index = node.nodeValue.indexOf(end);
+		if (index === -1) {
+			break;
+		}
+
+		const next = node.splitText(index + end.length);
+		ret.push(node);
+		node = next;
 	}
 
-	toggleAll(completed) {
-		this.todos.forEach(todo => todo.completed = completed);
-	}
+	return ret;
+};
 
-	removeTodo(todo) {
-		this.todos = this.todos.filter(_todo => _todo !== todo);
-	}
 
-	clearCompleted() {
-		this.todos = this.todos.filter(todo => !todo.completed);
-	}
-});
+compile(document.body);
+
+
 </script>
 </body>
 </html>
