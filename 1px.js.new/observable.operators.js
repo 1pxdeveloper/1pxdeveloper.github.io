@@ -7,7 +7,7 @@
 	/// Operators
 	/// -------------------------------------------------------------------------------------------
 	const noop = () => {};
-	const just = v => v;
+	const just = $ => $;
 	
 	Observable.prototype.pipe = function(...operators) {
 		return operators.reduce((observable, operator) => operator(observable), this);
@@ -50,9 +50,9 @@
 	
 	
 	Observable.prototype.scan = function(accumulator, seed) {
-		return this.lift(observer => ({
+		return this.lift((observer, ret = seed) => ({
 			next(value) {
-				observer.next((seed = accumulator(seed, value)))
+				observer.next((ret = accumulator(ret, value)));
 			},
 		}));
 	};
@@ -552,6 +552,7 @@
 			}
 		});
 	};
+	
 	
 	Observable.merge = function(...observables) {
 		return new Observable(observer => {
