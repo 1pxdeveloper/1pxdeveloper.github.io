@@ -80,151 +80,171 @@
 const {Subject, BehaviorSubject} = require();
 const {merge, combine, of, fromEvent} = Observable;
 
-function AppTodo() {
 
+/// Observable
+const combineObject = (object) => new Observable(observer => {
 
-	/// FP operator
-	const not = (a) => (b) => a !== b;
+	const toObservable = (value) => value instanceof Observable ? value : Observable.of(value);
+	const keys = Object.keys(object);
+	const values = Object.values(object).map(toObservable);
 
-	const trim = (title) => (typeof title === "string") && title.trim();
-
-	const log = console.log.bind(console, "[log]");
-
-	const assign = (props) => (object) => ({...object, ...props});
-
-	const objectMap = (mapper) => (object) => ({
-		...object,
-		...Object.fromEntries(Object.entries(mapper).map(([key, callback]) => [key, callback(object[key])]))
-	});
-
-	const reducer = (state, action) => action(state);
-
-
-	/// utils
-	const location$ = merge(
-			of(location),
-			fromEvent(window, "popstate", true).map(() => location)
-	).share(new BehaviorSubject);
-
-
-	location$.subscribe(log);
-
-
-	const route = (url) => location$.filter(location => location.hash === url);
-
-
-	/// actions
-	const addTodo = ({title, completed = false}) => (todos) => [...todos, {title, completed}];
-
-	const removeTodo = (todo) => (todos) => todos.filter(not(todo));
-
-	const toggleAll = (completed) => (todos) => todos.map(todo => ({...todo, completed}));
-
-	const clearCompleted = () => (todos) => todos.filter(todo => !todo.completed);
-
-
-	/// computed
-	const num_items_left = (todos) => todos.length - todos.filter(todo => todo.completed).length;
-
-	const all_checked = (todos) => todos.every(todo => todo.completed);
-
-
-	/// _todo
-	const editingTodo = (todo) => todo;
-
-	const commitTodo = (todo, title) => ({...todo, title});
-
-	// 	if (typeof title !== "string") return;
-	// 	title = title.trim();
-	// 	if (!title.length) {
-	// 		return removeTodo(todo); ///?
-	// 	}
-	//
-	// 	;
-	// };
-
-
-	return function AppTodo({actions}) {
-
-		let {ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED} = actions;
-
-		ADD_TODO.subscribe(console.warn.bind(console, "[ADD_TODO]"));
-
-
-		const todos$ = merge(
-				ADD_TODO.map(objectMap({title: trim}))
-						.filter(({title}) => title.length)
-						.map(addTodo),
-
-				REMOVE_TODO.map(removeTodo),
-				TOGGLE_ALL.map(toggleAll),
-				CLEAR_COMPLETED.map(clearCompleted)
-		)
-
-				.scan(reducer, [])
-				.share(new BehaviorSubject([]));
-
-
-		const num_items_left$ = todos$.map(num_items_left);
-		const all_checked$ = todos$.map(all_checked);
-
-
-		// let {EDITING_TODO, COMMIT_TODO} = actions;
-
-		// EDITING_TODO.map(editingTodo);
-
-
-		const editingTodo$ = (todo) => todo;
-
-
-		// actions["editingTodo"].map(editingTodo);
-
-
-		// actions["saveTodo"].map(saveTodo);
-
-
-		const filter$ = merge(
-				Observable.of(todo => todo),
-				merge(route(""), route("#/")).mapTo(todo => todo),
-				route("#/active").mapTo(todo => !todo.completed),
-				route("#/completed").mapTo(todo => todo.completed),
-		).share(new BehaviorSubject);
-
-
-		num_items_left$.subscribe(console.warn);
-		const filteredTodo$ = combine(todos$, filter$).map(([todos, filter]) => todos.filter(filter));
-
-
-		todos$.subscribe(console.log.bind(console, "todos"));
-		filter$.subscribe(console.log.bind(console, "filter$"));
-		filteredTodo$.subscribe(console.log.bind(console, "filteredTodo$"));
-
-
-		ADD_TODO.next({title: "  asdf ", completed: true});
-		ADD_TODO.next({title: "Hello, world"});
-		ADD_TODO.next({title: "Hello, world", completed: true});
-		ADD_TODO.next({title: " askldfjasl "});
-
-
-		return {
-			todos$,
-			filteredTodo$,
-			filter$,
-			num_items_left$,
-			all_checked$,
-		};
-	}
-}
-
-
-const a = AppTodo()({
-	actions: {
-		ADD_TODO: new Subject(),
-		REMOVE_TODO: new Subject(),
-		TOGGLE_ALL: new Subject(),
-		CLEAR_COMPLETED: new Subject(),
-	}
+	return Observable.combineAnyway(...values)
+			.map(args => {
+				return Object.fromEntries(args.map((value, index) => [keys[index], value]))
+			})
+			.subscribe(observer)
 });
+
+
+/// FP operator
+const not = (a) => (b) => a !== b;
+
+const trim = (title) => (typeof title === "string") && title.trim();
+
+const log = console.log.bind(console, "[log]");
+
+const assign = (props) => (object) => ({...object, ...props});
+
+const objectMap = (mapper) => (object) => ({
+	...object,
+	...Object.fromEntries(Object.entries(mapper).map(([key, callback]) => [key, callback(object[key])]))
+});
+
+const reducer = (state, action) => action(state);
+
+const callCount = (callback, count = 0) => (...args) => (console.log(++count), callback.apply(null, args));
+
+
+/// utils
+window.addEventListener("popstate", (e) => console.log(e));
+
+
+const location$ = of(location).concat(fromEvent(window, "popstate", true).mapTo(location)).shareReplay(1);
+
+const route = (url) => location$.filter(location => location.hash === url);
+
+
+const actions = {
+	ADD_TODO: new Subject(),
+	REMOVE_TODO: new Subject(),
+	TOGGLE_ALL: new Subject(),
+	CLEAR_COMPLETED: new Subject(),
+};
+
+
+let {ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED} = actions;
+
+location$.subscribe(console.warn.bind(console, "[location]"));
+
+ADD_TODO.subscribe(console.warn.bind(console, "[ADD_TODO]"));
+REMOVE_TODO.subscribe(console.warn.bind(console, "[REMOVE_TODO]"));
+TOGGLE_ALL.subscribe(console.warn.bind(console, "[TOGGLE_ALL]"));
+CLEAR_COMPLETED.subscribe(console.warn.bind(console, "[CLEAR_COMPLETED]"));
+
+
+/// actions
+const addTodo = ({id, title, completed = false}) => (todos) => [...todos, {id, title, completed}];
+
+const removeTodo = ({id}) => (todos) => todos.filter(todo => todo.id !== id);
+
+const toggleAll = (completed) => (todos) => todos.map(todo => ({...todo, completed}));
+
+const clearCompleted = () => (todos) => todos.filter(todo => !todo.completed);
+
+
+/// computed
+const num_items_left = (todos) => todos.length - todos.filter(todo => todo.completed).length;
+
+const all_checked = (todos) => todos.every(todo => todo.completed);
+
+
+/// _todo
+const editingTodo = (todo) => todo;
+
+const commitTodo = (todo, title) => ({...todo, title});
+
+
+/// Reducer
+const todos$ = merge(
+		ADD_TODO.map(objectMap({title: trim}))
+				.filter(({title}) => title.length)
+				.map(addTodo),
+
+		REMOVE_TODO.map(removeTodo),
+		TOGGLE_ALL.map(toggleAll),
+		CLEAR_COMPLETED.map(clearCompleted)
+)
+		.scan(reducer, [])
+		.shareReplay(1);
+
+const num_items_left$ = todos$.map(num_items_left);
+const all_checked$ = todos$.map(all_checked);
+
+
+// let {EDITING_TODO, COMMIT_TODO} = actions;
+
+// EDITING_TODO.map(editingTodo);
+
+
+const editingTodo$ = (todo) => todo;
+
+
+// actions["editingTodo"].map(editingTodo);
+
+
+// actions["saveTodo"].map(saveTodo);
+
+
+const filterAll = (todo) => todo;
+const filterActive = (todo) => !todo.completed;
+const filterCompleted = (todo) => todo.completed;
+
+const filter$ = merge(
+		Observable.of(filterAll),
+		merge(route(""), route("#/")).mapTo(filterAll),
+		route("#/active").mapTo(filterActive),
+		route("#/completed").mapTo(filterCompleted),
+).shareReplay(1);
+
+
+const filteredTodo$ = combine(todos$, filter$).map(([todos, filter]) => todos.filter(filter));
+
+
+/// Test
+combineObject({
+	todos$,
+	filteredTodo$,
+	filter$,
+	num_items_left$,
+	all_checked$,
+}).subscribe(state => {
+
+	window.state = state;
+
+	console.log.bind(console, "[state]")(state);
+});
+
+
+/// TEST Action
+ADD_TODO.next({id: 1, title: "  asdf ", completed: true});
+ADD_TODO.next({id: 2, title: "Hello, world"});
+ADD_TODO.next({id: 3, title: "Hello, world", completed: true});
+ADD_TODO.next({id: 4, title: " askldfjasl "});
+
+
+REMOVE_TODO.next({id: 2});
+REMOVE_TODO.next({id: 3});
+
+CLEAR_COMPLETED.next();
+
+
+
+// TOGGLE_ALL.next(true);
+
+// TOGGLE_ALL.next(false);
+
+
+// TOGGLE_ALL
 
 </script>
 </body>
