@@ -8,14 +8,14 @@
 	<link rel="stylesheet" href="node_modules/todomvc-app-css/index.css">
 	<!-- CSS overrides - remove if you don't need it -->
 	<link rel="stylesheet" href="css/app.css">
-	<script src="../1px.js/1px.js"></script>
+	<script src="../1px.js.new/1px.js"></script>
 </head>
 
 <body>
 <section is="AppTodo" class="todoapp">
 	<header class="header">
 		<h1>todos</h1>
-		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="#ADD_TODO(el.value); el.value = ''">
+		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="#ADD_TODO({title:el.value}); el.value = ''">
 	</header>
 
 	<!-- This section should be hidden by default and shown when there are todos -->
@@ -77,14 +77,44 @@
 <script src="js/app.js"></script>
 
 <script>
-function AppTodo(im) {
+const {Subject, BehaviorSubject} = require();
+const {merge, combine, of, fromEvent} = Observable;
 
+function AppTodo() {
+
+
+	/// FP operator
 	const not = (a) => (b) => a !== b;
 
-	const trim = (title) => (typeof title !== "string") && title.trim();
+	const trim = (title) => (typeof title === "string") && title.trim();
+
+	const log = console.log.bind(console, "[log]");
+
+	const assign = (props) => (object) => ({...object, ...props});
+
+	const objectMap = (mapper) => (object) => ({
+		...object,
+		...Object.fromEntries(Object.entries(mapper).map(([key, callback]) => [key, callback(object[key])]))
+	});
+
+	const reducer = (state, action) => action(state);
+
+
+	/// utils
+	const location$ = merge(
+			of(location),
+			fromEvent(window, "popstate", true).map(() => location)
+	).share(new BehaviorSubject);
+
+
+	location$.subscribe(log);
+
+
+	const route = (url) => location$.filter(location => location.hash === url);
+
 
 	/// actions
-	const addTodo = (title, completed = false) => (todos) => [...todos, {title, completed}];
+	const addTodo = ({title, completed = false}) => (todos) => [...todos, {title, completed}];
 
 	const removeTodo = (todo) => (todos) => todos.filter(not(todo));
 
@@ -92,8 +122,15 @@ function AppTodo(im) {
 
 	const clearCompleted = () => (todos) => todos.filter(todo => !todo.completed);
 
-	const editingTodo = (todo) => todo;
 
+	/// computed
+	const num_items_left = (todos) => todos.length - todos.filter(todo => todo.completed).length;
+
+	const all_checked = (todos) => todos.every(todo => todo.completed);
+
+
+	/// _todo
+	const editingTodo = (todo) => todo;
 
 	const commitTodo = (todo, title) => ({...todo, title});
 
@@ -107,39 +144,34 @@ function AppTodo(im) {
 	// };
 
 
-	/// computed
-	const num_items_left = (todos) => todos.length - todos.filter(todo => todo.completed).length;
-
-	const all_checked = (todos) => todos.every(todo => todo.completed);
-
-
-	// const test = ([a, b, c]) => [1, 2, 3];
-
-
-	const {merge, combine} = Observable;
-
-	function spread(fn) {
-		return (arr) => fn.apply(null, arr);
-	}
-
-	return function AppTodo({actions, route}) {
+	return function AppTodo({actions}) {
 
 		let {ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED} = actions;
 
+		ADD_TODO.subscribe(console.warn.bind(console, "[ADD_TODO]"));
+
+
 		const todos$ = merge(
-				ADD_TODO.map(trim).filter(title => title.length).map(addTodo),
+				ADD_TODO.map(objectMap({title: trim}))
+						.filter(({title}) => title.length)
+						.map(addTodo),
+
 				REMOVE_TODO.map(removeTodo),
 				TOGGLE_ALL.map(toggleAll),
-				CLEAR_COMPLETED.map(clearCompleted),
-		).scan((state, action) => action(state), []);
+				CLEAR_COMPLETED.map(clearCompleted)
+		)
+
+				.scan(reducer, [])
+				.share(new BehaviorSubject([]));
+
 
 		const num_items_left$ = todos$.map(num_items_left);
 		const all_checked$ = todos$.map(all_checked);
 
 
-		let {EDITING_TODO, COMMIT_TODO} = actions;
+		// let {EDITING_TODO, COMMIT_TODO} = actions;
 
-		EDITING_TODO.map(editingTodo);
+		// EDITING_TODO.map(editingTodo);
 
 
 		const editingTodo$ = (todo) => todo;
@@ -152,12 +184,27 @@ function AppTodo(im) {
 
 
 		const filter$ = merge(
-				route("#/").mapTo(todo => todo),
+				Observable.of(todo => todo),
+				merge(route(""), route("#/")).mapTo(todo => todo),
 				route("#/active").mapTo(todo => !todo.completed),
 				route("#/completed").mapTo(todo => todo.completed),
-		);
+		).share(new BehaviorSubject);
 
+
+		num_items_left$.subscribe(console.warn);
 		const filteredTodo$ = combine(todos$, filter$).map(([todos, filter]) => todos.filter(filter));
+
+
+		todos$.subscribe(console.log.bind(console, "todos"));
+		filter$.subscribe(console.log.bind(console, "filter$"));
+		filteredTodo$.subscribe(console.log.bind(console, "filteredTodo$"));
+
+
+		ADD_TODO.next({title: "  asdf ", completed: true});
+		ADD_TODO.next({title: "Hello, world"});
+		ADD_TODO.next({title: "Hello, world", completed: true});
+		ADD_TODO.next({title: " askldfjasl "});
+
 
 		return {
 			todos$,
@@ -168,6 +215,16 @@ function AppTodo(im) {
 		};
 	}
 }
+
+
+const a = AppTodo()({
+	actions: {
+		ADD_TODO: new Subject(),
+		REMOVE_TODO: new Subject(),
+		TOGGLE_ALL: new Subject(),
+		CLEAR_COMPLETED: new Subject(),
+	}
+});
 
 </script>
 </body>

@@ -67,7 +67,7 @@
 					observer.complete();
 				});
 			}
-			
+
 			throw new TypeError(x + " is not observable");
 		}
 
@@ -160,14 +160,24 @@
 
 		error(error) {
 			if (this.closed) return;
-			if (this._subscription._observer.error) this._subscription._observer.error(error);
-			cleanupSubscription(this._subscription);
+			try {
+				if (this._subscription._observer.error) this._subscription._observer.error(error);
+				cleanupSubscription(this._subscription);
+			} catch (error) {
+				console.error(error);
+				// this.error(error);
+			}
 		}
 
 		complete() {
 			if (this.closed) return;
-			if (this._subscription._observer.complete) this._subscription._observer.complete();
-			cleanupSubscription(this._subscription);
+			try {
+				if (this._subscription._observer.complete) this._subscription._observer.complete();
+				cleanupSubscription(this._subscription);
+			} catch (error) {
+				console.error(error);
+				// this.error(error);
+			}
 		}
 	}
 
@@ -212,12 +222,16 @@
 	class BehaviorSubject extends Subject {
 		constructor(value) {
 			super();
-			this.value = value;
+			if (arguments.length > 0) {
+				this.value = value;
+			}
 
 			let _subscriber = this._subscriber;
 			this._subscriber = (observer) => {
 				if (this.closed) return;
-				observer.next(this.value);
+				if (arguments.length > 0) {
+					observer.next(this.value);
+				}
 				return _subscriber.call(null, observer);
 			}
 		}
