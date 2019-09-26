@@ -33,7 +33,7 @@
 				</div>
 				<input *if="editingTodo === todo" class="edit" [value]="todo.title"
 						.focus()="editingTodo === todo"
-						(blur)="el.value.trim() ? #SAVE_TODO(todo, el.value) : #REMOVE_TODO(todo) if editingTodo"
+						(blur)="title = el.value.trim() ? #PATCH_TODO(todo, {title}) : #REMOVE_TODO(todo)"
 						(keydown.enter)="el.blur()"
 						(keydown.escape)="#REVERT_TODO()">
 			</li>
@@ -96,8 +96,33 @@ const combineObject = (object) => new Observable(observer => {
 });
 
 
+const mergeObject = (object) => {
+
+	const toObservable = (value) => value instanceof Observable ? value : Observable.of(value);
+
+	let o = Object.entries(object).map(([key, value]) => toObservable(value).map(value => ({[key]: value})));
+
+	console.log(o);
+
+
+	return merge(...o);
+
+	// const toObservable = (value) => value instanceof Observable ? value : Observable.of(value);
+	// const keys = Object.keys(object);
+	// const values = Object.values(object).map(toObservable);
+	//
+	// return Observable.combineAnyway(...values)
+	// 		.map(args => {
+	// 			return Object.fromEntries(args.map((value, index) => [keys[index], value]))
+	// 		})
+	// 		.subscribe(observer)
+};
+
+
 /// FP operator
 const not = (a) => (b) => a !== b;
+
+const just = (value) => value;
 
 const trim = (title) => (typeof title === "string") && title.trim();
 
@@ -107,18 +132,16 @@ const assign = (props) => (object) => ({...object, ...props});
 
 const objectMap = (mapper) => (object) => ({
 	...object,
-	...Object.fromEntries(Object.entries(mapper).map(([key, callback]) => [key, callback(object[key])]))
+	...Object.fromEntries(Object.entries(mapper).map(([key, callback]) => [key, callback(object[key])])),
 });
 
 const reducer = (state, action) => action(state);
 
 const callCount = (callback, count = 0) => (...args) => (console.log(++count), callback.apply(null, args));
 
+const spread = (callback) => (args) => callback(...args);
 
 /// utils
-window.addEventListener("popstate", (e) => console.log(e));
-
-
 const location$ = of(location).concat(fromEvent(window, "popstate", true).mapTo(location)).shareReplay(1);
 
 const route = (url) => location$.filter(location => location.hash === url);
@@ -129,17 +152,25 @@ const actions = {
 	REMOVE_TODO: new Subject(),
 	TOGGLE_ALL: new Subject(),
 	CLEAR_COMPLETED: new Subject(),
+
+	EDITING_TODO: new Subject(),
+	CANCEL_EDITING_TODO: new Subject(),
+
+	PATCH_TODO: new Subject(),
 };
 
 
-let {ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED} = actions;
+const {ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED, PATCH_TODO} = actions;
+const {EDITING_TODO, CANCEL_EDITING_TODO} = actions;
 
 location$.subscribe(console.warn.bind(console, "[location]"));
 
-ADD_TODO.subscribe(console.warn.bind(console, "[ADD_TODO]"));
-REMOVE_TODO.subscribe(console.warn.bind(console, "[REMOVE_TODO]"));
-TOGGLE_ALL.subscribe(console.warn.bind(console, "[TOGGLE_ALL]"));
-CLEAR_COMPLETED.subscribe(console.warn.bind(console, "[CLEAR_COMPLETED]"));
+
+/// actions Test Log!!!
+const actionLogger = (actions) => Object.entries(actions).forEach(([key, value]) => value.subscribe(console.warn.bind(console, key)));
+
+
+actionLogger(actions);
 
 
 /// actions
@@ -151,6 +182,8 @@ const toggleAll = (completed) => (todos) => todos.map(todo => ({...todo, complet
 
 const clearCompleted = () => (todos) => todos.filter(todo => !todo.completed);
 
+const patchTodo = (payload) => (todos) => todos.map(todo => todo.id !== payload.id ? todo : {...todo, ...payload});
+
 
 /// computed
 const num_items_left = (todos) => todos.length - todos.filter(todo => todo.completed).length;
@@ -158,10 +191,12 @@ const num_items_left = (todos) => todos.length - todos.filter(todo => todo.compl
 const all_checked = (todos) => todos.every(todo => todo.completed);
 
 
-/// _todo
-const editingTodo = (todo) => todo;
+/// filter
+const filterAll = (todo) => todo;
+const filterActive = (todo) => !todo.completed;
+const filterCompleted = (todo) => todo.completed;
 
-const commitTodo = (todo, title) => ({...todo, title});
+const filteredTodos = (todos, filter) => todos.filter(filter);
 
 
 /// Reducer
@@ -172,21 +207,16 @@ const todos$ = merge(
 
 		REMOVE_TODO.map(removeTodo),
 		TOGGLE_ALL.map(toggleAll),
-		CLEAR_COMPLETED.map(clearCompleted)
-)
-		.scan(reducer, [])
-		.shareReplay(1);
+		CLEAR_COMPLETED.map(clearCompleted),
+
+		PATCH_TODO.map(patchTodo),
+).scan(reducer, []).shareReplay(1);
+
 
 const num_items_left$ = todos$.map(num_items_left);
 const all_checked$ = todos$.map(all_checked);
 
-
-// let {EDITING_TODO, COMMIT_TODO} = actions;
-
-// EDITING_TODO.map(editingTodo);
-
-
-const editingTodo$ = (todo) => todo;
+const editingTodo$ = merge(EDITING_TODO, CANCEL_EDITING_TODO.mapTo(null)).shareReplay(1);
 
 
 // actions["editingTodo"].map(editingTodo);
@@ -195,34 +225,45 @@ const editingTodo$ = (todo) => todo;
 // actions["saveTodo"].map(saveTodo);
 
 
-const filterAll = (todo) => todo;
-const filterActive = (todo) => !todo.completed;
-const filterCompleted = (todo) => todo.completed;
-
 const filter$ = merge(
 		Observable.of(filterAll),
-		merge(route(""), route("#/")).mapTo(filterAll),
+		route("").mapTo(filterAll),
+		route("#/").mapTo(filterAll),
 		route("#/active").mapTo(filterActive),
 		route("#/completed").mapTo(filterCompleted),
 ).shareReplay(1);
 
 
-const filteredTodo$ = combine(todos$, filter$).map(([todos, filter]) => todos.filter(filter));
+const filteredTodo$ = combine(todos$, filter$).map(spread(filteredTodos));
 
 
 /// Test
-combineObject({
+mergeObject({
 	todos$,
-	filteredTodo$,
-	filter$,
 	num_items_left$,
 	all_checked$,
-}).subscribe(state => {
+	filter$,
+	filteredTodo$,
+	editingTodo$
+}).subscribe(diff => {
 
-	window.state = state;
+	console.log("[diff]", diff);
 
-	console.log.bind(console, "[state]")(state);
 });
+
+
+// combineObject({
+// 	todos$,
+// 	filteredTodo$,
+// 	filter$,
+// 	num_items_left$,
+// 	all_checked$,
+// }).subscribe(state => {
+//
+// 	window.state = state;
+//
+// 	console.log.bind(console, "[state]")(state);
+// });
 
 
 /// TEST Action
@@ -231,12 +272,14 @@ ADD_TODO.next({id: 2, title: "Hello, world"});
 ADD_TODO.next({id: 3, title: "Hello, world", completed: true});
 ADD_TODO.next({id: 4, title: " askldfjasl "});
 
+//
+// REMOVE_TODO.next({id: 2});
+// REMOVE_TODO.next({id: 3});
+//
+// CLEAR_COMPLETED.next();
 
-REMOVE_TODO.next({id: 2});
-REMOVE_TODO.next({id: 3});
-
-CLEAR_COMPLETED.next();
-
+PATCH_TODO.next({id: 2, title: "SKAJSLKAJDLKAJSLKSA"});
+PATCH_TODO.next({id: 3, completed: false});
 
 
 // TOGGLE_ALL.next(true);

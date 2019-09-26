@@ -16,25 +16,25 @@
 <section is="app-todo" class="todoapp" inline-template>
 	<header class="header">
 		<h1>todos</h1>
-		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="addTodo(el.value); el.value = ''">
+		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="#ADD_TODO(el.value); el.value = ''">
 	</header>
 
 	<!-- This section should be hidden by default and shown when there are todos -->
 	<section class="main" hidden [hidden]="!todos.length">
-		<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked" (input)="toggleAll(el.checked)">
+		<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked" (input)="#TOGGLE_ALL(el.checked)">
 		<label for="toggle-all">Mark all as complete</label>
 		<ul class="todo-list">
 			<!-- These are here just to show the structure of the list items -->
 			<!-- List items should get the class `editing` when editing and `completed` when marked as completed -->
-			<li *foreach="todos.filter(filter) as todo" [class.completed]="todo.completed" [class.editing]="editingTodo === todo">
+			<li *foreach="todos.filter(filter) as todo, index" [class.completed]="todo.completed" [class.editing]="editingTodo === todo">
 				<div class="view">
 					<input class="toggle" type="checkbox" [(checked)]="todo.completed">
 					<label (dblclick)="editingTodo = todo">{{ todo.title }}</label>
-					<button class="destroy" (click)="removeTodo(todo)"></button>
+					<button class="destroy" (click)="#REMOVE_TODO(todo)"></button>
 				</div>
 				<input class="edit"
 						[value]="todo.title if editingTodo !== todo"
-						(blur)="saveTodo(todo, el.value) if editingTodo === todo; editingTodo = null"
+						(blur)="el.value.trim() let title ? #PATCH_TODO(todo, title) : #REMOVE_TODO(todo) if editingTodo === todo; editingTodo = null"
 						(keydown.enter)="el.blur()"
 						(keydown.escape)="editingTodo = null"
 						.focus()="editingTodo === todo"
@@ -51,17 +51,17 @@
 		<!-- Remove this if you don't implement routing -->
 		<ul class="filters">
 			<li>
-				<a [class.selected]="hash === '#/'" href="#/">All</a>
+				<a [class.selected]="filter === filterAll" href="#/">All</a>
 			</li>
 			<li>
-				<a [class.selected]="hash === '#/active'" href="#/active">Active</a>
+				<a [class.selected]="filter === filterActive" href="#/active">Active</a>
 			</li>
 			<li>
-				<a [class.selected]="hash === '#/completed'" href="#/completed">Completed</a>
+				<a [class.selected]="filter === filterCompleted" href="#/completed">Completed</a>
 			</li>
 		</ul>
 		<!-- Hidden if no completed items are left ↓ -->
-		<button class="clear-completed" hidden [hidden]="todos.length === num_items_left" (click)="clearCompleted()">Clear completed</button>
+		<button class="clear-completed" hidden [hidden]="todos.length === num_items_left" (click)="#CLEAR_COMPLETED()">Clear completed</button>
 	</footer>
 </section>
 
@@ -79,42 +79,55 @@
 <script src="js/app.js"></script>
 
 <script>
-Mimosa.controller("app-todo", function() {
+const app = Mimosa();
+
+app.action("#ADD_TODO");
+app.action("#PATCH_TODO");
+app.action("#TOGGLE_ALL");
+app.action("#REMOVE_TODO");
+app.action("#CLEAR_COMPLETED");
+
+
+app.controller("app-todo", function(action) {
+	"use strict";
 
 	return class AppTodo {
 
 		constructor() {
-			this.allFilter = (todo) => todo;
-			this.activeFilter = (todo) => !todo.completed;
-			this.completedFilter = (todo) => todo.completed;
+			this.filterAll = (todo) => todo;
+			this.filterActive = (todo) => !todo.completed;
+			this.filterCompleted = (todo) => todo.completed;
 
 			this.todos = [];
-			this.filter = this.allFilter;
+			this.filter = this.filterAll;
 
+			this.editingTodo = null;
 			this.num_items_left = null;
 			this.all_checked = null;
-			this.editingTodo = null;
 		}
 
 		init($) {
 			$`this.num_items_left = this.todos.length - this.todos.filter(todo => todo.completed).length`;
 			$`this.all_checked = this.todos.every(todo => todo.completed)`;
 
-			$`this.todos.forEach(todo => todo.title; todo.completed); this.todos`.subscribe(); // nested check trick!
-
-
-			$.route("#/", {
-				"#/": () => this.filter = this.allFilter,
-				"#/active": () => this.filter = this.activeFilter,
-				"#/completed": () => this.filter = this.completedFilter,
-			}, (hash) => this.hash = hash);
-
-			this.addTodo("Hello");
-			this.addTodo("World");
+			$`this.todos.forEach(todo => todo.checked)`; /// nested watch trick!!
 		}
 
+		/// Action
+		["#ON_LOCATION_CHANGE"]({location}) {
+			switch (location.hash) {
+				case "#/":
+					return (this.filter = this.filterAll);
 
-		addTodo(title, completed = false) {
+				case "#/active":
+					return (this.filter = this.filterActive);
+
+				case "#/completed":
+					return (this.filter = this.filterCompleted);
+			}
+		}
+
+		["#ADD_TODO"]({title, completed = false}) {
 			if (typeof title !== "string") return;
 			title = title.trim();
 			if (!title) return;
@@ -122,26 +135,26 @@ Mimosa.controller("app-todo", function() {
 			this.todos.push({title, completed});
 		}
 
-		saveTodo(todo, title) {
+		["#PATCH_TODO"]({todo, title}) {
 			if (typeof title !== "string") return;
 			title = title.trim();
 			if (!title.length) {
-				this.removeTodo(todo);
-				return;
+				// action.dispatch("#REMOVE_TODO", todo);
+				return this["#REMOVE_TODO"](todo);
 			}
 
 			todo.title = title;
 		}
 
-		toggleAll(completed) {
+		["#TOGGLE_ALL"](completed) {
 			this.todos.forEach(todo => todo.completed = completed);
 		}
 
-		removeTodo(todo) {
+		["#REMOVE_TODO"](todo) {
 			this.todos = this.todos.filter(_todo => _todo !== todo);
 		}
 
-		clearCompleted() {
+		["#CLEAR_COMPLETED"]() {
 			this.todos = this.todos.filter(todo => !todo.completed);
 		}
 	}
