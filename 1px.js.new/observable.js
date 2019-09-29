@@ -269,10 +269,12 @@
 		}
 	}
 
-	exports.Observable = Observable;
-	exports.Subject = Subject;
-	exports.AsyncSubject = AsyncSubject;
-	exports.BehaviorSubject = BehaviorSubject;
+	if (exports) {
+		exports.Observable = Observable;
+		exports.Subject = Subject;
+		exports.AsyncSubject = AsyncSubject;
+		exports.BehaviorSubject = BehaviorSubject;
+	}
 
 	window.Observable = Observable;
 })();

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script>window.exports = {}</script>
+	<script src="1px.js.new/observable.js"></script>
+</head>
+<body>
+
+<script>
+"use strict";
+
+
+/// common
+const noop = () => {};
+
+const pipe = (...args) => (value) => args.reduce((f, g) => g(f), value);
+
+const scan = (...args) => (value) => (callback) => args.reduce((f, g) => {
+	let v = g(f);
+	callback(v);
+	return v;
+}, value);
+
+
+const lift = (callback) => (observable) => new Observable(observer => {
+	const s = observable.subscribe(Object.setPrototypeOf(callback(observer), observer));
+
+	return () => {
+		s.unsubscribe();
+		typeof observer.finallize === "function" && observer.finallize();
+	}
+});
+
+const $next = (callback) => lift(observer => ({next: callback(observer)}));
+const $complete = (callback) => lift(observer => ({complete: callback(observer)}));
+
+Observable.pipe = pipe;
+Observable.prototype.pipe = function(...args) { return pipe(...args)(this) };
+
+
+/// Operators
+const map = (callback) => $next((observer, index = 0) => value => observer.next(callback(value, index++)));
+const mapTo = (value) => $next((observer) => () => observer.next(value));
+
+const filter = (callback) => $next((observer, index = 0) => value => callback(value, index++) && observer.next(value));
+
+const take = (num) => lift((observer) => ({
+	start() {
+		num <= 0 && observer.complete();
+	},
+
+	next(value) {
+		observer.next(value);
+		--num <= 0 && observer.complete();
+	}
+}));
+
+const tap = (onNext, onComplete = noop) => lift((observer) => ({
+	next(value) {
+		onNext(value);
+		observer.next(value);
+	},
+
+	complete() {
+		onComplete();
+		observer.complete();
+	}
+}));
+
+
+/// Share
+const shareReplay = (num = Infinity) => (observable) => {
+
+	let subscription, replay = [], observers = [];
+
+	return new Observable(observer => {
+		for (const value of replay) {
+			observer.next(value);
+		}
+
+		if (subscription && subscription.closed) {
+			observer.complete();
+			return;
+		}
+
+		observers.push(observer);
+
+		subscription = subscription || observable.subscribe({
+			next(value) {
+				replay.push(value);
+				replay = replay.slice(-num);
+				for (const observer of observers) observer.next(value);
+			},
+
+			error(error) {
+				for (const observer of observers) observer.error(error);
+			},
+
+			complete() {
+				for (const observer of observers) observer.complete();
+			}
+		});
+
+		return () => {
+			observers = observers.filter(_observer => _observer !== observer);
+			if (observers.length === 0) {
+				subscription.unsubscribe();
+			}
+		}
+	});
+};
+
+
+/// Array like
+const toArray = () => lift((observer, array = []) => ({
+	next: (value) => {
+		console.log(value);
+
+		array.push(value);
+	},
+	complete: () => {
+		observer.next(array);
+		observer.complete();
+	}
+}));
+
+const Range = (start, stop, step = 1) => new Observable(observer => {
+	start = Math.floor(start);
+	stop = Math.ceil(stop);
+
+	while (start !== stop) {
+		observer.next(start);
+		start += step;
+	}
+
+	observer.complete();
+});
+
+
+/// List
+const List = {};
+
+List.pipe = pipe;
+
+for (const method of Object.getOwnPropertyNames(Array.prototype)) {
+	if (typeof Array.prototype[method] === "function") {
+		List[method] = (...args) => map(array => array[method](...args));
+	}
+}
+
+/// MUTATION_METHODS_OF_ARRAY:
+for (const method of ["pop", "shift", "reverse", "splice", "sort"]) {
+	List[method] = (...args) => map(array => array.slice()[method](...args))
+}
+
+/// MUTATION_METHODS_OF_ARRAY: -> return array
+for (const method of ["push", "unshift"]) {
+	List[method] = (...args) => map(array => {
+		array = array.slice();
+		array[method](...args);
+		return array;
+	})
+}
+
+List.of = (...items) => Observable.of(items);
+
+List.from = (list) => Observable.of([...list]);
+
+List.length = () => map(array => array.length);
+
+
+const log = (...tag) => tap(v => console.log(...tag, JSON.stringify(v, null, 2)));
+
+
+/// TODO MVC
+const uuid = ((id = 0) => () => id++)();
+
+const addTodo = ({title = "", completed = false}) => List.push({id: uuid(), title, completed});
+const removeTodo = ({id}) => List.filter(todo => todo.id !== id);
+const toggleAll = (completed) => List.map(todo => ({...todo, completed}));
+const clearCompleted = () => List.filter(todo => !todo.completed);
+
+
+// computed
+const num_items_left = (todos) => todos.length - todos.filter(todo => todo.completed).length;
+
+
+let todos$ = List.of();
+
+todos$ = todos$.pipe(
+	addTodo({title: "hello"}),
+	addTodo({title: "world"}),
+	addTodo({title: "welcome"}),
+	addTodo({title: "mimosa"}),
+	log("todos"),
+
+	removeTodo({id: 2}),
+	log("todos"),
+
+	// toggleAll(true),
+	// clearCompleted(true),
+
+	shareReplay(1)
+);
+
+
+// todos$.subscribe(console.log);
+// todos$.subscribe(console.log);
+todos$.subscribe(console.log);
+
+
+const num_items_left$ = todos$.pipe(map(num_items_left));
+
+
+num_items_left$.subscribe(console.log);
+
+
+</script>
+
+</body>
+</html>

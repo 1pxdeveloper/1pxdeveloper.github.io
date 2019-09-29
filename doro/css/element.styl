@@ -1,93 +1,175 @@
 @import core
 
-$background = #262b35
-$top = 72px
-$orange = #ffaa21
-$green = #29be9b;
-$gray-border = #dedede;
-$green-gradient3 = linear-gradient(102deg, #14ffa4, #11cfc1, #11cbc4);
 
-$width = 414px
-$safe-zone = 24px
+/// Core
+init()
+  *
+    margin 0
+    padding 0
+    border 0
+    box-sizing border-box
+    font inherit
+    color inherit
 
-$header-font-size = 18px
-$green = #29be9b
-$font-black = #2f2f2f
+  body
+    font-family "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif
 
-*
-  margin 0
-  padding 0
-  box-sizing border-box
-  font inherit
-  color inherit
+  space
+    display block
+    visibility hidden
 
-html
-  background #e2e2e2
 
-body
-  font-weight bold
-  font-family "Apple SD Gothic Neo", 'Noto Sans KR', "Noto Sans CJK KR", "Helvetica Neue", sans-serif
-  font-size 14px
-  line-height 1.43
-  letter-spacing -0.84px;
-  width $width
-  margin auto
-  color #2f2f2f
-
-  > h1
-    font-size 20px
-    margin 1em 0
-    margin-top 5rem
-
+wrap-center()
   > *
-    margin 1.62rem 0
+    margin auto
 
+btn()
+  hbox()
+  wrap-center()
+  text-align center
+
+
+colors($names)
+  for $name in $names
+    {"[color="+$name+"]"}
+      color lookup("$" +$name)
+
+//theme()
+//font-size: 18px;
+//  font-weight: bold;
+//  font-style: normal;
+//  font-stretch: normal;
+//  line-height: 0.78;
+//  letter-spacing: -1.08px;
+
+
+[hbox]
+  hbox()
 
 [flex]
   flex 1
 
-[color="green"]
-  color $green
+
+/// Values: color
+$gray-border = #dedede;
+$green-gradient-header = linear-gradient(102deg, #1dd87b, #11cbc4)
+$green-gradient3 = linear-gradient(102deg, #14ffa4, #11cfc1, #11cbc4);
+
+$orange = #ffaa21
+$green = #29be9b
+$black = #2f2f2f
+$black_50 = blend(rgba(#2f2f2f, .5), #fff)
+$black_70 = blend(rgba(#2f2f2f, .7), #fff)
+$gray-dark = #818181;
+
+$background = #262b35
+$border = $gray-border
+
+
+/// Values: size
+$top = 72px
+$width = 414px
+$safe-zone = 24px
+$header-font-size = 18px
+
+
+init()
+colors("black" "orange" "green" "gray-dark")
+
+html
+  background #e2e2e2
+  font-size 11px
+
+body
+  font-size 14px
+  line-height 1.43
+  letter-spacing -0.062em
+  font-weight bold
+  width $width
+  margin auto
+  color #2f2f2f
+
+  > *
+    margin 1.62rem 0
+
+  > h1
+    font-size 32px
+    color #202329;
+    margin 1em 0
+    margin-top 5rem
+
 
 space
-  display block
-
   &[size="safe-zone"]
     padding $safe-zone $safe-zone 0 0
 
   &[size="gap"]
     padding $safe-zone $safe-zone 0 0
 
+  &[size="1"]
+    padding 1rem 1rem 0 0
+
+  &[size="2"]
+    padding 2rem 3rem 0 0
+
+  &[size="3"]
+    padding 3rem 3rem 0 0
+
+
+doro-btn
+  btn()
+  padding 1rem
+
+  &.navigation-icon
+    min-width 62px
+    height 100%
+
+doro-icon
+  btn()
+  min-width 4rem
+  padding 1rem
+
+doro-dividor
+  border-bottom 1px solid $border
+
+
 doro-header
+doro-footer
   display block
   width $width
-  object-fit: contain;
   box-shadow: 0 10px 6px 0 rgba(0, 0, 0, 0.16);
-  background-image: linear-gradient(102deg, #1dd87b, #11cbc4);
+  background-image $green-gradient-header
   color #fff
-  font-size $header-font-size
-  padding 0 11px
 
   > header
     hbox()
-    height 56px
+    min-height 5rem
 
   h1
     font-size 18px
-    letter-spacing: -1.08px;
 
   p
     font-size 14px
-    line-height 1.43
-    letter-spacing -0.84px;
     padding 0 17px
     text-align center
     margin auto
 
-  &[type="dark"]
+doro-header
+doro-footer
+  &[theme="dark"]
     opacity: 0.95;
     box-shadow: 0 10px 10px 0 rgba(0, 0, 0, 0.16);
     background-image: linear-gradient(102deg, #393a41, #2f2f34);
+
+input.doro-input
+  width: 255px;
+  height: 40px;
+  border-radius: 0.7em
+  box-shadow: 0 5px 6px 0 rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+  font-size 14px
+  color $black_50
+  padding 1.38em
 
 
 doro-todo
@@ -115,13 +197,15 @@ doro-todo
     overflow hidden
 
     .icon
+      wrap-center()
       display flex
       width 42px
       height 100%
       text-align center
 
-      > *
-        margin auto
+      svg
+        width 16px
+        height 18px
 
     h1
       font-size: 14px;
@@ -165,7 +249,7 @@ doro-todo[type="outline"]
 
   h1
   h2
-    color $font-black
+    color $black
 
 
 doro-todo[type="white"]
@@ -175,9 +259,13 @@ doro-todo[type="white"]
   .icon
     color #ff9d00
 
+    svg
+      *
+        fill #ff9d00
+
   h1
   h2
-    color $font-black
+    color $black
 
 
 doro-todo[type="warn"]
@@ -191,10 +279,9 @@ doro-todo[type="warn"]
 doro-log-date {
   display block
   font-size: 18px;
-  line-height: 1.5;
-  letter-spacing: -1.08px;
   text-align: right
-  color: #ffffff;
+  color: #fff;
+  margin-bottom 1rem
 }
 
 
@@ -276,6 +363,14 @@ doro-report
 doro-report
   text-align center
 
+  h2
+    font-family: Roboto;
+    font-size: 13px;
+    color $green
+
+  > section
+    padding 44px 0
+
   .top
     background-image: linear-gradient(101deg, #14ffa4, #11cbc4);
 
@@ -286,19 +381,10 @@ doro-report
     > div
       padding 11px
 
-      h2
-        font-family: Roboto;
-        font-size: 13px;
-        line-height: 1.54;
-        letter-spacing: -0.78px;
-        color: #29be9b;
-
 
 doro-bar
   hbox()
   height: 50px;
-  object-fit: contain;
-  border: solid 1px #ededed;
   padding 0 37px
 
 
@@ -314,13 +400,12 @@ doro-bar[type="black"]
   letter-spacing: -0.72px;
   text-align center
 
+
 doro-para
   display block
   width: 340px;
   margin auto
-  object-fit: contain;
   border-radius: 4px;
-  border: solid 1px #e0e0e0;
   background-color: #fcfcfc;
   padding 33px
   font-size 12px
@@ -343,23 +428,26 @@ doro-big-date
 
 
 doro-title
+  check-outline()
   display block
   height: 126px;
   object-fit: contain;
-  border: solid 1px #f0f0f0;
-  padding 0 37px
+  padding 0 3.38rem
 
   h1
     font-size: 24px;
-    line-height: 0.58;
-    letter-spacing: -1.44px;
+    margin-top 40px
+    margin-bottom 50px
 
 
 doro-input-field
   display block
   height: 77px;
   border: solid 1px #ededed;
-  padding 0 37px
+  padding 0 3.38rem
+
+  h1
+    font-size 14px
 
 
 doro-check-field
@@ -367,9 +455,156 @@ doro-check-field
   height: 44px;
   border: solid 1px #f5f5f5;
   background-color: #ffffff;
-  padding 0 37px
+  padding 0 3.38rem
+
+  h1
+    font-size 14px
 
   h2
     color $green
+
+
+
+doro-section
+  vbox()
+  padding 1rem 3.38rem
+
+doro-page
+  > *
+    margin 1.62rem 0
+    border: solid 1px #ededed;
+
+
+doro-graph
+  vbox()
+  background #fff
+  min-height 10rem
+  padding 0 3.38rem
+
+
+doro-dl-field
+  check-outline()
+  hbox()
+  padding 1rem 3.38rem
+
+doro-datetime
+  check-outline()
+  hbox()
+  padding 1rem 3.38rem
+
+
+doro-background-menu
+  vbox()
+  background $background
+  padding 4.38rem
+
+  doro-background-menu-item
+    btn()
+    border 2px solid #fff
+    box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.27);
+    min-height 4.38rem
+    color #fff
+    margin 1rem 0
+
+    > div
+      btn()
+
+
+doro-splash
+  vbox()
+  text-align center
+  background #fff
+  padding 7rem
+
+  h1
+    font-size 20px
+
+
+doro-page-indicagtor
+  hbox()
+  margin auto
+
+  > div
+    border 1px solid $border
+    border-radius 50%
+    width .8rem
+    height .8rem
+    margin 0 .19rem
+
+    &[selected]
+      background $green
+      border-color $green
+
+
+doro-youtube-header
+  vbox()
+  background #fff
+  min-height 3rem
+  padding 3rem 3.38rem
+
+  h1
+    font-size 20px
+
+  p
+    font-size 13px
+
+  > section
+    hbox()
+
+
+doro-youtube-item
+  hbox()
+  background #fff
+  padding 2rem 3.38rem
+
+  doro-youtube-thumbnail
+    hbox()
+
+    > div
+      ratio(16, 9)
+      width 162px
+      background url(../imgs/yu_sample.jpg) no-repeat center center
+      background-size cover
+      border-radius 3px
+      overflow hidden
+
+  h2, h3
+    text-align right
+    font-size 12px
+    color $black_50
+
+  h3
+    color $black_70
+
+
+doro-comment
+  hbox()
+  background #fff
+  padding 1rem 1.38rem
+
+  > section
+    hbox(start)
+    padding 1.38rem 2rem
+
+    border-radius: 4px;
+    box-shadow: 1px 2px 6px 0 rgba(0, 0, 0, 0.03);
+    border: solid 1px #dedede;
+    background-color: #ffffff;
+
+
+    doro-avatar
+      hbox()
+      width 3rem
+      ratio(1, 1)
+      border 1px solid $border
+      background $green
+      border-radius 50%
+      margin-right 1rem
+
+    h2
+      font-weight: normal
+
+    p
+      font-size 13px
 
 

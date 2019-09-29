@@ -21,11 +21,19 @@
 <doro-header>
 	<space size="safe-zone"></space>
 	<header>
+		<space size="3"></space>
 		<h1>Doro.</h1>
 		<space flex></space>
-		<div>icon</div>
-		<div>icon</div>
-		<div>icon</div>
+		<doro-btn>
+			<svg src="svgs/icon-search.svg"></svg>
+		</doro-btn>
+		<doro-btn>
+			<svg src="svgs/icon-cal.svg"></svg>
+		</doro-btn>
+		<doro-btn>
+			<svg src="svgs/icon-notification.svg"></svg>
+		</doro-btn>
+		<space size="1"></space>
 	</header>
 </doro-header>
 
@@ -33,17 +41,56 @@
 <doro-header>
 	<space size="safe-zone"></space>
 	<header>
-		<h1>&lt;</h1>
+		<doro-btn class="navigation-icon">
+			<svg src="svgs/icon-back.svg"></svg>
+		</doro-btn>
 		<h1>통계</h1>
 	</header>
 </doro-header>
 
 
-<doro-header type="dark">
+<doro-header theme="dark">
+	<space size="safe-zone"></space>
+	<header>
+		<space size="3"></space>
+		<h1>Doro.</h1>
+		<space flex></space>
+		<doro-btn>
+			<svg src="svgs/icon-search.svg"></svg>
+		</doro-btn>
+		<doro-btn>
+			<svg src="svgs/icon-cal.svg"></svg>
+		</doro-btn>
+		<doro-btn>
+			<svg src="svgs/icon-notification.svg"></svg>
+		</doro-btn>
+		<space size="1"></space>
+	</header>
+</doro-header>
+
+
+<doro-header theme="dark">
 	<space size="safe-zone"></space>
 	<header>
 		<p>모든 알림에 기준이 됩니다.<br>
 			정확히 입력해 주세요!</p>
+	</header>
+</doro-header>
+
+
+<doro-header>
+	<space size="safe-zone"></space>
+	<header>
+		<space size="3"></space>
+		<input class="doro-input" type="text" value="input.text.desc">
+		<space flex></space>
+		<doro-btn>
+			<svg src="svgs/icon-search.svg"></svg>
+		</doro-btn>
+		<doro-btn>
+			<svg src="svgs/icon-filter.svg"></svg>
+		</doro-btn>
+		<space size="1"></space>
 	</header>
 </doro-header>
 
@@ -55,7 +102,7 @@
 	<section class="km">1234km</section>
 	<section class="todo">
 		<i class="icon">
-			<div>@</div>
+			<svg src="svgs/icon-shield.svg"></svg>
 		</i>
 		<h1>에어컨필터</h1>
 		<space flex></space>
@@ -68,7 +115,7 @@
 	<section class="km">1234km</section>
 	<section class="todo">
 		<i class="icon">
-			<div>@</div>
+			<svg src="svgs/icon-shield.svg"></svg>
 		</i>
 		<h1>와이퍼</h1>
 		<space flex></space>
@@ -81,61 +128,96 @@
 	<section class="km">1234km</section>
 	<section class="todo">
 		<i class="icon">
-			<div>@</div>
+			<svg src="svgs/icon-shield.svg"></svg>
 		</i>
 		<h1>히터클리닉</h1>
 		<space flex></space>
 		<h2>20000km 마다</h2>
 	</section>
 </doro-todo>
-
-
-<doro-todo type="warn">
-	<section class="km">1234km</section>
-	<section class="todo">
-		<i class="icon">
-			<div>@</div>
-		</i>
-		<h1>타이어교체</h1>
-		<space flex></space>
-		<h2>20000km 마다</h2>
-	</section>
-</doro-todo>
-
-
 <doro-todo>
 	<space flex></space>
 	<section class="toast"><p>탭을 누르시거나, 길게 이 버튼을 눌러주세요!</p></section>
 </doro-todo>
 
 
-<h1>차계부</h1>
+<section>
+	<doro-log-date color="gray-dark">2018. 11. 20</doro-log-date>
+	<doro-todo type="warn">
+		<section class="km">1234km</section>
+		<section class="todo">
+			<i class="icon">
+				<svg src="svgs/icon-shield.svg"></svg>
+			</i>
+			<h1>타이어교체</h1>
+			<space flex></space>
+			<h2>20000km 마다</h2>
+		</section>
+	</doro-todo>
+</section>
 
-<doro-log-date>2018. 11. 20</doro-log-date>
-<doro-log>
-	<section class="km">1234km</section>
-	<section class="log">
-		<section>
-			<i class="icon"></i>
-			<h1>주유</h1>
-			<space size="gap"></space>
-			<h2>50L</h2>
-			<space flex></space>
-			<h3>1000W</h3>
-		</section>
-		<section>
-			<space class="icon"></space>
-			<h1>논현 주유소</h1>
-			<space flex></space>
-			<h3>서울시 강남구</h3>
-		</section>
-		<section>
-			<space flex></space>
-			<h2>0원</h2>
-		</section>
-	</section>
-</doro-log>
 
+<h1>Log2</h1>
+
+
+<section>
+	<doro-log-date>2018. 11. 20</doro-log-date>
+	<doro-log>
+		<section class="km">1234km</section>
+		<section class="log">
+			<section>
+				<doro-icon>
+					<svg src="svgs/icon-oil.svg"></svg>
+				</doro-icon>
+				<h1>주유</h1>
+				<space size="gap"></space>
+				<h2>50L</h2>
+				<space flex></space>
+				<h3>1000W</h3>
+			</section>
+			<section>
+				<doro-icon></doro-icon>
+				<h1>논현 주유소</h1>
+				<space flex></space>
+				<h3>서울시 강남구</h3>
+			</section>
+			<section>
+				<space flex></space>
+				<h2>0원</h2>
+			</section>
+		</section>
+	</doro-log>
+</section>
+
+
+<section>
+	<doro-log-date color="gray-dark">2018. 11. 20</doro-log-date>
+	<doro-log>
+		<section class="km">1234km</section>
+		<section class="log">
+			<section>
+				<doro-icon>
+					<svg src="svgs/icon-oil.svg"></svg>
+				</doro-icon>
+				<h1>주유</h1>
+				<space size="gap"></space>
+				<h2>50L</h2>
+				<space flex></space>
+				<h3>1000W</h3>
+			</section>
+			<section>
+				<doro-icon></doro-icon>
+				<h1>논현 주유소</h1>
+				<space flex></space>
+				<h3>서울시 강남구</h3>
+			</section>
+			<section>
+				<space flex></space>
+				<h2>0원</h2>
+			</section>
+		</section>
+	</doro-log>
+</section>
 
 <h1>Tip</h1>
 
@@ -197,54 +279,235 @@
 </doro-report>
 
 
+<h1>Bottom Bar</h1>
+
+
+<doro-footer theme="dark">
+	<header></header>
+</doro-footer>
+
+<doro-footer theme="dark">
+	<header></header>
+</doro-footer>
+
+
+<doro-footer theme="dark">
+	<header></header>
+</doro-footer>
+
+
 <h1>In Page Element</h1>
 
-
-<doro-bar color="green">
-	<h1>Title</h1>
-	<space flex></space>
-	<h2>0L</h2>
-</doro-bar>
-
-
-<doro-bar>
-	<h1>Title</h1>
-	<space flex></space>
-	<h2>0L</h2>
-</doro-bar>
+<doro-page>
+	<doro-bar color="green">
+		<h1>Title</h1>
+		<space flex></space>
+		<h2>0L</h2>
+	</doro-bar>
 
 
-<doro-para>
-	<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry’s standard dummy text ever since the 1500s,</p>
-</doro-para>
+	<doro-bar>
+		<h1>Title</h1>
+		<space flex></space>
+		<h2>0L</h2>
+	</doro-bar>
 
 
-<doro-bar type="black">
-	<p>약관 동의 후 로그인 하시면 안전하게 내역을 관리하실 수 있습니다.</p>
-</doro-bar>
+	<doro-para>
+		<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry’s standard dummy text ever since the 1500s,</p>
+	</doro-para>
 
 
-<doro-big-date>
-	<h1>YYYY년 M월</h1>
-</doro-big-date>
+	<doro-bar type="black">
+		<p>약관 동의 후 로그인 하시면 안전하게 내역을 관리하실 수 있습니다.</p>
+	</doro-bar>
 
 
-<doro-title>
-	<h1>Hello</h1>
-</doro-title>
-
-<doro-input-field>
-	<h1>Subject</h1>
-	<input type="text" value="Text">
-</doro-input-field>
+	<doro-big-date>
+		<h1>YYYY년 M월</h1>
+	</doro-big-date>
 
 
-<doro-check-field>
-	<h1>Title</h1>
-	<h2>(text)</h2>
-	<space flex></space>
-	<i class="icon check">check</i>
-</doro-check-field>
+	<doro-title>
+		<h1 class="title">Title.H1</h1>
+	</doro-title>
+
+	<doro-input-field>
+		<h1 class="subject">Subject</h1>
+		<space size="1"></space>
+		<input type="text" value="Text">
+	</doro-input-field>
+
+
+	<doro-check-field>
+		<h1>Title</h1>
+		<space size="1"></space>
+		<h2>(text)</h2>
+		<space flex></space>
+		<doro-icon>
+			<svg src="svgs/icon-check.svg"></svg>
+		</doro-icon>
+	</doro-check-field>
+
+
+	<doro-dl-field>
+		<h1>Title1</h1>
+		<space flex></space>
+		<h2>Text</h2>
+	</doro-dl-field>
+
+
+	<doro-dl-field>
+		<h1>Title2</h1>
+		<space flex></space>
+		<h2 color="green">Text</h2>
+		<space size="1"></space>
+		<h2>Sub Text</h2>
+	</doro-dl-field>
+
+
+	<doro-dl-field>
+		<h1>Title3</h1>
+		<space flex></space>
+		<h2 color="green">Text</h2>
+		<space size="1"></space>
+		<h2>Sub Text</h2>
+	</doro-dl-field>
+
+
+	<doro-datetime>
+		<h1 class="date" color="orange">YYYY.MM.DD</h1>
+		<space flex></space>
+		<h2>Time</h2>
+		<space flex></space>
+		<h2>Null</h2>
+		<doro-checkbox></doro-checkbox>
+	</doro-datetime>
+
+
+	<doro-section>
+		<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry’s standard dummy text ever since the 1500s,</p>
+	</doro-section>
+</doro-page>
+
+
+<h1>Background Menu</h1>
+
+<doro-background-menu>
+	<doro-background-menu-item>
+		<div>
+			<doro-icon>
+				<svg src="svgs/icon-drive.svg"></svg>
+			</doro-icon>
+			<h1>Text1</h1>
+		</div>
+	</doro-background-menu-item>
+
+	<doro-background-menu-item>
+		<div>
+			<doro-icon>
+				<svg src="svgs/icon-drive.svg"></svg>
+			</doro-icon>
+			<h1>Text2</h1>
+		</div>
+	</doro-background-menu-item>
+
+	<doro-background-menu-item>
+		<div>
+			<doro-icon>
+				<svg src="svgs/icon-drive.svg"></svg>
+			</doro-icon>
+			<h1>Text3</h1>
+		</div>
+	</doro-background-menu-item>
+
+</doro-background-menu>
+
+
+<h1>Splash</h1>
+
+
+<doro-splash>
+	<h1>Lorem Ipsum is simply dummy text of the printing</h1>
+
+	<space size="3"></space>
+
+	<doro-page-indicagtor>
+		<div selected></div>
+		<div></div>
+		<div></div>
+		<div></div>
+	</doro-page-indicagtor>
+</doro-splash>
+
+
+<h1>Infographics</h1>
+
+
+<doro-graph>
+	<section class="graph"></section>
+
+	<div class="month">
+		<h1>12월</h1>
+		<h1>1월</h1>
+		<h1>2월</h1>
+		<h1>3월</h1>
+		<h1>4월</h1>
+	</div>
+
+	<div>
+		<doro-btn>left</doro-btn>
+		<div flex>
+			<div>Title</div>
+			<div class="accent">Text</div>
+		</div>
+		<doro-btn>right</doro-btn>
+	</div>
+
+</doro-graph>
+
+
+<h1>Comment</h1>
+<doro-comment>
+	<section>
+		<doro-avatar></doro-avatar>
+		<section>
+			<div hbox>
+				<h1>ID</h1>
+				<space size="2"></space>
+				<h2>Tag1, Tag2, Tag2</h2>
+			</div>
+			<space size="1"></space>
+			<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+		</section>
+	</section>
+</doro-comment>
+
+<h1>Youtube</h1>
+
+<doro-youtube-header>
+	<section>
+		<div>[[Youtube logo]]</div>
+	</section>
+	<section>
+		<h1>동영상 검색 결과</h1>
+		<space flex></space>
+		<p><strong class="num" color="orange">12</strong>건이 검색되었습니다.</p>
+	</section>
+</doro-youtube-header>
+
+<doro-youtube-item>
+	<doro-youtube-thumbnail>
+		<div></div>
+	</doro-youtube-thumbnail>
+	<space size="1"></space>
+	<section flex>
+		<h1>Lorem Ipsum is simply dummy text of the</h1>
+		<h2>Title</h2>
+		<h3>Years / Rate</h3>
+	</section>
+</doro-youtube-item>
+
 
 <space size="gap"></space>
 <space size="gap"></space>
@@ -253,5 +516,32 @@
 <space size="gap"></space>
 <space size="gap"></space>
 
+
+<script>
+const localSVG = {};
+
+for (const svg of document.querySelectorAll("svg")) {
+
+
+	let src = svg.getAttributeNode("src");
+	if (src) {
+		if (localSVG[src.nodeValue]) {
+			svg.replaceWith(localSVG[src.nodeValue]);
+		}
+		else {
+			fetch(src.nodeValue).then(res => res.text()).then(res => {
+
+				let template = document.createElement("template");
+				template.innerHTML = res;
+				localSVG[src.nodeValue] = template.content;
+
+				svg.replaceWith(localSVG[src.nodeValue]);
+			});
+		}
+	}
+
+}
+
+</script>
 </body>
 </html>
