@@ -11,22 +11,95 @@
 <script>
 "use strict";
 
+const {ReplaySubject} = exports;
 
-/// common
+
+/// Util
 const noop = () => {};
 
+/// PIPE
 const pipe = (...args) => (value) => args.reduce((f, g) => g(f), value);
 
-const scan = (...args) => (value) => (callback) => args.reduce((f, g) => {
-	let v = g(f);
-	callback(v);
-	return v;
-}, value);
+const co = (...args) => (observable) => {
 
 
+	return new Observable(observer => {
+
+		observer.complete = noop;
+
+		return observable.subscribe({
+			next(value) {
+
+				value = Observable.of(value);
+
+				for (const arg of args) {
+					value = value.pipe(arg, tap(v => observer.next(v)));
+				}
+
+				value.subscribe();
+			},
+
+			error() {
+
+			},
+
+			complete() {
+
+			}
+		});
+
+
+		// let num_completed = 0;
+		// let subject = new ReplaySubject();
+		//
+		// let o = Object.setPrototypeOf({
+		// 	complete() {
+		// 		num_completed++;
+		// 		if (num_completed >= args.length) {
+		// 			subject.complete();
+		// 		}
+		// 	}
+		// }, subject);
+
+		// observable.subscribe(console.warn);
+
+
+		// for (const arg of args) {
+		// 	subject.pipe(arg).subscribe(o);
+		// }
+
+		// window.subject = subject;
+
+		// return subject;
+
+		// return Observable.of("test");
+
+
+	});
+
+};
+
+
+Observable.pipe = pipe;
+Observable.prototype.pipe = function(...args) { return pipe(...args)(this) };
+Observable.prototype.co = function(...args) { return co(...args)(this) };
+
+
+/// ---------------------------------------------------------------------------
+/// Observable: Creation
+/// ---------------------------------------------------------------------------
+const fromEvent = (el, type, useCapture = false) => new Observable(observer => {
+	const handler = (event) => observer.next(event);
+	el.addEventListener(type, handler, useCapture);
+	return () => el.removeEventListener(type, handler, useCapture);
+});
+
+
+/// ---------------------------------------------------------------------------
+/// Operators: lift
+/// ---------------------------------------------------------------------------
 const lift = (callback) => (observable) => new Observable(observer => {
 	const s = observable.subscribe(Object.setPrototypeOf(callback(observer), observer));
-
 	return () => {
 		s.unsubscribe();
 		typeof observer.finallize === "function" && observer.finallize();
@@ -36,24 +109,21 @@ const lift = (callback) => (observable) => new Observable(observer => {
 const $next = (callback) => lift(observer => ({next: callback(observer)}));
 const $complete = (callback) => lift(observer => ({complete: callback(observer)}));
 
-Observable.pipe = pipe;
-Observable.prototype.pipe = function(...args) { return pipe(...args)(this) };
 
-
+/// ---------------------------------------------------------------------------
 /// Operators
+/// ---------------------------------------------------------------------------
 const map = (callback) => $next((observer, index = 0) => value => observer.next(callback(value, index++)));
 const mapTo = (value) => $next((observer) => () => observer.next(value));
 
 const filter = (callback) => $next((observer, index = 0) => value => callback(value, index++) && observer.next(value));
 
 const take = (num) => lift((observer) => ({
-	start() {
-		num <= 0 && observer.complete();
-	},
+	start() { if (num <= 0) observer.complete() },
 
 	next(value) {
 		observer.next(value);
-		--num <= 0 && observer.complete();
+		if (--num <= 0) observer.complete();
 	}
 }));
 
@@ -68,6 +138,52 @@ const tap = (onNext, onComplete = noop) => lift((observer) => ({
 		observer.complete();
 	}
 }));
+
+const scan = function(callback, initialValue) {
+	const hasInitialValue = arguments.length > 1;
+
+	return (observable) => new Observable((observer, currentValue = initialValue) => {
+
+		const o1 = Object.setPrototypeOf({
+			next(value) {
+				currentValue = value;
+				o1.next = o2.next;
+			}
+		}, observer);
+
+		const o2 = Object.setPrototypeOf({
+			next(value) {
+				currentValue = callback(currentValue, value);
+				observer.next(currentValue);
+			}
+		}, observer);
+
+		return observable.subscribe(hasInitialValue ? o2 : o1);
+	})
+};
+
+
+/// Map
+const mergeMap = (callback) => lift(observer => {
+
+
+});
+
+
+const merge = (...observables) => new Observable(observer => {
+
+	let o = Object.setPrototypeOf(observer, {
+		complete() {}
+	});
+
+	let ss = observables.map(observable => observable.subscribe(o));
+
+	return () => {
+		for (const s of ss) {
+			s.unsubscribe();
+		}
+	}
+});
 
 
 /// Share
@@ -189,26 +305,32 @@ const num_items_left = (todos) => todos.length - todos.filter(todo => todo.compl
 
 let todos$ = List.of();
 
-todos$ = todos$.pipe(
+// todos$ = todos$.pipe(
+// 	addTodo({title: "hello"}),
+// 	addTodo({title: "world"}),
+// 	addTodo({title: "welcome"}),
+// 	addTodo({title: "mimosa"}),
+// 	removeTodo({id: 2}),
+// 	shareReplay(1)
+// );
+
+
+// Observable.of(1, 2, 3, 4, 5).pipe(
+// 	scan(((a, b) => a + b))
+// ).subscribe(console.log);
+
+
+todos$ = todos$.co(
 	addTodo({title: "hello"}),
 	addTodo({title: "world"}),
 	addTodo({title: "welcome"}),
 	addTodo({title: "mimosa"}),
-	log("todos"),
-
 	removeTodo({id: 2}),
-	log("todos"),
-
-	// toggleAll(true),
-	// clearCompleted(true),
-
 	shareReplay(1)
 );
 
 
-// todos$.subscribe(console.log);
-// todos$.subscribe(console.log);
-todos$.subscribe(console.log);
+todos$.subscribe(v => console.log(JSON.stringify(v, null, 2)));
 
 
 const num_items_left$ = todos$.pipe(map(num_items_left));

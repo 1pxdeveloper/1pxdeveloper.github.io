@@ -269,11 +269,48 @@
 		}
 	}
 
+
+	class ReplaySubject extends Subject {
+		constructor(bufferSize) {
+			super();
+
+			this.value = [];
+			this.bufferSize = bufferSize;
+
+			this._subscriber = (_subscriber => (observer) => {
+				for (const value of this.value) {
+					observer.next(value);
+				}
+
+				if (this.closed) {
+					observer.complete();
+					return;
+				}
+
+				return _subscriber.call(null, observer);
+
+			})(this._subscriber)
+		}
+
+		next(value) {
+			if (this.closed) return;
+			this.value.push(value);
+			this.value = this.value.slice(-this.bufferSize);
+
+
+			console.log(this.value);
+
+			super.next(value);
+		}
+	}
+
+
 	if (exports) {
 		exports.Observable = Observable;
 		exports.Subject = Subject;
 		exports.AsyncSubject = AsyncSubject;
 		exports.BehaviorSubject = BehaviorSubject;
+		exports.ReplaySubject = ReplaySubject;
 	}
 
 	window.Observable = Observable;
