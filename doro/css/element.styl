@@ -34,6 +34,41 @@ colors($names)
     {"[color="+$name+"]"}
       color lookup("$" +$name)
 
+
+page()
+  layer()
+  vbox()
+  background #fff
+  color #000
+  z-index 9999
+  font-size 1.38rem
+
+  .ui-top-app-bar
+    background $accent
+    color #fff
+
+    svg
+      fill #fff !important
+
+
+badge()
+  display inline-block
+  text-align center
+  padding 0.38em 1em
+  border-radius 0.38em
+  border 1px solid
+
+
+button()
+  cursor pointer
+  text-align center
+  box-shadow 0 3px 3px rgba(0, 0, 0, .2), 0 0px 3px rgba(0, 0, 0, .2)
+
+  &:active
+    transform translateY(1px)
+    box-shadow 0 0 3px rgba(0, 0, 0, .2), inset 0 0 9999px rgba(0, 0, 0, .2)
+
+
 //theme()
 //font-size: 18px;
 //  font-weight: bold;
@@ -462,7 +497,6 @@ doro-check-field
 
   h2
     color $green
-
 
 
 doro-section

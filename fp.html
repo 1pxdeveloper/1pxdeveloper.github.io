@@ -17,77 +17,127 @@ const {ReplaySubject} = exports;
 /// Util
 const noop = () => {};
 
-/// PIPE
-const pipe = (...args) => (value) => args.reduce((f, g) => g(f), value);
+const callCount = (callback, count = 0) => (...args) => {
+	console.log("[callCount]", count++, callback);
+	return callback(...args);
+};
 
-const co = (...args) => (observable) => {
+/// Core: pipe(...operators)
+const pipe = (...operators) => (value) => operators.reduce((f, g) => g(f), value);
 
 
-	return new Observable(observer => {
+const conc = (...operators) => (observable) => new Observable(observer => {
 
-		observer.complete = noop;
+	const next = observer.next.bind(observer);
+	const error = observer.error.bind(observer);
+	const complete = observer.complete.bind(observer);
 
-		return observable.subscribe({
-			next(value) {
+	let currentValue, s2, s3 = [];
 
-				value = Observable.of(value);
+	const operators$ = merge(...operators.map(operator => Observable.of(operator)));
 
-				for (const arg of args) {
-					value = value.pipe(arg, tap(v => observer.next(v)));
-				}
+	/// @TODO: operators$.pipe(shareReplay(1)) ????? 확인 필요...
 
-				value.subscribe();
-			},
 
-			error() {
+	function test(operator) {
+		const s = Observable.of(currentValue).pipe(operator).subscribe(value => {
+			currentValue = value;
+			next(currentValue);
+		}, error);
 
-			},
+		s3.push(s);
+	}
 
-			complete() {
+
+	const subscription = observable.subscribe(value => {
+
+		currentValue = value;
+		observer.next(currentValue);
+
+
+		if (s2) s2.unsubscribe();
+
+		s2 = operators$.subscribe(operator => {
+
+			/// @TODO: operator가 function인지, Observable인지 확인 필요..
+
+			if (typeof operator === "function") {
+				const s = Observable.of(currentValue).pipe(operator).subscribe(value => {
+					currentValue = value;
+					next(currentValue);
+				}, error);
+
+				s3.push(s);
+			}
+
+
+			/// @TODO: Observable는 subscribe해서 function이면, pipe처리하고 아니면 값을 next 한다.
+			if (operator instanceof Observable) {
+
+
+				operator.subscribe(operator => {
+					// currentValue = operator(value);
+					// next(currentValue);
+
+					console.log(operator);
+
+
+					const s = Observable.of(currentValue).pipe(operator).subscribe(value => {
+						currentValue = value;
+						next(currentValue);
+					}, error);
+
+					s3.push(s);
+
+
+				}, error);
+
+				// console.log("@@@@@@@@@@@@@", );
+
+
+				// const s = Observable.of(currentValue).pipe(operator).subscribe(value => {
+				// 	currentValue = value;
+				// 	next(currentValue);
+				// }, error);
+				//
+				// s3.push(s);
 
 			}
-		});
 
+			// console.log(currentValue, operator);
 
-		// let num_completed = 0;
-		// let subject = new ReplaySubject();
-		//
-		// let o = Object.setPrototypeOf({
-		// 	complete() {
-		// 		num_completed++;
-		// 		if (num_completed >= args.length) {
-		// 			subject.complete();
-		// 		}
-		// 	}
-		// }, subject);
+			// operator(Observable.of(currentValue))
 
-		// observable.subscribe(console.warn);
-
-
-		// for (const arg of args) {
-		// 	subject.pipe(arg).subscribe(o);
-		// }
-
-		// window.subject = subject;
-
-		// return subject;
-
-		// return Observable.of("test");
-
-
+		}, error);
 	});
 
-};
+	return () => {
+		subscription.unsubscribe();
+		if (s2) s2.unsubscribe();
+		for (const s of s3) s.unsubscribe();
+	}
+});
 
 
 Observable.pipe = pipe;
 Observable.prototype.pipe = function(...args) { return pipe(...args)(this) };
-Observable.prototype.co = function(...args) { return co(...args)(this) };
+Observable.prototype.co = function(...args) { return conc(...args)(this) };
 
 
 /// ---------------------------------------------------------------------------
-/// Observable: Creation
+/// Observable: Creation Source
 /// ---------------------------------------------------------------------------
+const timeout = (duration = 0, value) => new Observable(observer => {
+	const id = setTimeout(() => observer.next(value), duration);
+	return () => clearTimeout(id)
+});
+
+const interval = (duration = 0) => new Observable(observer => {
+	let index = 0;
+	const id = setInterval(() => observer.next(++index), duration);
+	return () => clearInterval(id)
+});
+
 const fromEvent = (el, type, useCapture = false) => new Observable(observer => {
 	const handler = (event) => observer.next(event);
 	el.addEventListener(type, handler, useCapture);
@@ -124,7 +174,7 @@ const take = (num) => lift((observer) => ({
 	next(value) {
 		observer.next(value);
 		if (--num <= 0) observer.complete();
-	}
+	},
 }));
 
 const tap = (onNext, onComplete = noop) => lift((observer) => ({
@@ -136,7 +186,7 @@ const tap = (onNext, onComplete = noop) => lift((observer) => ({
 	complete() {
 		onComplete();
 		observer.complete();
-	}
+	},
 }));
 
 const scan = function(callback, initialValue) {
@@ -148,14 +198,14 @@ const scan = function(callback, initialValue) {
 			next(value) {
 				currentValue = value;
 				o1.next = o2.next;
-			}
+			},
 		}, observer);
 
 		const o2 = Object.setPrototypeOf({
 			next(value) {
 				currentValue = callback(currentValue, value);
 				observer.next(currentValue);
-			}
+			},
 		}, observer);
 
 		return observable.subscribe(hasInitialValue ? o2 : o1);
@@ -172,9 +222,9 @@ const mergeMap = (callback) => lift(observer => {
 
 const merge = (...observables) => new Observable(observer => {
 
-	let o = Object.setPrototypeOf(observer, {
-		complete() {}
-	});
+	let o = Object.setPrototypeOf({
+		complete() {},
+	}, observer);
 
 	let ss = observables.map(observable => observable.subscribe(o));
 
@@ -216,7 +266,7 @@ const shareReplay = (num = Infinity) => (observable) => {
 
 			complete() {
 				for (const observer of observers) observer.complete();
-			}
+			},
 		});
 
 		return () => {
@@ -239,14 +289,14 @@ const toArray = () => lift((observer, array = []) => ({
 	complete: () => {
 		observer.next(array);
 		observer.complete();
-	}
+	},
 }));
 
 const Range = (start, stop, step = 1) => new Observable(observer => {
 	start = Math.floor(start);
 	stop = Math.ceil(stop);
 
-	while (start !== stop) {
+	while(start !== stop) {
 		observer.next(start);
 		start += step;
 	}
@@ -287,6 +337,9 @@ List.from = (list) => Observable.of([...list]);
 List.length = () => map(array => array.length);
 
 
+///
+
+
 const log = (...tag) => tap(v => console.log(...tag, JSON.stringify(v, null, 2)));
 
 
@@ -303,8 +356,6 @@ const clearCompleted = () => List.filter(todo => !todo.completed);
 const num_items_left = (todos) => todos.length - todos.filter(todo => todo.completed).length;
 
 
-let todos$ = List.of();
-
 // todos$ = todos$.pipe(
 // 	addTodo({title: "hello"}),
 // 	addTodo({title: "world"}),
@@ -320,21 +371,35 @@ let todos$ = List.of();
 // ).subscribe(console.log);
 
 
-todos$ = todos$.co(
+// todos$ = todos$.conc(
+// 	addTodo({title: "hello"}),
+// 	addTodo({title: "world"}),
+// 	addTodo({title: "welcome"}),
+// 	addTodo({title: "mimosa"}),
+// 	removeTodo({id: 2}),
+// 	shareReplay(1),
+// );
+
+
+// todos$.subscribe(v => console.log(JSON.stringify(v, null, 2)));
+
+
+const timer = interval(1000).pipe(take(5));//.subscribe(console.warn);
+
+
+const todos$ = List.of().co(
 	addTodo({title: "hello"}),
-	addTodo({title: "world"}),
+	timer.pipe(map(v => addTodo({title: v}))),
 	addTodo({title: "welcome"}),
 	addTodo({title: "mimosa"}),
 	removeTodo({id: 2}),
-	shareReplay(1)
-);
+).pipe(shareReplay(1));
 
 
-todos$.subscribe(v => console.log(JSON.stringify(v, null, 2)));
+todos$.subscribe(console.log);
 
 
 const num_items_left$ = todos$.pipe(map(num_items_left));
-
 
 num_items_left$.subscribe(console.log);
 

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="1px.js.new/1px.js"></script>
+</head>
+<body>
+
+<script>
+function Callable(f) {
+	return Object.setPrototypeOf(f, new.target.prototype);
+}
+
+Callable.prototype = Function.prototype;
+
+
+class Http extends Callable {
+	constructor(init = {}, http) {
+		super(body => {
+
+			const url = this.init.url;
+			let init = this.init;
+
+			if (body) {
+				init = {...this.init, body};
+			}
+
+			if (typeof init.preScript === "function") {
+				init = {...init, ...init.preScript(init)};
+			}
+
+			const response = init.response || ((v) => v);
+
+			return new Observable(observer => {
+				Observable.fromPromise(fetch(url, init).then(response)).subscribe(observer);
+			});
+		});
+
+		this.init = http ? {...http.init, ...init} : {...init};
+	}
+
+	/// Request
+	resource = (data) => new Http(data, this);
+
+	/// Request
+	url = (url) => this.resource({url});
+	headers = (headers) => this.resource({headers});
+	method = (method, url = this.init.url) => this.resource({method, url});
+	body = (body) => this.resource({body});
+
+	GET = (url) => this.method("GET", url);
+	POST = (url) => this.method("POST", url);
+	PUT = (url) => this.method("PUT", url);
+	DELETE = (url) => this.method("DELETE", url);
+	PATCH = (url) => this.method("PATCH", url);
+	HEAD = (url) => this.method("HEAD", url);
+	OPTION = (url) => this.method("OPTION", url);
+
+
+	/// Response
+	preScript(preScript) {
+		return this.resource({preScript});
+	}
+
+	/// Request
+	response(response) {
+		return this.resource({response});
+	}
+}
+
+
+let http = new Http();
+
+http = http.headers({'Accept': 'application/json', 'Content-Type': 'application/json'});
+http = http.POST("/services/carrot/:id/123");
+http = http.preScript(req => ({body: JSON.stringify(req.body)}));
+http = http.response(res => res.json());
+
+
+http = http.url("/api/test");
+
+
+// http.params(sdkfjldsj);
+
+http({abc: "asdasdas"}).subscribe(v => {
+
+	console.log(v);
+})
+
+</script>
+
+</body>
+</html>

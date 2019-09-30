@@ -99,12 +99,7 @@ const combineObject = (object) => new Observable(observer => {
 const mergeObject = (object) => {
 
 	const toObservable = (value) => value instanceof Observable ? value : Observable.of(value);
-
 	let o = Object.entries(object).map(([key, value]) => toObservable(value).map(value => ({[key]: value})));
-
-	console.log(o);
-
-
 	return merge(...o);
 
 	// const toObservable = (value) => value instanceof Observable ? value : Observable.of(value);
@@ -120,6 +115,21 @@ const mergeObject = (object) => {
 
 
 /// FP operator
+const pipe = (...args) => args.reduce((a, b) => b(a));
+
+const map = (callback) => object => object.map(callback);
+
+const filter = (callback) => object => object.filter(callback);
+
+const append = (item) => (array) => [...array, ...item];
+
+
+const List = {
+	map,
+	filter,
+	append,
+}
+
 const not = (a) => (b) => a !== b;
 
 const just = (value) => value;
@@ -135,6 +145,11 @@ const objectMap = (mapper) => (object) => ({
 	...Object.fromEntries(Object.entries(mapper).map(([key, callback]) => [key, callback(object[key])])),
 });
 
+const objectMapAll = (callback) => (object) => pipe(
+		Object.entries(object).map(([key, value]) => [key, callback(value)]),
+		Object.fromEntries);
+
+
 const reducer = (state, action) => action(state);
 
 const callCount = (callback, count = 0) => (...args) => (console.log(++count), callback.apply(null, args));
@@ -143,10 +158,12 @@ const spread = (callback) => (args) => callback(...args);
 
 /// utils
 const location$ = of(location).concat(fromEvent(window, "popstate", true).mapTo(location)).shareReplay(1);
+location$.subscribe(console.warn.bind(console, "[location]"));
 
 const route = (url) => location$.filter(location => location.hash === url);
 
 
+/// Actions
 const actions = {
 	ADD_TODO: new Subject(),
 	REMOVE_TODO: new Subject(),
@@ -160,35 +177,25 @@ const actions = {
 };
 
 
-const {ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED, PATCH_TODO} = actions;
-const {EDITING_TODO, CANCEL_EDITING_TODO} = actions;
-
-location$.subscribe(console.warn.bind(console, "[location]"));
-
-
 /// actions Test Log!!!
 const actionLogger = (actions) => Object.entries(actions).forEach(([key, value]) => value.subscribe(console.warn.bind(console, key)));
 
+const {ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED, PATCH_TODO} = actions;
+const {EDITING_TODO, CANCEL_EDITING_TODO} = actions;
 
 actionLogger(actions);
 
 
-/// actions
-const addTodo = ({id, title, completed = false}) => (todos) => [...todos, {id, title, completed}];
+/// todos
+const addTodo = ({id, title, completed = false}) => List.append({id, title, completed});
 
-const removeTodo = ({id}) => (todos) => todos.filter(todo => todo.id !== id);
+const removeTodo = ({id}) => List.filter(todo => todo.id !== id);
 
-const toggleAll = (completed) => (todos) => todos.map(todo => ({...todo, completed}));
+const toggleAll = (completed) => List.map(todo => ({...todo, completed}));
 
-const clearCompleted = () => (todos) => todos.filter(todo => !todo.completed);
+const clearCompleted = () => List.filter(todo => !todo.completed);
 
-const patchTodo = (payload) => (todos) => todos.map(todo => todo.id !== payload.id ? todo : {...todo, ...payload});
-
-
-/// computed
-const num_items_left = (todos) => todos.length - todos.filter(todo => todo.completed).length;
-
-const all_checked = (todos) => todos.every(todo => todo.completed);
+const patchTodo = (payload) => List.map(todo => todo.id !== payload.id ? todo : {...todo, ...payload});
 
 
 /// filter
@@ -197,6 +204,12 @@ const filterActive = (todo) => !todo.completed;
 const filterCompleted = (todo) => todo.completed;
 
 const filteredTodos = (todos, filter) => todos.filter(filter);
+
+
+/// computed
+const num_items_left = (todos) => todos.length - todos.filter(filterCompleted).length;
+
+const all_checked = (todos) => todos.every(filterCompleted);
 
 
 /// Reducer
@@ -218,13 +231,6 @@ const all_checked$ = todos$.map(all_checked);
 
 const editingTodo$ = merge(EDITING_TODO, CANCEL_EDITING_TODO.mapTo(null)).shareReplay(1);
 
-
-// actions["editingTodo"].map(editingTodo);
-
-
-// actions["saveTodo"].map(saveTodo);
-
-
 const filter$ = merge(
 		Observable.of(filterAll),
 		route("").mapTo(filterAll),
@@ -244,26 +250,10 @@ mergeObject({
 	all_checked$,
 	filter$,
 	filteredTodo$,
-	editingTodo$
+	editingTodo$,
 }).subscribe(diff => {
-
 	console.log("[diff]", diff);
-
 });
-
-
-// combineObject({
-// 	todos$,
-// 	filteredTodo$,
-// 	filter$,
-// 	num_items_left$,
-// 	all_checked$,
-// }).subscribe(state => {
-//
-// 	window.state = state;
-//
-// 	console.log.bind(console, "[state]")(state);
-// });
 
 
 /// TEST Action
@@ -272,10 +262,9 @@ ADD_TODO.next({id: 2, title: "Hello, world"});
 ADD_TODO.next({id: 3, title: "Hello, world", completed: true});
 ADD_TODO.next({id: 4, title: " askldfjasl "});
 
-//
 // REMOVE_TODO.next({id: 2});
 // REMOVE_TODO.next({id: 3});
-//
+
 // CLEAR_COMPLETED.next();
 
 PATCH_TODO.next({id: 2, title: "SKAJSLKAJDLKAJSLKSA"});
@@ -283,10 +272,7 @@ PATCH_TODO.next({id: 3, completed: false});
 
 
 // TOGGLE_ALL.next(true);
-
 // TOGGLE_ALL.next(false);
-
-
 // TOGGLE_ALL
 
 </script>
