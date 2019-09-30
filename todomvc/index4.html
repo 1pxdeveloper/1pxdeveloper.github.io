@@ -19,7 +19,7 @@
 		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="addTodo(el.value); el.value = ''">
 	</header>
 
-	<!-- This section should be hidden by default and shown when there are todos -->
+	<!-- This section should be hidden by default and shown when there are List -->
 	<section class="main" hidden [hidden]="!todos.length">
 		<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked" (input)="toggleAll(el.checked)">
 		<label for="toggle-all">Mark all as complete</label>
@@ -43,7 +43,7 @@
 		</ul>
 	</section>
 
-	<!-- This footer should hidden by default and shown when there are todos -->
+	<!-- This footer should hidden by default and shown when there are List -->
 	<footer class="footer" hidden [hidden]="!todos.length">
 		<!-- This should be `0 items left` by default -->
 		<span class="todo-count"><strong>{{ num_items_left }}</strong> item{{ num_items_left === 0 || num_items_left > 1 ? 's' : ''}} left</span>
@@ -79,73 +79,60 @@
 <script src="js/app.js"></script>
 
 <script>
-Mimosa.controller("app-todo", function() {
+function filter() {}
 
-	return class AppTodo {
-
-		constructor() {
-			this.filterAll = (todo) => todo;
-			this.filterActive = (todo) => !todo.completed;
-			this.filterCompleted = (todo) => todo.completed;
-
-			this.todos = [];
-			this.filter = this.filterAll;
-
-			this.num_items_left = null;
-			this.all_checked = null;
-			this.editingTodo = null;
-		}
-
-		init($) {
-			$`this.num_items_left = this.todos.length - this.todos.filter(todo => todo.completed).length`;
-			$`this.all_checked = this.todos.every(todo => todo.completed)`;
-
-			$`this.todos.forEach(todo => todo.title; todo.completed); this.todos`.subscribe(); // nested check trick!
+const filterAll = (todo) => todo;
+const filterActive = (todo) => !todo.completed;
+const filterCompleted = (todo) => todo.completed;
 
 
-			$.route("#/", {
-				"#/": () => this.filter = this.filterAll,
-				"#/active": () => this.filter = this.filterActive,
-				"#/completed": () => this.filter = this.filterCompleted,
-			}, (hash) => this.hash = hash);
+const todos$ = of([]).co(
+		ADD_TODO.pipe(
+				filter(({title}) => typeof title === "string"),
 
-			this.addTodo("Hello");
-			this.addTodo("World");
-		}
+				map({title: (title) => title.trim()}),
+
+				filter(({title}) => title.length),
+
+				map(({title, completed = false}) => List.push({title, completed}))
+		),
+
+		REMOVE_TODO.pipe(
+				map((todo) => List.filter(_todo !== todo))
+		),
+
+		CLEAR_COMPLETED.pipe(
+				map(() => List.filter(filterCompleted))
+		),
+
+		TOGGLE_ALL.pipe(
+				map(({completed}) => List.map(todo => ({...todo, completed})))
+		),
 
 
-		addTodo(title, completed = false) {
-			if (typeof title !== "string") return;
-			title = title.trim();
-			if (!title) return;
+		SAVE_TODO.pipe(
+				filter(({title}) => typeof title === "string"),
 
-			this.todos.push({title, completed});
-		}
+				map({title: (title) => title.trim()}),
 
-		saveTodo(todo, title) {
-			if (typeof title !== "string") return;
-			title = title.trim();
-			if (!title.length) {
-				this.removeTodo(todo);
-				return;
-			}
+				switchWhen(({todo, title}) => !title.length && REMOVE_TODO(todo)),
 
-			todo.title = title;
-		}
+				map(({title}) => List.map((t => t !== todo ? t : {...todo, title})))
+		)
+);
 
-		toggleAll(completed) {
-			this.todos.forEach(todo => todo.completed = completed);
-		}
+const num_items_left$ = todos$.pipe(
+		map((todos) => todos.length - todos.filter(filterCompleted).length)
+);
 
-		removeTodo(todo) {
-			this.todos = this.todos.filter(_todo => _todo !== todo);
-		}
+const all_checked$ = todos$.pipe(
+		map((todos) => todos.every(filterCompleted))
+);
 
-		clearCompleted() {
-			this.todos = this.todos.filter(todo => !todo.completed);
-		}
-	}
-});
+
+// const addTodo = (title, completed = false)
+
+
 </script>
 </body>
 </html>
