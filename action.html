@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="1px.js.new/1px.js"></script>
+</head>
+
+<body is="App">
+
+<h1>{{ title }}</h1>
+
+
+<script>
+const {Subject} = require();
+const {take, shareReplay} = Observable.operators;
+
+class Action extends Observable {
+	constructor(type, ...pipes) {
+		const subject = new Subject;
+		let observable = subject;
+
+		if (pipes.length) {
+			observable = observable.pipe(...pipes);
+			observable.subscribe();
+		}
+
+		super(observer => {
+			observable.subscribe(observer);
+		});
+
+		this.type = type;
+		this.toString = () => type;
+
+		const f = payload => subject.next(payload);
+		Object.setPrototypeOf(f, this);
+		return f;
+	}
+
+	pipe(...pipes) {
+		return new Action(this.type, ...pipes);
+	}
+}
+
+
+let login = new Action("kjhlksjdlk", shareReplay(1));
+
+
+login(1);
+login(2);
+login(3);
+login(4);
+login(5);
+login(6);
+
+
+login.subscribe(console.log);
+
+
+// console.log(action instanceof Action);
+// console.log(action instanceof Observable);
+
+
+</script>
+
+
+</body>
+</html>

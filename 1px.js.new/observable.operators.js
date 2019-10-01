@@ -7,21 +7,25 @@
 	/// Operators
 	/// -------------------------------------------------------------------------------------------
 	const noop = () => {};
-	const just = $ => $;
+	const just = _ => _;
+	
+	const pipe = (...pipes) => (value) => pipes.reduce((f, g) => g(f), value);
+	
+	const lift = (callback) => (observable) => new Observable(observer => {
+		const o = callback(observer) || {};
+		const s = observable.subscribe(Object.setPrototypeOf(o, observer));
+		return () => {
+			s.unsubscribe();
+			o.finalize && o.finalize();
+		}
+	});
 	
 	Observable.prototype.pipe = function(...operators) {
-		return operators.reduce((observable, operator) => operator(observable), this);
+		return pipe(...operators)(this);
 	};
 	
 	Observable.prototype.lift = function(callback) {
-		return new Observable(observer => {
-			const o = callback(observer) || {};
-			const s = this.subscribe(Object.setPrototypeOf(o, observer));
-			return () => {
-				s.unsubscribe();
-				o.finalize && o.finalize();
-			}
-		});
+		return lift(callback)(this);
 	};
 	
 	
@@ -77,13 +81,16 @@
 	
 	Observable.prototype.initialize = function(initialize) {
 		return new Observable(observer => {
-			const next = observer.next;
-			observer.next = value => {
-				initialize(value);
-				observer.next(value);
-				observer.next = next;
-			};
-			return this.subscribe(observer);
+			
+			const o = Object.setPrototypeOf({
+				next(value) {
+					initialize(value);
+					observer.next(value);
+					delete o.next;
+				},
+			}, observer);
+			
+			return this.subscribe(o);
 		});
 	};
 	
@@ -157,14 +164,14 @@
 	
 	
 	Observable.prototype.take = function(num) {
-		return this.lift(observer => ({
+		return this.lift((observer, count = num) => ({
 			start() {
-				(num <= 0) && observer.complete();
+				(count <= 0) && observer.complete();
 			},
 			
 			next(value) {
 				observer.next(value);
-				(--num <= 0) && observer.complete();
+				(--count <= 0) && observer.complete();
 			},
 		}));
 	};
@@ -274,10 +281,8 @@
 		let buffer = [];
 		
 		return new Observable(observer => {
-			
 			if (subscription) {
 				for (const value of buffer) {
-					console.log("Start Share Replay", value);
 					observer.next(value);
 				}
 				
@@ -291,11 +296,9 @@
 			
 			subscription = subscription || this.subscribe({
 				next(value) {
-					console.warn("[shareReplay] next", value);
-					
 					for (const observer of observers) observer.next(value);
 					buffer.push(value);
-					buffer.slice(-bufferSize);
+					buffer = buffer.slice(-bufferSize);
 				},
 				
 				error(error) {
@@ -323,7 +326,7 @@
 	/// Utils
 	/// -------------------------------------------------------------------------------------------
 	/// @TODO: count
-	Observable.prototype.retry = function(count = 1, error) {
+	Observable.prototype.retry = function(count = Infinity, error) {
 		if (count <= 0) {
 			return Observable.throw(error);
 		}
@@ -399,6 +402,27 @@
 	};
 	
 	
+	Observable.prototype.connectMap = function(callback) {
+		return this.lift(observer => {
+			let subscription;
+			
+			return {
+				next(value) {
+					if (subscription) subscription.unsubscribe();
+					const observable = Observable.castAsync(callback(value));
+					subscription = observable.subscribe(observer);
+				},
+				
+				complete() {},
+				
+				finalize() {
+					if (subscription) subscription.unsubscribe();
+				},
+			}
+		});
+	};
+	
+	
 	Observable.prototype.exhaustMap = function(callback) {
 		return this.lift(observer => {
 			let completed = false;
@@ -429,58 +453,57 @@
 		
 		return this.lift(observer => {
 			
-			let queue = [];
+			const queue = [];
+			
+			let allSourceCompleted = false;
 			let running = false;
-			let completed = false;
-			let subscriptions = [];
+			let subscription;
 			
 			function doQueue() {
+				if (queue.length === 0) {
+					if (allSourceCompleted) {
+						observer.complete();
+					}
+					return;
+				}
+				
 				if (running) return;
+				running = true;
 				
-				let nextJob = queue.shift();
-				if (nextJob) {
-					return nextJob();
-				}
 				
-				if (completed) {
-					observer.complete();
-				}
+				const value = queue.shift();
+				const observable = Observable.castAsync(callback(value));
+				
+				let completed = false;
+				
+				const o = Object.setPrototypeOf({
+					complete: () => {
+						completed = true;
+					},
+				}, observer);
+				
+				
+				subscription = observable.finalize(() => {
+					if (completed) {
+						running = false;
+						doQueue();
+					}
+					
+				}).subscribe(o);
 			}
 			
 			return {
 				next(value) {
-					queue.push(() => {
-						running = true;
-						
-						let observable = Observable.castAsync(callback(value));
-						
-						let subscription = observable.subscribe(
-							value => observer.next(value),
-							err => observer.error(err),
-							() => {
-								
-								/// @FIXME: 임시 조치 complate() -> 이후 callback()이 되어야 함.
-								
-								Promise.resolve().then(() => {
-									running = false;
-									doQueue();
-									
-								})
-							},
-						);
-						
-						subscriptions.push(subscription);
-					});
-					
+					queue.push(value);
 					doQueue();
 				},
 				
 				complete() {
-					completed = true;
+					allSourceCompleted = true;
 				},
 				
 				finalize() {
-					for (const subscription of subscriptions) subscription.unsubscribe();
+					if (subscription) subscription.unsubscribe();
 				},
 			}
 		})
@@ -725,6 +748,25 @@
 			}
 		});
 	};
+	
+	
+	/// 임시 Operators
+	Observable.operators = {};
+	for (const method of Object.getOwnPropertyNames(Observable.prototype)) {
+		Observable.operators[method] = (...args) => (observable) => observable[method](...args);
+	}
+	
+	
+	const distinctUntilChanged = () => lift((observer, lastValue) => ({
+		
+		next(value) {
+			if (!Object.is(lastValue, value)) observer.next(value);
+			lastValue = value;
+		},
+	}));
+	
+	
+	Object.assign(Observable.operators, {distinctUntilChanged});
 	
 	
 })();
