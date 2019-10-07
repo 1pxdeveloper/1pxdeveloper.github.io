@@ -123,8 +123,11 @@ const filter = (callback) => object => object.filter(callback);
 
 const append = (item) => (array) => [...array, ...item];
 
+const push = append;
+
 
 const List = {
+	push,
 	map,
 	filter,
 	append,
@@ -147,7 +150,8 @@ const objectMap = (mapper) => (object) => ({
 
 const objectMapAll = (callback) => (object) => pipe(
 		Object.entries(object).map(([key, value]) => [key, callback(value)]),
-		Object.fromEntries);
+		Object.fromEntries
+);
 
 
 const reducer = (state, action) => action(state);
@@ -187,7 +191,7 @@ actionLogger(actions);
 
 
 /// todos
-const addTodo = ({id, title, completed = false}) => List.append({id, title, completed});
+const addTodo = ({id, title, completed = false}) => List.push({id, title, completed});
 
 const removeTodo = ({id}) => List.filter(todo => todo.id !== id);
 

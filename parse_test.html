@@ -7,20 +7,25 @@
 </head>
 <body>
 
+<h1>{{ title }}</h1>
+
+
 <script>
-const {BehaviorSubject} = require();
-const {tokenize, watch$$} = require();
+const {Observable} = require("observable");
+const {tokenize, watch$$} = require("parse");
+
+const {combine, of} = Observable;
+const {map, tap} = Observable.operators;
+
 
 const evaluate$$ = (function() {
 
-	const {combine, of} = Observable;
-
 	const $evaluateRules = {};
 
-	function evaluate(token) {
+	const evaluate = (token) => {
 		console.log(token.id, token.length, token);
 		return $evaluateRules[token.id][token.length].apply(token, token);
-	}
+	};
 
 	function evaluateRule(id, callback) {
 		$evaluateRules[id] = $evaluateRules[id] || Object.create(null);
@@ -31,15 +36,20 @@ const evaluate$$ = (function() {
 
 	evaluateRule("(literal)", function() { return of(this.value) });
 
-	evaluateRule("[", (a) => combine(...a.map(evaluate)));
+	/// @TODO:///
+	evaluateRule("this", function() {
+		// return this.thisObj;
+	});
 
+	/// [1,2,3]
+	evaluateRule("[", (a) => combine(...a.pipe(map(evaluate))));
 
-	/// @TODO:
+	/// {foo: 123, bsr: 'abc'} @TODO:
 	evaluateRule("{", (a) => {
 
 		console.log(a);
 
-		// return combine(...a.map(evaluate)).map(o);
+		// return combine(...a.pipe(map(evaluate)).pipe(map(o);
 
 
 		return of(a.reduce((object, o) => {
@@ -48,36 +58,34 @@ const evaluate$$ = (function() {
 		}, {}));
 	});
 
-	/// @TODO:///
-	evaluateRule("this", function() {
-		// return this.thisObj;
-	});
 
+	const unary = (callback) => (a) => evaluate(a).pipe(map(callback));
+	const binary = (callback) => (a, b) => combine(evaluate(a), evaluate(b)).pipe(map(callback));
 
-	evaluateRule("+", (a) => evaluate(a).map(a => +a));
-	evaluateRule("-", (a) => evaluate(a).map(a => -a));
-	evaluateRule("!", (a) => evaluate(a).map(a => !a));
+	evaluateRule("+", unary(a => +a));
+	evaluateRule("-", unary(a => -a));
+	evaluateRule("!", unary(a => !a));
 
-	evaluateRule("+", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a + b));
-	evaluateRule("-", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a - b));
-	evaluateRule("*", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a * b));
-	evaluateRule("/", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a / b));
-	evaluateRule("%", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a % b));
+	evaluateRule("+", binary(([a, b]) => a + b));
+	evaluateRule("-", binary(([a, b]) => a - b));
+	evaluateRule("*", binary(([a, b]) => a * b));
+	evaluateRule("/", binary(([a, b]) => a / b));
+	evaluateRule("%", binary(([a, b]) => a % b));
 
-	evaluateRule("&&", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a && b));
-	evaluateRule("||", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a || b));
-	evaluateRule("===", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a === b));
-	evaluateRule("!==", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a !== b));
-	evaluateRule("==", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a == b));
-	evaluateRule("!=", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a != b));
-	evaluateRule("<", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a < b));
-	evaluateRule("<=", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a <= b));
-	evaluateRule(">", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a > b));
-	evaluateRule(">=", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => a >= b));
+	evaluateRule("&&", binary(([a, b]) => a && b));
+	evaluateRule("||", binary(([a, b]) => a || b));
+	evaluateRule("===", binary(([a, b]) => a === b));
+	evaluateRule("!==", binary(([a, b]) => a !== b));
+	evaluateRule("==", binary(([a, b]) => a == b));
+	evaluateRule("!=", binary(([a, b]) => a != b));
+	evaluateRule("<", binary(([a, b]) => a < b));
+	evaluateRule("<=", binary(([a, b]) => a <= b));
+	evaluateRule(">", binary(([a, b]) => a > b));
+	evaluateRule(">=", binary(([a, b]) => a >= b));
+	evaluateRule(";", binary(([a, b]) => b));
 
 	evaluateRule("?", (a, b, c) => evaluate(a).switchMap(bool => bool ? evaluate(b) : evaluate(c)));
 
-	evaluateRule(";", (a, b) => combine(evaluate(a), evaluate(b)).map(([a, b]) => b));
 
 	/// foo
 	evaluateRule("(name)", function() {
@@ -85,13 +93,6 @@ const evaluate$$ = (function() {
 		let thisObj = window;
 
 		let a = thisObj[this.value];
-
-		// this.subject = this.subject || new BehaviorSubject;
-		//
-		// Observable.castAsync(a).subscribe(this.subject);
-		//
-		// return this.subject;
-
 
 		// @TODO:...
 		this.object = thisObj;
@@ -103,28 +104,42 @@ const evaluate$$ = (function() {
 
 	/// foo.bar
 	evaluateRule(".", function(a, b) {
-		return evaluate(a)
-			.tap(object => {
+		return evaluate(a).pipe(
+			tap(object => {
 				this.object = object;
 				this.prop = b.value;
-			})
-			.map(object => object && object[b.value])
+			}),
+
+			map(object => object && object[b.value])
+		);
 	});
 
 	/// foo[bar]
 	evaluateRule("[", function(a, b) {
-		return combine(evaluate(a), evaluate(b))
-			.tap(([object, prop]) => {
+		return combine(evaluate(a), evaluate(b)).pipe(
+			tap(([object, prop]) => {
 				this.object = object;
 				this.prop = prop;
-			})
-			.map(([object, prop]) => object && object[prop]);
+			}),
+
+			map(([object, prop]) => object && object[prop])
+		);
 	});
 
 	/// foo(bar, ...baz)
 	evaluateRule("(", function(a, b) {
-		return combine(evaluate(a), combine(...b.map(evaluate))).map(([fn, args]) => fn.apply(a.object, args));
+		return combine(evaluate(a), combine(...b.map(evaluate))).pipe(
+			map(([fn, args]) => fn.apply(a.object, args))
+		);
 	});
+
+
+	// evaluateRule("=");
+	// evaluateRule("|");
+	// evaluateRule("=>");
+	// evaluateRule("as");
+	// evaluateRule("if");
+	// evaluateRule("let");
 
 	return evaluate;
 
@@ -147,7 +162,7 @@ window.d = {
 window.test = x => x * 10;
 
 
-let root = tokenize("d.test()");
+let root = tokenize("a + d.test()");
 console.log(root);
 
 
@@ -158,6 +173,36 @@ let s = evaluate$$(root);
 
 s.subscribe(console.log);
 
+
+class Context {
+	constructor(scope) {
+		this.thisObj = scope;
+
+		const f = (...args) => evaluate$$(tokenize(String.raw(...args)));
+		Object.setPrototypeOf(f, this);
+		return f;
+	}
+}
+
+
+const $ = new Context(window);
+
+
+const {traverseDOM} = require();
+
+
+traverseDOM(document.body, (node) => {
+
+	switch (node.nodeType) {
+		case Node.ELEMENT_NODE:
+			if (node.tagName === "SCRIPT") return false;
+			console.log(node);
+			return;
+
+		case Node.TEXT_NODE:
+			console.log(node);
+	}
+})
 
 </script>
 </body>

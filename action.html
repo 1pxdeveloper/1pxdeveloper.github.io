@@ -36,10 +36,6 @@ class Action extends Observable {
 		Object.setPrototypeOf(f, this);
 		return f;
 	}
-
-	pipe(...pipes) {
-		return new Action(this.type, ...pipes);
-	}
 }
 
 

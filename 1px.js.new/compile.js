@@ -460,6 +460,7 @@
 	}
 
 	exports.traverseDOM = traverseDOM;
+	exports.compile_text_node = compile_text_node;
 	exports.$compile = $compile;
 })();
 
