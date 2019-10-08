@@ -91,67 +91,74 @@ function AppTodo($) {
 	const PATCH_TODO_TITLE = new Action("PATCH_TODO_TITLE");
 	const PATCH_TODO_COMPLETED = new Action("PATCH_TODO_COMPLETED");
 
-	Object.assign(this, {ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED, PATCH_TODO_TITLE, PATCH_TODO_COMPLETED});
-
 
 	/// -----------------------------------------------------------------------
-	/// Data
+	/// Reducer
 	/// -----------------------------------------------------------------------
-	const isnot = (a) => (b) => a !== b;
-	const trim = (string) => typeof string === "string" ? string.trim() : null;
-
 	const filterAll = (todo) => todo;
 	const filterActive = (todo) => !todo.completed;
 	const filterCompleted = (todo) => todo.completed;
 
+	const todos = reducer(
+			List.from([]),
 
-	this.todos = [];
-	this.num_items_left = 0;
-	this.all_checked = false;
-	this.filter = filterAll;
-	this.filteredTodos = null;
-	this.editingTodo = null;
+			ADD_TODO.map((title) =>
+					(todos) => {
+						title = trim(title);
+						if (!title) return todos;
+
+						return todos.push({title});
+					},
+			),
+
+			REMOVE_TODO.map((todo) =>
+					(todos) => todos.remove(todo),
+			),
+
+			TOGGLE_ALL.map((completed) =>
+					(todos) => todos.map(todo => ({...todo, completed})),
+			),
+
+			CLEAR_COMPLETED.map(() =>
+					(todos) => todos.filter(filterCompleted),
+			),
+
+			PATCH_TODO_TITLE.map((todo, title) =>
+					(todos) => todos.patch({id}, {...todo, title}),
+			),
+
+			PATCH_TODO_COMPLETED.map((todo, completed) =>
+					(todos) => {
+						const {id} = todo;
+						return todos.patch({id}, {...todo, completed})
+					}),
+	);
+
+	const todosFilter = reducer(
+			"#/".mapTo(filterAll),
+			"#/actice".mapTo(filterAll),
+			"#/complteed".mapTo(filterCompleted),
+	);
+
+	const num_items_left = todos.map(
+			(todos) => todos.length - todos.filter(filterCompleted).length,
+	);
+
+	const all_checked = todos.map(
+			(todos) => todos.every(filterCompleted),
+	);
 
 
-	/// -----------------------------------------------------------------------
-	/// Reduce
-	/// -----------------------------------------------------------------------
-	ADD_TODO.subscribe(([title, completed = false]) => {
-		title = trim(title);
-		if (!title) return;
-
-		this.todos.push({title, completed});
-	};
-
-	REMOVE_TODO.subscribe((todo) => {
-		this.todos = this.todos.filter(isnot(todo));
-	});
-
-	TOGGLE_ALL.subscribe(completed => {
-		this.todos.forEach(todo => todo.completed = completed);
-	});
-
-	CLEAR_COMPLETED.subscribe(() => {
-		this.todos = this.todos.filter(filterCompleted);
-	});
-
-	PATCH_TODO.subscribe(([todo, title]) => {
-		title = trim(title);
-		if (!title) return REMOVE_TODO(todo);
-
-		todo.title = title;
-	});
-
-	PATCH_TODO_COMPLETED.subscribe(([todo, completed]) => {
-		todo.completed = completed;
-	});
-
-	Action.merge(ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED, PATCH_TODO, PATCH_TODO_COMPLETED).subscribe(() => {
-		this.num_items_left = this.todos.length - this.todos.filter(filterCompleted);
-		this.all_checked = this.todos.every(filterCompleted);
-		this.filteredTodos = this.todos.filter(this.filter);
-	});
+	return {
+		ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED, PATCH_TODO_TITLE, PATCH_TODO_COMPLETED,
+		todos,
+		todosFilter,
+		num_items_left,
+		all_checked,
+	}
 }
+
+
 </script>
 </body>
 </html>
