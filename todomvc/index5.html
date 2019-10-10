@@ -13,28 +13,28 @@
 
 <body>
 
-<section is="app-todo" class="todoapp" inline-template>
+<section is="AppTodo" class="todoapp" inline-template>
 	<header class="header">
 		<h1>todos</h1>
-		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="addTodo(el.value); el.value = ''">
+		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="ADD_TODO(el.value); el.value = ''">
 	</header>
 
 	<!-- This section should be hidden by default and shown when there are todos -->
 	<section class="main" hidden [hidden]="!todos.length">
-		<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked" (input)="toggleAll(el.checked)">
+		<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked" (input)="TOGGLE_ALL(el.checked)">
 		<label for="toggle-all">Mark all as complete</label>
 		<ul class="todo-list">
 			<!-- These are here just to show the structure of the list items -->
 			<!-- List items should get the class `editing` when editing and `completed` when marked as completed -->
-			<li *foreach="todos.filter(filter) as todo" [class.completed]="todo.completed" [class.editing]="editingTodo === todo">
+			<li *foreach="filteredTodos as todo" [class.completed]="todo.completed" [class.editing]="editingTodo === todo">
 				<div class="view">
-					<input class="toggle" type="checkbox" [(checked)]="todo.completed">
+					<input class="toggle" type="checkbox" [checked]="todo.completed" (input)="PATCH_TODO_COMPLETED(todo, el.value)">
 					<label (dblclick)="editingTodo = todo">{{ todo.title }}</label>
-					<button class="destroy" (click)="removeTodo(todo)"></button>
+					<button class="destroy" (click)="REMOVE_TODO(todo)"></button>
 				</div>
 				<input class="edit"
 						[value]="todo.title if editingTodo !== todo"
-						(blur)="saveTodo(todo, el.value) if editingTodo === todo; editingTodo = null"
+						(blur)="PATCH_TODO_TITLE(todo, el.value) if editingTodo === todo; editingTodo = null"
 						(keydown.enter)="el.blur()"
 						(keydown.escape)="editingTodo = null"
 						.focus()="editingTodo === todo"
@@ -61,7 +61,7 @@
 			</li>
 		</ul>
 		<!-- Hidden if no completed items are left ↓ -->
-		<button class="clear-completed" hidden [hidden]="todos.length === num_items_left" (click)="clearCompleted()">Clear completed</button>
+		<button class="clear-completed" hidden [hidden]="todos.length === num_items_left" (click)="CLEAR_COMPLETED()">Clear completed</button>
 	</footer>
 </section>
 
@@ -79,109 +79,79 @@
 <script src="js/app.js"></script>
 
 <script>
-const pipe = (...pipes) => (value) => pipes.reduce((f, g) => g(f), value);
+function AppTodo($) {
 
-const just = (a) => a;
+	/// -----------------------------------------------------------------------
+	/// Actions
+	/// -----------------------------------------------------------------------
+	const ADD_TODO = new Action("ADD_TODO");
+	const REMOVE_TODO = new Action("REMOVE_TODO");
+	const TOGGLE_ALL = new Action("TOGGLE_ALL");
+	const CLEAR_COMPLETED = new Action("CLEAR_COMPLETED");
+	const PATCH_TODO_TITLE = new Action("PATCH_TODO_TITLE");
+	const PATCH_TODO_COMPLETED = new Action("PATCH_TODO_COMPLETED");
 
-const go = (value, ...pipes) => pipe(...pipes)(value);
-
-Object.prototype.pipe = function(...pipes) { return pipe(...pipes)(this) };
-
-
-const List = {};
-
-
-List.push = (item) => (array) => [...array, item];
-
-
-const addTodo = ({title, completed = false}) => pipe(
-		// if (typeof title !== "string") return just;
-		// title = title.trim();
-		// if (!title) return just;
-		//
-		// return List.push({title, completed});
-
-		List.push({title, completed}),
-)
+	Object.assign(this, {ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED, PATCH_TODO_TITLE, PATCH_TODO_COMPLETED});
 
 
-let todos = [].pipe(
-		addTodo({title: 123}),
-		addTodo({title: "", completed: true}),
-		addTodo({title: "My name is", completed: false}),
-);
+	/// -----------------------------------------------------------------------
+	/// Data
+	/// -----------------------------------------------------------------------
+	const isnot = (a) => (b) => a !== b;
+	const trim = (string) => typeof string === "string" ? string.trim() : null;
+
+	const filterAll = (todo) => todo;
+	const filterActive = (todo) => !todo.completed;
+	const filterCompleted = (todo) => todo.completed;
 
 
-console.log(todos);
+	this.todos = [];
+	this.num_items_left = 0;
+	this.all_checked = false;
+	this.filter = filterAll;
+	this.filteredTodos = null;
+	this.editingTodo = null;
 
 
-// Mimosa.controller("app-todo", function() {
-//
-// 	return class AppTodo {
-//
-// 		constructor() {
-// 			this.filterAll = (todo) => todo;
-// 			this.filterActive = (todo) => !todo.completed;
-// 			this.filterCompleted = (todo) => todo.completed;
-//
-// 			this.todos = [];
-// 			this.filter = this.filterAll;
-//
-// 			this.num_items_left = null;
-// 			this.all_checked = null;
-// 			this.editingTodo = null;
-// 		}
-//
-// 		init($) {
-// 			$`this.num_items_left = this.todos.length - this.todos.filter(todo => todo.completed).length`;
-// 			$`this.all_checked = this.todos.every(todo => todo.completed)`;
-//
-// 			$`this.todos.forEach(todo => todo.title; todo.completed); this.todos`.subscribe(); // nested check trick!
-//
-//
-// 			$.route("#/", {
-// 				"#/": () => this.filter = this.filterAll,
-// 				"#/active": () => this.filter = this.filterActive,
-// 				"#/completed": () => this.filter = this.filterCompleted,
-// 			}, (hash) => this.hash = hash);
-//
-// 			this.addTodo("Hello");
-// 			this.addTodo("World");
-// 		}
-//
-//
-// 		addTodo(title, completed = false) {
-// 			if (typeof title !== "string") return;
-// 			title = title.trim();
-// 			if (!title) return;
-//
-// 			this.todos.push({title, completed});
-// 		}
-//
-// 		saveTodo(todo, title) {
-// 			if (typeof title !== "string") return;
-// 			title = title.trim();
-// 			if (!title.length) {
-// 				this.removeTodo(todo);
-// 				return;
-// 			}
-//
-// 			todo.title = title;
-// 		}
-//
-// 		toggleAll(completed) {
-// 			this.todos.forEach(todo => todo.completed = completed);
-// 		}
-//
-// 		removeTodo(todo) {
-// 			this.todos = this.todos.filter(_todo => _todo !== todo);
-// 		}
-//
-// 		clearCompleted() {
-// 			this.todos = this.todos.filter(todo => !todo.completed);
-// 		}
-// 	}
-// });
+	/// -----------------------------------------------------------------------
+	/// Reduce
+	/// -----------------------------------------------------------------------
+	ADD_TODO.subscribe(([title, completed = false]) => {
+		title = trim(title);
+		if (!title) return;
+
+		this.todos.push({title, completed});
+	};
+
+	REMOVE_TODO.subscribe((todo) => {
+		this.todos = this.todos.filter(isnot(todo));
+	});
+
+	TOGGLE_ALL.subscribe(completed => {
+		this.todos.forEach(todo => todo.completed = completed);
+	});
+
+	CLEAR_COMPLETED.subscribe(() => {
+		this.todos = this.todos.filter(filterCompleted);
+	});
+
+	PATCH_TODO.subscribe(([todo, title]) => {
+		title = trim(title);
+		if (!title) return REMOVE_TODO(todo);
+
+		todo.title = title;
+	});
+
+	PATCH_TODO_COMPLETED.subscribe(([todo, completed]) => {
+		todo.completed = completed;
+	});
+
+	Action.merge(ADD_TODO, REMOVE_TODO, TOGGLE_ALL, CLEAR_COMPLETED, PATCH_TODO, PATCH_TODO_COMPLETED).subscribe(() => {
+		this.num_items_left = this.todos.length - this.todos.filter(filterCompleted);
+		this.all_checked = this.todos.every(filterCompleted);
+		this.filteredTodos = this.todos.filter(this.filter);
+	});
+}
 </script>
 </body>
 </html>

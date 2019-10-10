@@ -8,29 +8,34 @@
 <body>
 
 <h1>{{ title }}</h1>
+<h2>this is a: {{ a }}</h2>
+<h2>this is a+ "xyz": {{ a + "xyz" }}</h2>
+<h2>this is a * 10: {{ a * 10 }}</h2>
+<h2>this is a > 2 ? "2a" : "3a": {{a }} {{ a > 2 ? "2a" : "3a" }}</h2>
+<h2>this {{ d.test(a) }} {{ d.x }}</h2>
 
 
 <script>
 const {Observable} = require("observable");
-const {tokenize, watch$$} = require("parse");
+const {tokenize} = require("parse");
 
 const {combine, of} = Observable;
-const {map, tap} = Observable.operators;
+const {map, tap, mergeMap} = Observable.operators;
 
 
 const evaluate$$ = (function() {
 
-	const $evaluateRules = {};
+	const $evaluateRules = Object.create(null);
 
-	const evaluate = (token) => {
+	const evaluate = (token, thisObj) => {
 		console.log(token.id, token.length, token);
 		return $evaluateRules[token.id][token.length].apply(token, token);
 	};
 
-	function evaluateRule(id, callback) {
+	const evaluateRule = (id, callback) => {
 		$evaluateRules[id] = $evaluateRules[id] || Object.create(null);
 		$evaluateRules[id][callback.length] = callback;
-	}
+	};
 
 	evaluateRule("(end)", () => of(undefined));
 
@@ -40,6 +45,10 @@ const evaluate$$ = (function() {
 	evaluateRule("this", function() {
 		// return this.thisObj;
 	});
+
+	const unary = (callback) => (a) => evaluate(a).pipe(map(callback));
+	const binary = (callback) => (a, b) => combine(evaluate(a), evaluate(b)).pipe(map(callback));
+	// const params = (callback) => (a, b) => combine(evaluate(a), evaluate(b)).pipe(map(callback));
 
 	/// [1,2,3]
 	evaluateRule("[", (a) => combine(...a.pipe(map(evaluate))));
@@ -57,10 +66,6 @@ const evaluate$$ = (function() {
 			return object;
 		}, {}));
 	});
-
-
-	const unary = (callback) => (a) => evaluate(a).pipe(map(callback));
-	const binary = (callback) => (a, b) => combine(evaluate(a), evaluate(b)).pipe(map(callback));
 
 	evaluateRule("+", unary(a => +a));
 	evaluateRule("-", unary(a => -a));
@@ -90,15 +95,16 @@ const evaluate$$ = (function() {
 	/// foo
 	evaluateRule("(name)", function() {
 
-		let thisObj = window;
+		const thisObj = this.thisObj;
 
-		let a = thisObj[this.value];
+		let a = watch$$(thisObj, this.value);
 
 		// @TODO:...
 		this.object = thisObj;
+		this.prop = this.value;
 
 
-		return Observable.castAsync(a);
+		return a;
 	});
 
 
@@ -106,11 +112,15 @@ const evaluate$$ = (function() {
 	evaluateRule(".", function(a, b) {
 		return evaluate(a).pipe(
 			tap(object => {
+
+				console.warn("object", object);
+
+
 				this.object = object;
 				this.prop = b.value;
 			}),
 
-			map(object => object && object[b.value])
+			mergeMap(object => watch$$(object, b.value)),
 		);
 	});
 
@@ -122,14 +132,17 @@ const evaluate$$ = (function() {
 				this.prop = prop;
 			}),
 
-			map(([object, prop]) => object && object[prop])
+			mergeMap(([object, prop]) => watch$$(object, prop)),
 		);
 	});
 
 	/// foo(bar, ...baz)
 	evaluateRule("(", function(a, b) {
 		return combine(evaluate(a), combine(...b.map(evaluate))).pipe(
-			map(([fn, args]) => fn.apply(a.object, args))
+			map(([func, args]) => {
+				if (typeof func !== "function") return;
+				return Function.prototype.apply.call(func, a.object, args);
+			}),
 		);
 	});
 
@@ -141,68 +154,211 @@ const evaluate$$ = (function() {
 	// evaluateRule("if");
 	// evaluateRule("let");
 
+	console.log("$evaluateRules", $evaluateRules);
+
 	return evaluate;
 
 }());
 
 
-window.a = Observable.interval(1000).take(5);
-window.b = watch$$(window, "b");
-window.c = ["A", "B", "C", "D", "E"];
-
-window.d = {
-	x: 100,
-
-	test: function() {
-		return "xxxxx" + this.x;
-	},
-};
-
-
-window.test = x => x * 10;
-
-
-let root = tokenize("a + d.test()");
-console.log(root);
-
-
-let s = evaluate$$(root);
-
-
-/// @TODO:... this + locals만 pipe해서 Parse Tree + Observable은 재사용하는 방식을 고민할것!!!!!!!!!!
-
-s.subscribe(console.log);
-
+/// -----------------------------------------------------------------------
+/// Context
+/// -----------------------------------------------------------------------
+function _makeString(strings) {
+	return Object(strings) === strings ? String.raw(...arguments) : String(strings);
+}
 
 class Context {
-	constructor(scope) {
-		this.thisObj = scope;
+	constructor(thisObj) {
+		this.thisObj = thisObj;
 
-		const f = (...args) => evaluate$$(tokenize(String.raw(...args)));
+		const f = (...args) => {
+			const root = tokenize(_makeString(...args));
+			for (const token of root.tokens) {
+				token.thisObj = thisObj;
+			}
+			return evaluate$$(root);
+		};
+
 		Object.setPrototypeOf(f, this);
 		return f;
 	}
 }
 
 
-const $ = new Context(window);
-
-
+/// -----------------------------------------------------------------------
+/// Compile
+/// -----------------------------------------------------------------------
 const {traverseDOM} = require();
 
 
-traverseDOM(document.body, (node) => {
+function $compile(el, data) {
 
-	switch (node.nodeType) {
-		case Node.ELEMENT_NODE:
-			if (node.tagName === "SCRIPT") return false;
-			console.log(node);
-			return;
+	const context = new Context(data);
 
-		case Node.TEXT_NODE:
-			console.log(node);
+	traverseDOM(el, (node) => {
+
+		switch (node.nodeType) {
+			case Node.ELEMENT_NODE:
+				if (node.tagName === "SCRIPT") return false;
+				if (node.tagName === "STYLE") return false;
+				console.log(node);
+				return _$compile_element_node(node, context);
+
+			case Node.TEXT_NODE:
+				console.log(node);
+				return _$compile_text_node(node, context);
+		}
+	});
+}
+
+function _$compile_element_node(el, context) {
+	const attributes = Array.from(el.attributes);
+}
+
+function _$compile_text_node(node, context) {
+	let index = node.nodeValue.indexOf("{{");
+
+	while(index >= 0) {
+		node = node.splitText(index);
+		index = node.nodeValue.indexOf("}}");
+		if (index === -1) return;
+
+		let next = node.splitText(index + 2);
+		let script = node.nodeValue.slice(2, -2);
+		node.nodeValue = "";
+		context(script).subscribe(_nodeValue.bind(null, node));
+
+		node = next;
+		index = node.nodeValue.indexOf("{{");
 	}
-})
+}
+
+/// -----------------------------------------------------------------------
+/// Render Values
+/// -----------------------------------------------------------------------
+function _nodeValue(node, value) {
+	/// HTML Element
+	if (node.__node__) {
+		for (const n of node.__node__) n.remove();
+		delete node.__node__;
+	}
+
+	if (value instanceof Node) {
+		node.nodeValue = "";
+		node.__node__ = Array.from(value.childNodes || [value]);
+		node.before(value);
+		return;
+	}
+
+	node.nodeValue = value === undefined ? "" : value;
+}
+
+
+/// -----------------------------------------------------------------------
+/// Watch
+/// -----------------------------------------------------------------------
+function watch$$(object, prop) {
+	if (Object(object) !== object) {
+		return Observable.NEVER;
+	}
+
+	if (Array.isArray(object) && +prop === prop) {
+		return Observable.NEVER;
+	}
+
+	const desc = Object.getOwnPropertyDescriptor(object, prop);
+	if (desc && desc.set && desc.set.observable$) {
+		return desc.set.observable$;
+	}
+
+	let observable$ = null;
+	return (observable$ = new Observable(observer => {
+		let subscription;
+
+		const desc = Object.getOwnPropertyDescriptor(object, prop);
+		if (desc && desc.set && desc.set.observable$) {
+			return desc.set.observable$.subscribe(observer);
+		}
+
+		let value = object[prop];
+		if (desc) {
+			if (value instanceof Observable) {
+				subscription = value.subscribe(observer);
+			}
+			else {
+				observer.next(value);
+			}
+		}
+
+		function set(newValue) {
+			if (Object.is(value, newValue)) {
+				return;
+			}
+			value = newValue;
+
+			if (subscription) {
+				subscription.unsubscribe();
+				subscription = null;
+			}
+
+			if (value instanceof Observable) {
+				subscription = value.subscribe(observer);
+			}
+			else {
+				observer.next(value);
+			}
+		}
+
+		set.observable$ = observable$;
+
+		Object.defineProperty(object, prop, {
+			enumerable: true,
+			configurable: true,
+			get: () => value,
+			set: set,
+		});
+
+		return () => {
+			if (subscription) {
+				subscription.unsubscribe();
+				subscription = null;
+			}
+
+			if (desc && "value" in desc) desc.value = value;
+			Object.defineProperty(object, prop, desc);
+		}
+
+	}).shareReplay(1));
+}
+
+
+/// -----------------------------------------------------------------------
+/// Test
+/// -----------------------------------------------------------------------
+
+
+let data = {};
+data.a = Observable.interval(1000).take(5);
+data.c = ["A", "B", "C", "D", "E"];
+
+data.d = {
+	x: 100,
+
+	test: function(abc) {
+		return "xxxxx" + this.x + abc;
+	},
+};
+
+
+data.test = x => x * 10;
+
+data.title = "Asdklfjasdlkfjaklsd";
+watch$$(data, "title");
+
+
+$compile(document.body, data);
+
 
 </script>
 </body>
