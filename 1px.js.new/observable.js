@@ -304,6 +304,29 @@
 		}
 	}
 
+	class Action extends Observable {
+		constructor(type, ...pipes) {
+			const subject = new Subject;
+			let observable = subject;
+
+			if (pipes.length) {
+				observable = observable.pipe(...pipes);
+				observable.subscribe();
+			}
+
+			super(observer => {
+				observable.subscribe(observer);
+			});
+
+			this.type = type;
+			this.toString = () => type;
+
+			const f = payload => subject.next(payload);
+			Object.setPrototypeOf(f, this);
+			return f;
+		}
+	}
+
 
 	if (exports) {
 		exports.Observable = Observable;
@@ -311,6 +334,7 @@
 		exports.AsyncSubject = AsyncSubject;
 		exports.BehaviorSubject = BehaviorSubject;
 		exports.ReplaySubject = ReplaySubject;
+		exports.Action = Action;
 	}
 
 	window.Observable = Observable;

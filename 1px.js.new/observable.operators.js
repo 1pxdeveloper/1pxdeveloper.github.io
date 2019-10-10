@@ -32,7 +32,6 @@
 	/// -------------------------------------------------------------------------------------------
 	/// Utils
 	/// -------------------------------------------------------------------------------------------
-
 	const map = (callback) => lift((observer, index = 0) => ({
 		next(value) { observer.next(callback(value, index++)) },
 	}));
@@ -50,84 +49,64 @@
 			onNext(value, index++);
 			observer.next(value)
 		},
+
 		complete() {
 			onComplete();
 			observer.complete();
 		},
 	}));
 
-	Observable.prototype.take = function(num) {
-		return this.lift((observer, count = num) => ({
-			start() {
-				(count <= 0) && observer.complete();
-			},
+	const take = (num) => lift((observer, count = num) => ({
+		start() {
+			(count <= 0) && observer.complete();
+		},
 
+		next(value) {
+			observer.next(value);
+			(--count <= 0) && observer.complete();
+		},
+	}));
+
+	const finalize = (finalize) => lift(() => ({finalize}));
+
+	const initialize = (initialize) => new Observable(observer => {
+
+		const o = Object.setPrototypeOf({
 			next(value) {
+				initialize(value);
 				observer.next(value);
-				(--count <= 0) && observer.complete();
+				delete o.next;
 			},
-		}));
-	};
+		}, observer);
+
+		return this.subscribe(o);
+	});
+
+	const scan = (accumulator, seed) => lift((observer, ret = seed) => ({
+		next(value) {
+			observer.next((ret = accumulator(ret, value)));
+		},
+	}));
 
 
-	Observable.prototype.finalize = function(finalize) {
-		return this.lift(() => ({finalize}));
-	};
+	const concat = (observable) => new Observable(observer => {
+		let s1, s2, _value;
+		let completed = false;
 
-	Observable.prototype.initialize = function(initialize) {
-		return new Observable(observer => {
+		const next = value => (_value = observer.next(value) || value);
+		const error = observer.error.bind(observer);
+		const complete = () => completed = true;
+		const nextObserver = typeof observable === "function"
+			? () => s2 = completed && Observable.defer(observable.bind(null, _value)).subscribe(observer)
+			: () => s2 = completed && observable.subscribe(observer);
 
-			const o = Object.setPrototypeOf({
-				next(value) {
-					initialize(value);
-					observer.next(value);
-					delete o.next;
-				},
-			}, observer);
+		s1 = this.finalize(nextObserver).subscribe(next, error, complete);
 
-			return this.subscribe(o);
-		});
-	};
-
-
-	Observable.prototype.scan = function(accumulator, seed) {
-		return this.lift((observer, ret = seed) => ({
-			next(value) {
-				observer.next((ret = accumulator(ret, value)));
-			},
-		}));
-	};
-
-
-	Observable.prototype.doWhile = function(callback) {
-		return this.lift((observer, index = 0, flag = true) => ({
-			next(value) {
-				flag && (flag = callback(value));
-				observer.next(value)
-			},
-		}));
-	};
-
-	Observable.prototype.concat = function(observable) {
-		return new Observable(observer => {
-			let s1, s2, _value;
-			let completed = false;
-
-			const next = value => (_value = observer.next(value) || value);
-			const error = observer.error.bind(observer);
-			const complete = () => completed = true;
-			const nextObserver = typeof observable === "function"
-				? () => s2 = completed && Observable.defer(observable.bind(null, _value)).subscribe(observer)
-				: () => s2 = completed && observable.subscribe(observer);
-
-			s1 = this.finalize(nextObserver).subscribe(next, error, complete);
-
-			return () => {
-				s1.unsubscribe();
-				s2 && s2.unsubscribe();
-			}
-		})
-	};
+		return () => {
+			s1.unsubscribe();
+			s2 && s2.unsubscribe();
+		}
+	});
 
 
 	Observable.prototype.mergeAll = function() {
@@ -197,7 +176,7 @@
 	};
 
 
-/// @TODO: inclusive
+	/// @TODO: inclusive
 	Observable.prototype.takeWhile = function(callback = just, inclusive) {
 		return this.lift((observer, index = 0) => ({
 			next(value) {
@@ -313,10 +292,9 @@
 	};
 
 
-/// -------------------------------------------------------------------------------------------
-/// Utils
-/// -------------------------------------------------------------------------------------------
-/// @TODO: count
+	/// -------------------------------------------------------------------------------------------
+	/// Utils
+	/// -------------------------------------------------------------------------------------------
 	Observable.prototype.retry = function(count = Infinity, error) {
 		if (count <= 0) {
 			return Observable.throw(error);
@@ -340,9 +318,9 @@
 	};
 
 
-/// -------------------------------------------------------------------------------------------
-/// Flatten Map Functions
-/// -------------------------------------------------------------------------------------------
+	/// -------------------------------------------------------------------------------------------
+	/// Flatten Map Functions
+	/// -------------------------------------------------------------------------------------------
 	Observable.prototype.mergeMap = Observable.prototype.flatMap = function(callback) {
 		return this.lift((observer) => {
 			let completed = false;
@@ -461,7 +439,6 @@
 				if (running) return;
 				running = true;
 
-
 				const value = queue.shift();
 				const observable = Observable.castAsync(callback(value));
 
@@ -501,9 +478,9 @@
 	};
 
 
-/// -------------------------------------------------------------------------------------------
-/// Static Operators
-/// -------------------------------------------------------------------------------------------
+	/// -------------------------------------------------------------------------------------------
+	/// Static Operators
+	/// -------------------------------------------------------------------------------------------
 	Observable.never = () => new Observable(noop);
 	Observable.empty = () => new Observable(observer => observer.complete());
 
@@ -511,9 +488,9 @@
 	Observable.EMPTY = Observable.empty();
 
 
-/// -------------------------------------------------------------------------------------------
-/// Creation
-/// -------------------------------------------------------------------------------------------
+	/// -------------------------------------------------------------------------------------------
+	/// Creation
+	/// -------------------------------------------------------------------------------------------
 	Observable.defer = function(callback, thisObj, ...args) {
 		return new Observable(observer => {
 			return Observable.castAsync(callback.apply(thisObj, args)).subscribe(observer);
@@ -545,6 +522,7 @@
 					observer.next(res);
 					observer.complete();
 				},
+
 				err => observer.error(err),
 			)
 		});
@@ -558,16 +536,15 @@
 		}).share();
 	};
 
-
 	Observable.throw = function(error) {
 		return new Observable(observer => observer.error(error));
 	};
 
-/// -------------------------------------------------------------------------------------------
-/// Utils
-/// -------------------------------------------------------------------------------------------
 
-// @FIXME: 내가 만든거
+	/// -------------------------------------------------------------------------------------------
+	/// Utils
+	/// -------------------------------------------------------------------------------------------
+	// @FIXME: 내가 만든거
 	Observable.castAsync = function(value) {
 		if (value instanceof Observable) {
 			return value;
@@ -584,9 +561,9 @@
 	};
 
 
-/// -------------------------------------------------------------------------------------------
-/// Combination
-/// -------------------------------------------------------------------------------------------
+	/// -------------------------------------------------------------------------------------------
+	/// Combination
+	/// -------------------------------------------------------------------------------------------
 	Observable.forkjoin = function(...observables) {
 		return new Observable(observer => {
 			let ret = new Array(observables.length);
@@ -747,7 +724,6 @@
 		Observable.operators[method] = (...args) => (observable) => observable[method](...args);
 	}
 
-
 	const distinctUntilChanged = () => lift((observer, lastValue) => ({
 		next(value) {
 			if (!Object.is(lastValue, value)) observer.next(value);
@@ -761,8 +737,20 @@
 		mapTo,
 		filter,
 		tap,
+		take,
+		finalize,
+		initialize,
+		scan,
+		concat,
 		distinctUntilChanged
 	});
 
+	for (const [key, value] of Object.entries(Observable.operators)) {
+		if (!Observable.prototype[key]) {
+			Observable.prototype[key] = function(...args) {
+				return this.pipe(value(...args));
+			}
+		}
+	}
 
 })();
