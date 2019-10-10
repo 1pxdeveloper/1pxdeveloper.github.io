@@ -104,6 +104,7 @@ $border = $gray-border
 /// Values: size
 $top = 72px
 $width = 414px
+$height = $width * 2;
 $safe-zone = 24px
 $header-font-size = 18px
 
@@ -175,6 +176,7 @@ doro-footer
   box-shadow: 0 10px 6px 0 rgba(0, 0, 0, 0.16);
   background-image $green-gradient-header
   color #fff
+  z-index 1
 
   > header
     hbox()
@@ -519,12 +521,17 @@ doro-graph
 doro-dl-field
   check-outline()
   hbox()
-  padding 1rem 3.38rem
+  padding 1.38rem 3.38rem
+
+  &[type="border"]
+    border-bottom 1px solid $border
+    padding 1.38rem 0
+    margin 0 3.38rem
 
 doro-datetime
   check-outline()
   hbox()
-  padding 1rem 3.38rem
+  padding 1.38rem 3.38rem
 
 
 doro-background-menu
@@ -572,9 +579,11 @@ doro-page-indicagtor
 
 doro-youtube-header
   vbox()
-  background #fff
+  background #fafafa
   min-height 3rem
   padding 3rem 3.38rem
+  border-top 0.5px solid $border
+  border-bottom 0.5px solid $border
 
   h1
     font-size 20px
@@ -641,4 +650,32 @@ doro-comment
     p
       font-size 13px
 
+
+figure
+  padding 3rem 0
+
+img
+  display block
+  max-width 100%
+  height auto
+
+
+h1.title
+  font-size: 24px;
+
+section[is="app"]
+  vbox()
+  width $width
+  min-height $height
+  background #fff
+
+
+doro-divider
+  display block
+  height 1px
+  border-top 0.5px solid $border
+
+doro-splash-image
+  ratio(414, 468)
+  background-image: linear-gradient(to bottom, #14ffa4, #11cbc4);
 
