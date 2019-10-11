@@ -139,7 +139,6 @@ app.controller("app-todo", function(action) {
 			if (typeof title !== "string") return;
 			title = title.trim();
 			if (!title.length) {
-				// action.dispatch("#REMOVE_TODO", todo);
 				return this["#REMOVE_TODO"](todo);
 			}
 

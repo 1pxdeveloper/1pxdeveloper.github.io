@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="1px.js.new/1px.js"></script>
+</head>
+<body>
+
+
+<script>
+const {Action} = require("");
+const {map, mapTo, mergeMap, concatMap} = Observable.operators;
+
+
+const SPEAK = new Action("SPEAK");
+
+
+const fromTextToSpeech = (text) => new Observable(observer => {
+
+	const speechSynthesis = window.speechSynthesis;
+	const handleNext = observer.next.bind(observer);
+
+	const utterance = new SpeechSynthesisUtterance(text);
+	for (const prop of Object.getOwnPropertyNames(SpeechSynthesisUtterance.prototype)) {
+		if (prop.startsWith("on")) {
+			utterance[prop] = handleNext;
+		}
+	}
+
+	utterance.onend = (event) => {
+		handleNext(event);
+		observer.complete();
+	};
+
+	speechSynthesis.speak(utterance);
+
+	return () => {
+		speechSynthesis.cancel();
+	}
+});
+
+
+const click$ = Observable.fromEvent(document, "click");
+
+click$.pipe(mapTo("본문을 잘 읽고 따라해보세요.")).subscribe(SPEAK);
+
+
+const speak$ = SPEAK.pipe(
+	concatMap(text => fromTextToSpeech(text)),
+);
+
+
+
+speak$.subscribe(event => {
+	console.log(event.type, event);
+});
+
+
+
+
+</script>
+
+</body>
+</html>

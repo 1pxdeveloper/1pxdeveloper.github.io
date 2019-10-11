@@ -27,7 +27,7 @@ const evaluate$$ = (function() {
 
 	const $evaluateRules = Object.create(null);
 
-	const evaluate = (token, thisObj) => {
+	const evaluate = (token) => {
 		console.log(token.id, token.length, token);
 		return $evaluateRules[token.id][token.length].apply(token, token);
 	};
@@ -43,7 +43,7 @@ const evaluate$$ = (function() {
 
 	/// @TODO:///
 	evaluateRule("this", function() {
-		// return this.thisObj;
+		return this.thisObj;
 	});
 
 	const unary = (callback) => (a) => evaluate(a).pipe(map(callback));

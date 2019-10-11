@@ -97,17 +97,16 @@ Mimosa.controller("app-todo", function() {
 		}
 
 		init($) {
-			$`this.num_items_left = this.todos.length - this.todos.filter(todo => todo.completed).length`;
-			$`this.all_checked = this.todos.every(todo => todo.completed)`;
-
-			$`this.todos.forEach(todo => todo.title; todo.completed); this.todos`.subscribe(); // nested check trick!
-
-
 			$.route("#/", {
 				"#/": () => this.filter = this.filterAll,
 				"#/active": () => this.filter = this.filterActive,
 				"#/completed": () => this.filter = this.filterCompleted,
 			}, (hash) => this.hash = hash);
+
+			$`this.todos.forEach(todo => todo.title; todo.completed); this.todos`.subscribe(); // nested check trick!
+
+			$`this.num_items_left = this.todos.length - this.todos.filter(todo => todo.completed).length`;
+			$`this.all_checked = this.todos.every(todo => todo.completed)`;
 
 			this.addTodo("Hello");
 			this.addTodo("World");
