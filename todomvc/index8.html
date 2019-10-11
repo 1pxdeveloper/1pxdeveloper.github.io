@@ -8,7 +8,7 @@
 	<link rel="stylesheet" href="node_modules/todomvc-app-css/index.css">
 	<!-- CSS overrides - remove if you don't need it -->
 	<link rel="stylesheet" href="css/app.css">
-	<script src="../1px.js.new/1px.js"></script>
+	<script src="../1px.js.test/1px.js"></script>
 </head>
 
 <body>
@@ -28,8 +28,8 @@
 			<!-- List items should get the class `editing` when editing and `completed` when marked as completed -->
 			<li *foreach="todos.filter(filter) as todo" [class.completed]="todo.completed" [class.editing]="editingTodo === todo">
 				<div class="view">
-					<input class="toggle" type="checkbox" [(checked)]="todo.completed">
-					<label (dblclick)="SET_EDITING_TODO(todo)">{{ todo.title }}</label>
+					<input class="toggle" type="checkbox" [checked]="todo.completed" (input)="PATCH_TODO_COMPLETED(todo, el.value)">
+					<label (dblclick)="editingTodo = todo">{{ todo.title }}</label>
 					<button class="destroy" (click)="REMOVE_TODO(todo)"></button>
 				</div>
 				<input class="edit"
@@ -79,139 +79,72 @@
 <script src="js/app.js"></script>
 
 <script>
+Mimosa.controller("app-todo", function() {
 
+	return class AppTodo {
 
-const {Observable, Action} = require();
+		constructor() {
+			this.filterAll = (todo) => todo;
+			this.filterActive = (todo) => !todo.completed;
+			this.filterCompleted = (todo) => todo.completed;
 
-Observable.reducer = function(...reducers) {
+			this.todos = [];
+			this.filter = this.filterAll;
 
-	return new Observable(observer => {
-		let value;
-		let sub = [];
+			this.num_items_left = null;
+			this.all_checked = null;
+			this.editingTodo = null;
+		}
 
-		for (const reducer of reducers) {
+		init($) {
+			$.route("#/", {
+				"#/": () => this.filter = this.filterAll,
+				"#/active": () => this.filter = this.filterActive,
+				"#/completed": () => this.filter = this.filterCompleted,
+			}, (hash) => this.hash = hash);
 
-			if (reducer instanceof Observable) {
-				const s = reducer.subscribe(func => {
-					value = func(value);
-					observer.next(value);
-				});
+			$`this.num_items_left = this.todos.length - this.todos.filter(todo => todo.completed).length`;
+			$`this.all_checked = this.todos.every(todo => todo.completed)`;
+		}
 
-				sub.push(s);
+		ADD_TODO(title, completed = false) {
+			if (typeof title !== "string") return;
+			title = title.trim();
+			if (!title) return;
 
-				continue;
+			this.todos.push({title, completed});
+		}
+
+		PATCH_TODO_TITLE(todo, title) {
+			if (typeof title !== "string") return;
+			title = title.trim();
+			if (!title.length) {
+				this.REMOVE_TODO(todo);
+				return;
 			}
 
-			value = reducer;
-			observer.next(value);
+			todo.title = title;
+			this.todos.splice();
 		}
 
-		return () => {
-			for (const s of sub) s.unsubscribe();
+		PATCH_TODO_COMPLETED(todo, completed) {
+			todo.completed = completed;
+			this.todos.splice();
 		}
 
-	}).shareReplay(1);
-};
-
-
-const _ = () => {};
-
-_.isnot = (a) => (b) => !Object.is(a, b);
-_.map = (callback) => (a) => a.map(callback);
-_.filter = (callback) => (a) => a.filter(callback);
-
-
-function AppTodo() {
-
-	const ADD_TODO = new Action("ADD_TODO");
-	const REMOVE_TODO = new Action("REMOVE_TODO");
-	const TOGGLE_ALL = new Action("TOGGLE_ALL");
-	const CLEAR_COMPLETED = new Action("CLEAR_COMPLETED");
-
-	const PATCH_TODO_TITLE = new Action("PATCH_TODO_TITLE");
-	const PATCH_TODO_COMPLETED = new Action("PATCH_TODO_COMPLETED");
-
-	const SET_EDITING_TODO = new Action("SET_EDITING_TODO");
-
-	let id = 0;
-
-	const todos$ = Observable.reducer(
-			[],
-
-			ADD_TODO.map(({title, completed = false}) =>
-					(todos) => {
-						if (typeof title !== "string") return todos;
-						title = title.trim();
-						if (!title.length) return todos;
-
-						return [...todos, {title, completed, id: id++}];
-					}),
-
-			REMOVE_TODO.map((todo) =>
-					(todos) => todos.filter(_.isnot(todo))),
-
-			CLEAR_COMPLETED.map(() =>
-					(todos) => todos.filter(todo => !todo.completed)),
-
-			TOGGLE_ALL.map((completed) =>
-					(todos) => todos.map(todo => ({...todo, completed}))),
-
-			PATCH_TODO_TITLE.map(({todo, title}) =>
-					(todos) => {
-						if (typeof title !== "string") return todos;
-						title = title.trim();
-						if (!title.length) {
-							REMOVE_TODO(todo);
-							return todos;
-						}
-
-						return todos.map(_todo => _todo !== todo ? _todo : ({..._todo, title}))
-					}),
-
-			PATCH_TODO_COMPLETED.map(({todo, completed}) =>
-					(todos) => {
-						return todos.map(_todo => _todo !== todo ? _todo : ({..._todo, completed}))
-					})
-	);
-
-	const num_items_left$ = todos$.map((todos) => todos.length - todos.filter(todo => todo.completed).length);
-	const all_checked$ = todos$.map((todos) => todos.every(todo => todo.completed));
-
-	return {
-		ADD_TODO, REMOVE_TODO, CLEAR_COMPLETED, TOGGLE_ALL, PATCH_TODO,
-		todos$,
-		num_items_left$,
-		all_checked$
-	}
-}
-
-
-function test(app) {
-	for (const [key, value] of Object.entries(app)) {
-		if (value instanceof Action) {
-			value.subscribe(console.warn.bind(null, key));
-			continue;
+		TOGGLE_ALL(completed) {
+			this.todos.forEach(todo => todo.completed = completed);
 		}
 
-		if (value instanceof Observable) {
-			value.subscribe(console.log.bind(null, key));
+		REMOVE_TODO(todo) {
+			this.todos = this.todos.filter(_todo => _todo !== todo);
+		}
+
+		CLEAR_COMPLETED() {
+			this.todos = this.todos.filter(todo => !todo.completed);
 		}
 	}
-
-	Object.freeze(app);
-	return app;
-}
-
-
-const app = test(AppTodo());
-
-app.ADD_TODO({title: "hello"});
-app.ADD_TODO({title: "world"});
-app.ADD_TODO({title: "world"});
-
-app.TOGGLE_ALL(true);
-
-
+});
 </script>
 </body>
 </html>
