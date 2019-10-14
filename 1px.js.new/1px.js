@@ -9,6 +9,7 @@
 
 
 	[
+		"fp.js",
 		"observable.js",
 		"observable.operators.js",
 

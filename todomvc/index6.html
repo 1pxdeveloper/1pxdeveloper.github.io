@@ -16,25 +16,25 @@
 <section is="app-todo" class="todoapp" inline-template>
 	<header class="header">
 		<h1>todos</h1>
-		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="ADD_TODO(el.value); el.value = ''">
+		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="ADD_TODO({title:el.value}); el.value = ''">
 	</header>
 
 	<!-- This section should be hidden by default and shown when there are todos -->
-	<section class="main" hidden [hidden]="!todos.length">
+	<section class="main" hidden [hidden]="!todos$.length">
 		<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked" (input)="TOGGLE_ALL(el.checked)">
 		<label for="toggle-all">Mark all as complete</label>
 		<ul class="todo-list">
 			<!-- These are here just to show the structure of the list items -->
 			<!-- List items should get the class `editing` when editing and `completed` when marked as completed -->
-			<li *foreach="todos.filter(filter) as todo" [class.completed]="todo.completed" [class.editing]="editingTodo === todo">
+			<li *foreach="filteredTodos$ as todo" [class.completed]="todo.completed" [class.editing]="editingTodo === todo">
 				<div class="view">
-					<input class="toggle" type="checkbox" [(checked)]="todo.completed">
-					<label (dblclick)="SET_EDITING_TODO(todo)">{{ todo.title }}</label>
+					<input class="toggle" type="checkbox" [checked]="todo.completed" (input)="PATCH_TODO_COMPLETED({todo, completed})">
+					<label (dblclick)="editingTodo = todo">{{ todo.title }}</label>
 					<button class="destroy" (click)="REMOVE_TODO(todo)"></button>
 				</div>
 				<input class="edit"
 						[value]="todo.title if editingTodo !== todo"
-						(blur)="PATCH_TODO_TITLE(todo, el.value) if editingTodo === todo; editingTodo = null"
+						(blur)="PATCH_TODO_TITLE({todo, title:el.value}) if editingTodo === todo; editingTodo = null"
 						(keydown.enter)="el.blur()"
 						(keydown.escape)="editingTodo = null"
 						.focus()="editingTodo === todo"
@@ -44,9 +44,9 @@
 	</section>
 
 	<!-- This footer should hidden by default and shown when there are todos -->
-	<footer class="footer" hidden [hidden]="!todos.length">
+	<footer class="footer" hidden [hidden]="!todos$.length">
 		<!-- This should be `0 items left` by default -->
-		<span class="todo-count"><strong>{{ num_items_left }}</strong> item{{ num_items_left === 0 || num_items_left > 1 ? 's' : ''}} left</span>
+		<span class="todo-count"><strong>{{ num_items_left$ }}</strong> item{{ num_items_left$ === 0 || num_items_left$ > 1 ? 's' : ''}} left</span>
 
 		<!-- Remove this if you don't implement routing -->
 		<ul class="filters">
@@ -61,7 +61,7 @@
 			</li>
 		</ul>
 		<!-- Hidden if no completed items are left ↓ -->
-		<button class="clear-completed" hidden [hidden]="todos.length === num_items_left" (click)="CLEAR_COMPLETED()">Clear completed</button>
+		<button class="clear-completed" hidden [hidden]="todos$.length === num_items_left$" (click)="CLEAR_COMPLETED()">Clear completed</button>
 	</footer>
 </section>
 
@@ -85,43 +85,98 @@ const {Observable, Action} = require();
 
 Observable.reducer = function(...reducers) {
 
-	return new Observable(observer => {
+	return new Observable(_observer => {
 		let value;
-		let sub = [];
+
+		const observer = Object.setPrototypeOf({
+			next(_value) {
+				value = _value;
+				_observer.next(value);
+			},
+		}, _observer);
+
+
+		const subscriptions = [];
 
 		for (const reducer of reducers) {
 
 			if (reducer instanceof Observable) {
-				const s = reducer.subscribe(func => {
-					value = func(value);
-					observer.next(value);
+				const subscription = reducer.subscribe(payload => {
+
+					if (payload instanceof Observable) {
+						payload.subscribe(observer);
+						return;
+					}
+
+					if (typeof payload === "function") {
+						payload = payload(value);
+					}
+
+					observer.next(payload);
 				});
 
-				sub.push(s);
-
+				subscriptions.push(subscription);
 				continue;
 			}
 
-			value = reducer;
-			observer.next(value);
+			observer.next(reducer);
 		}
 
 		return () => {
-			for (const s of sub) s.unsubscribe();
+			for (const s of subscriptions) s.unsubscribe();
 		}
 
 	}).shareReplay(1);
 };
 
 
-const _ = () => {};
+function makeLocationDriver() {
 
-_.isnot = (a) => (b) => !Object.is(a, b);
-_.map = (callback) => (a) => a.map(callback);
-_.filter = (callback) => (a) => a.filter(callback);
+	/// Route는 side-effect일까?? location이 있으니 그렇겠지..
+	const location$ = Observable.reducer(
+			window.location,
+			Observable.fromEvent(window, "popstate", true).mapTo(window.location),
+	);
+
+	return {
+		from() {
+			return location$;
+		},
+
+		write(soruce$) {
+			soruce$.subscribe(hash => {
+				location.hash = hash;
+			});
+
+			// return location$;
+		},
+	}
+}
 
 
-function AppTodo() {
+function makeLocalStorageDriver() {
+
+	/// read
+	return {
+		fromKey(key, defaults) {
+			return new Observable(observer => {
+				const value = JSON.parse(window.localStorage.getItem(key)) || defaults;
+				observer.next(value);
+			});
+		},
+
+
+		/// write
+		write(source$) {
+			source$.subscribe(({key, value}) => {
+				window.localStorage.setItem(key, JSON.stringify(value));
+			});
+		},
+	}
+}
+
+
+function AppTodo({Location, LocalStorage}) {
 
 	const ADD_TODO = new Action("ADD_TODO");
 	const REMOVE_TODO = new Action("REMOVE_TODO");
@@ -131,63 +186,129 @@ function AppTodo() {
 	const PATCH_TODO_TITLE = new Action("PATCH_TODO_TITLE");
 	const PATCH_TODO_COMPLETED = new Action("PATCH_TODO_COMPLETED");
 
-	const SET_EDITING_TODO = new Action("SET_EDITING_TODO");
+	const SET_VISIBILITY_FILTER = new Action("SET_VISIBILITY_FILTER");
+	SET_VISIBILITY_FILTER.SHOW_ALL = "#/all";
+	SET_VISIBILITY_FILTER.SHOW_ACTIVE = "#/active";
+	SET_VISIBILITY_FILTER.SHOW_COMPLETED = "#/completed";
 
-	let id = 0;
+
+	const LOCAL_STORAGE_KEY = "todo-mvc-mimosa";
+
+
+	///
+	const filterAll = (todo) => todo;
+	const filterActive = (todo) => !todo.completed;
+	const filterCompleted = (todo) => todo.completed;
+
+
+	/// Todos
+	const initTodos$ = LocalStorage.fromKey(LOCAL_STORAGE_KEY, []);
 
 	const todos$ = Observable.reducer(
-			[],
+			initTodos$,
 
-			ADD_TODO.map(({title, completed = false}) =>
-					(todos) => {
-						if (typeof title !== "string") return todos;
-						title = title.trim();
-						if (!title.length) return todos;
+			ADD_TODO.filter({title: _.isStringLike})
+					.map({title: _.trim})
+					.filter({title: _.hasLength})
+					.map(({title, completed = false}) => _.append({title, completed})),
 
-						return [...todos, {title, completed, id: id++}];
-					}),
+			REMOVE_TODO
+					.map((todo) => _.removeItem(todo)),
 
-			REMOVE_TODO.map((todo) =>
-					(todos) => todos.filter(_.isnot(todo))),
+			CLEAR_COMPLETED
+					.map(() => _.remove(filterCompleted)),
 
-			CLEAR_COMPLETED.map(() =>
-					(todos) => todos.filter(todo => !todo.completed)),
+			TOGGLE_ALL
+					.map((completed) => _.patchAll({completed})),
 
-			TOGGLE_ALL.map((completed) =>
-					(todos) => todos.map(todo => ({...todo, completed}))),
+			PATCH_TODO_TITLE
+					.filter({title: _.isStringLike})
+					.map({title: _.trim})
+					/// cond??????
+					.tap(({todo, title}) => !title.length && REMOVE_TODO(todo))
+					.filter({title: _.hasLength})
+					.map(({todo, title}) => _.patch(todo, {title})),
 
-			PATCH_TODO_TITLE.map(({todo, title}) =>
-					(todos) => {
-						if (typeof title !== "string") return todos;
-						title = title.trim();
-						if (!title.length) {
-							REMOVE_TODO(todo);
-							return todos;
-						}
-
-						return todos.map(_todo => _todo !== todo ? _todo : ({..._todo, title}))
-					}),
-
-			PATCH_TODO_COMPLETED.map(({todo, completed}) =>
-					(todos) => {
-						return todos.map(_todo => _todo !== todo ? _todo : ({..._todo, completed}))
-					})
+			PATCH_TODO_COMPLETED
+					.map(({todo, completed}) => _.patch(todo, {completed})),
 	);
 
-	const num_items_left$ = todos$.map((todos) => todos.length - todos.filter(todo => todo.completed).length);
-	const all_checked$ = todos$.map((todos) => todos.every(todo => todo.completed));
+
+	/// VisibilityFilter
+	const visibilityFilter$ = Observable.merge(
+			Observable.of(filterAll),
+
+			SET_VISIBILITY_FILTER
+					.map(type => {
+						switch (type) {
+							case SET_VISIBILITY_FILTER.SHOW_ALL:
+								return filterAll;
+
+							case SET_VISIBILITY_FILTER.SHOW_ACTIVE:
+								return filterActive;
+
+							case SET_VISIBILITY_FILTER.SHOW_COMPLETED:
+								return filterCompleted;
+
+							default:
+								return filterAll;
+						}
+					}),
+	).shareReplay(1);
+
+
+	/// Computed
+	const filteredTodos$ = Observable.combine(todos$, visibilityFilter$)
+			.map(([todos, visibilityFilter]) => todos.filter(visibilityFilter))
+			.shareReplay(1);
+
+	const num_items_left$ = filteredTodos$.map((todos) => todos.length - todos.filter(filterCompleted).length);
+	const all_checked$ = filteredTodos$.map(_.every(filterCompleted));
+
+
+	/// Route
+	const location$ = Location.from();
+
+
+	location$.map(({hash}) => hash).tap(SET_VISIBILITY_FILTER);
+
+
+	// location$.filter({hash: _.is("#/")}).tap(() => SET_VISIBILITY_FILTER(SET_VISIBILITY_FILTER.SHOW_ALL));
+	// location$.filter({hash: _.is("#/active")}).tap(() => SET_VISIBILITY_FILTER(SET_VISIBILITY_FILTER.SHOW_ACTIVE));
+	// location$.filter({hash: _.is("#/completed")}).tap(() => SET_VISIBILITY_FILTER(SET_VISIBILITY_FILTER.SHOW_COMPLETED));
+
+	const hash$ = Observable.reducer(
+
+	);
+
 
 	return {
-		ADD_TODO, REMOVE_TODO, CLEAR_COMPLETED, TOGGLE_ALL, PATCH_TODO,
+		ADD_TODO, REMOVE_TODO, CLEAR_COMPLETED, TOGGLE_ALL, PATCH_TODO_TITLE, PATCH_TODO_COMPLETED,
+		SET_VISIBILITY_FILTER,
+
 		todos$,
+		filteredTodos$,
 		num_items_left$,
-		all_checked$
+		all_checked$,
+
+		LocalStorage: todos$.map(value => ({key: LOCAL_STORAGE_KEY, value})),
+		Location: SET_VISIBILITY_FILTER,
 	}
 }
 
 
-function test(app) {
+function test(app, params) {
+	app = app(params);
+
+	app.state = Object.create(null);
+
 	for (const [key, value] of Object.entries(app)) {
+		if (params[key]) {
+			console.log("driver??", key);
+			params[key].write(value);
+			continue;
+		}
+
 		if (value instanceof Action) {
 			value.subscribe(console.warn.bind(null, key));
 			continue;
@@ -195,21 +316,33 @@ function test(app) {
 
 		if (value instanceof Observable) {
 			value.subscribe(console.log.bind(null, key));
+			value.subscribe(value => app.state[key] = value);
 		}
 	}
 
 	Object.freeze(app);
-	return app;
+	return callback => callback(app);
 }
 
 
-const app = test(AppTodo());
+const testApp = test(AppTodo, {
+	Location: makeLocationDriver(),
+	LocalStorage: makeLocalStorageDriver(),
 
-app.ADD_TODO({title: "hello"});
-app.ADD_TODO({title: "world"});
-app.ADD_TODO({title: "world"});
+});
 
-app.TOGGLE_ALL(true);
+
+testApp(app => {
+	window.app = app;
+
+	app.ADD_TODO({title: "hello"});
+	app.ADD_TODO({title: "world"});
+	app.ADD_TODO({title: "world"});
+
+	app.TOGGLE_ALL(true);
+
+	app.SET_VISIBILITY_FILTER(app.SET_VISIBILITY_FILTER.SHOW_ACTIVE);
+});
 
 
 </script>
