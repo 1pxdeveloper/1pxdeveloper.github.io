@@ -20,7 +20,6 @@
 				wrap[method] = function() {
 					const result = prototype[method].apply(this, arguments);
 					observer.next(this);
-					observer.complete();
 					return result;
 				}
 			}
@@ -42,7 +41,6 @@
 	}
 
 	function watch$$(object, prop) {
-
 		if (Object(object) !== object) {
 			return Observable.NEVER;
 		}
@@ -52,31 +50,49 @@
 		}
 
 		const desc = Object.getOwnPropertyDescriptor(object, prop);
-		if (desc) {
-			if (desc.set && desc.set.observable$) {
-				return desc.set.observable$;
-			}
-
-			if (desc.configurable === false || desc.writable === false) {
-				return mutationObservable$(object[prop]);
-			}
+		if (desc && desc.set && desc.set.observable$) {
+			return desc.set.observable$;
 		}
 
-		let observable$;
+		let observable$ = null;
+
 		return (observable$ = new Observable(observer => {
+			let subscription;
+
 			const desc = Object.getOwnPropertyDescriptor(object, prop);
+			if (desc && desc.set && desc.set.observable$) {
+				return desc.set.observable$.subscribe(observer);
+			}
 
 			let value = object[prop];
-
-			const subscription = mutationObservable$(value).subscribe(observer);
+			if (desc) {
+				if (value instanceof Observable) {
+					subscription = value.subscribe(observer);
+				}
+				else {
+					subscription = mutationObservable$(value).subscribe(observer);
+					observer.next(value);
+				}
+			}
 
 			function set(newValue) {
 				if (Object.is(value, newValue)) {
 					return;
 				}
 				value = newValue;
-				observer.next(value);
-				observer.complete();
+
+				if (subscription) {
+					subscription.unsubscribe();
+					subscription = null;
+				}
+
+				if (value instanceof Observable) {
+					subscription = value.subscribe(observer);
+				}
+				else {
+					subscription = mutationObservable$(value).subscribe(observer);
+					observer.next(value);
+				}
 			}
 
 			set.observable$ = observable$;
@@ -89,13 +105,22 @@
 			});
 
 			return () => {
-				subscription.unsubscribe();
+				if (subscription) {
+					subscription.unsubscribe();
+					subscription = null;
+				}
 
-				if (desc) desc.value = value;
-				Object.defineProperty(object, prop, desc);
+				if (desc && "value" in desc) {
+					desc.value = value;
+					Object.defineProperty(object, prop, desc);
+				}
+				else {
+					delete object[prop];
+					object[prop] = value;
+				}
 			}
 
-		}).share());
+		}).shareReplay(1));
 	}
 
 	exports.watch$$ = watch$$;

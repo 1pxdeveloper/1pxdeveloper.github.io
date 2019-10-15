@@ -321,7 +321,11 @@
 			this.type = type;
 			this.toString = () => type;
 
-			const f = payload => subject.next(payload);
+			const f = (payload) => {
+				console.warn(type, payload);
+				subject.next(payload);
+			};
+
 			Object.setPrototypeOf(f, this);
 			return f;
 		}

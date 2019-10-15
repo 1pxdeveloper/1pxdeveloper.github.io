@@ -9,71 +9,25 @@
 <body>
 
 <script>
-const {Observable} = require();
-
-
-function watch$$(object, prop) {
-
-	if (Object(object) !== object) {
-		return Observable.NEVER;
-	}
-
-	if (Array.isArray(object) && +prop === prop) {
-		return Observable.NEVER;
-	}
-
-	const desc = Object.getOwnPropertyDescriptor(object, prop);
-	if (desc && desc.set && desc.set.observable$) {
-		return desc.set.observable$;
-	}
-
-	let observable$;
-
-	return (observable$ = new Observable(observer => {
-		const desc = Object.getOwnPropertyDescriptor(object, prop);
-		if (desc && desc.set && desc.set.observable$) {
-			return desc.set.observable$.subscribe(observer);
-		}
-
-		let value = object[prop];
-
-		function set(newValue) {
-			if (Object.is(value, newValue)) return;
-			value = newValue;
-			observer.next(value);
-			// observer.complete();
-		}
-
-		set.observable$ = observable$;
-
-		Object.defineProperty(o, prop, {
-			get: () => value,
-			set: set,
-			configurable: desc.configurable,
-			enumerable: desc.enumerable,
-		});
-
-		return () => {
-			desc.value = value;
-			Object.defineProperty(o, prop, desc);
-		}
-
-	}).share());
-}
-
+const {watch$$} = require();
+const {tokenize} = require();
 
 
 let o = {};
-let s = watch$$(o, "a");
+
+o.a = 700;
+
+let s = watch$$(o, "a").subscribe(console.warn);
 let s2 = watch$$(o, "a").subscribe(console.warn);
 
 o.a = 300;
 
 
-s.subscribe(console.warn);
+const r = tokenize("a+b+c/2 === 2 ? a : d");
 
 
-o.a = 500;
+console.log(r);
+
 
 </script>
 

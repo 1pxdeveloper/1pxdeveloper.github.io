@@ -2,9 +2,7 @@
 	"use strict";
 
 	/// Utils
-	const castArray = (array) => Array.isArray(array) ? array : [array];
-	const noop = () => {};
-
+	const {castArray, noop} = _;
 
 	/// Operator precedence
 	let bp = 1000;
@@ -42,6 +40,7 @@
 	/// expression
 	let $tokens;
 	let $token;
+	let $script;
 
 	function next(id) {
 		if (id && $token && $token.id !== id) {
@@ -79,7 +78,7 @@
 		nbp: 0,
 
 		error(err) {
-			throw SyntaxError(this.script + " " + err);
+			throw SyntaxError($script + " " + err);
 		},
 
 		nud() {
@@ -343,7 +342,7 @@
 		["(name)", /([_$a-zA-Z가-힣][_$a-zA-Z0-9가-힣]*)/],
 		["(number)", /((?:\d*\.\d+)|\d+)/],
 		["(string)", /('[^']*'|"[^"]*")/],
-		["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/!@?:;.,<>=\[\]\(\){}])/],
+		["(operator)", /(===|!==|==|!=|<=|>=|=>|&&|\|\||[-|+*/%!@?:;.,<>=\[\]\(\){}])/],
 		["(ws)", /(\s)/],
 		["(unknown)", /./],
 	];
@@ -352,6 +351,7 @@
 
 	function tokenize(script) {
 		/// assert: typeof script === "string";
+
 		let tokens = [];
 		tokens.index = 0;
 
@@ -394,12 +394,11 @@
 			return value;
 		});
 
-		// tokens.forEach(token => token.script = script);
-
 		/// parse Tree
 		$tokens = tokens;
+		$script = script;
 		next();
-		let root = expression();
+		const root = expression();
 		root.tokens = tokens;
 
 		return root;

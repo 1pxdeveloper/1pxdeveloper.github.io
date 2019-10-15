@@ -18,10 +18,9 @@
 <script>
 const {Observable} = require("observable");
 const {tokenize} = require("parse");
+const {watch$$} = require("parse");
 
 const {combine, of} = Observable;
-const {map, tap, mergeMap} = Observable.operators;
-
 
 const evaluate$$ = (function() {
 
@@ -46,12 +45,12 @@ const evaluate$$ = (function() {
 		return this.thisObj;
 	});
 
-	const unary = (callback) => (a) => evaluate(a).pipe(map(callback));
-	const binary = (callback) => (a, b) => combine(evaluate(a), evaluate(b)).pipe(map(callback));
+	const unary = (callback) => (a) => evaluate(a).map(callback);
+	const binary = (callback) => (a, b) => combine(evaluate(a), evaluate(b)).map(callback);
 	// const params = (callback) => (a, b) => combine(evaluate(a), evaluate(b)).pipe(map(callback));
 
 	/// [1,2,3]
-	evaluateRule("[", (a) => combine(...a.pipe(map(evaluate))));
+	evaluateRule("[", (a) => combine(...a.map(evaluate)));
 
 	/// {foo: 123, bsr: 'abc'} @TODO:
 	evaluateRule("{", (a) => {
@@ -110,40 +109,37 @@ const evaluate$$ = (function() {
 
 	/// foo.bar
 	evaluateRule(".", function(a, b) {
-		return evaluate(a).pipe(
-			tap(object => {
+		return evaluate(a)
+			.tap(object => {
 
 				console.warn("object", object);
 
 
 				this.object = object;
 				this.prop = b.value;
-			}),
+			})
 
-			mergeMap(object => watch$$(object, b.value)),
-		);
+			.mergeMap(object => watch$$(object, b.value));
 	});
 
 	/// foo[bar]
 	evaluateRule("[", function(a, b) {
-		return combine(evaluate(a), evaluate(b)).pipe(
-			tap(([object, prop]) => {
+		return combine(evaluate(a), evaluate(b))
+			.tap(([object, prop]) => {
 				this.object = object;
 				this.prop = prop;
-			}),
+			})
 
-			mergeMap(([object, prop]) => watch$$(object, prop)),
-		);
+			.mergeMap(([object, prop]) => watch$$(object, prop));
 	});
 
 	/// foo(bar, ...baz)
 	evaluateRule("(", function(a, b) {
-		return combine(evaluate(a), combine(...b.map(evaluate))).pipe(
-			map(([func, args]) => {
+		return combine(evaluate(a), combine(...b.map(evaluate)))
+			.map(([func, args]) => {
 				if (typeof func !== "function") return;
 				return Function.prototype.apply.call(func, a.object, args);
-			}),
-		);
+			});
 	});
 
 
@@ -165,7 +161,7 @@ const evaluate$$ = (function() {
 /// Context
 /// -----------------------------------------------------------------------
 function _makeString(strings) {
-	return Object(strings) === strings ? String.raw(...arguments) : String(strings);
+	return Object(strings) === strings ? String.raw.apply(String, arguments) : String(strings);
 }
 
 class Context {
@@ -219,7 +215,7 @@ function _$compile_element_node(el, context) {
 function _$compile_text_node(node, context) {
 	let index = node.nodeValue.indexOf("{{");
 
-	while(index >= 0) {
+	while (index >= 0) {
 		node = node.splitText(index);
 		index = node.nodeValue.indexOf("}}");
 		if (index === -1) return;
@@ -254,83 +250,6 @@ function _nodeValue(node, value) {
 	node.nodeValue = value === undefined ? "" : value;
 }
 
-
-/// -----------------------------------------------------------------------
-/// Watch
-/// -----------------------------------------------------------------------
-function watch$$(object, prop) {
-	if (Object(object) !== object) {
-		return Observable.NEVER;
-	}
-
-	if (Array.isArray(object) && +prop === prop) {
-		return Observable.NEVER;
-	}
-
-	const desc = Object.getOwnPropertyDescriptor(object, prop);
-	if (desc && desc.set && desc.set.observable$) {
-		return desc.set.observable$;
-	}
-
-	let observable$ = null;
-	return (observable$ = new Observable(observer => {
-		let subscription;
-
-		const desc = Object.getOwnPropertyDescriptor(object, prop);
-		if (desc && desc.set && desc.set.observable$) {
-			return desc.set.observable$.subscribe(observer);
-		}
-
-		let value = object[prop];
-		if (desc) {
-			if (value instanceof Observable) {
-				subscription = value.subscribe(observer);
-			}
-			else {
-				observer.next(value);
-			}
-		}
-
-		function set(newValue) {
-			if (Object.is(value, newValue)) {
-				return;
-			}
-			value = newValue;
-
-			if (subscription) {
-				subscription.unsubscribe();
-				subscription = null;
-			}
-
-			if (value instanceof Observable) {
-				subscription = value.subscribe(observer);
-			}
-			else {
-				observer.next(value);
-			}
-		}
-
-		set.observable$ = observable$;
-
-		Object.defineProperty(object, prop, {
-			enumerable: true,
-			configurable: true,
-			get: () => value,
-			set: set,
-		});
-
-		return () => {
-			if (subscription) {
-				subscription.unsubscribe();
-				subscription = null;
-			}
-
-			if (desc && "value" in desc) desc.value = value;
-			Object.defineProperty(object, prop, desc);
-		}
-
-	}).shareReplay(1));
-}
 
 
 /// -----------------------------------------------------------------------

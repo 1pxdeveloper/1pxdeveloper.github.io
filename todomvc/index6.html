@@ -13,15 +13,15 @@
 
 <body>
 
-<section is="app-todo" class="todoapp" inline-template>
+<section is="AppTodo" class="todoapp" inline-template>
 	<header class="header">
-		<h1>todos</h1>
+		<h1>todos {{title}}</h1>
 		<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="ADD_TODO({title:el.value}); el.value = ''">
 	</header>
 
 	<!-- This section should be hidden by default and shown when there are todos -->
 	<section class="main" hidden [hidden]="!todos$.length">
-		<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked" (input)="TOGGLE_ALL(el.checked)">
+		<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked$" (input)="TOGGLE_ALL(el.checked)">
 		<label for="toggle-all">Mark all as complete</label>
 		<ul class="todo-list">
 			<!-- These are here just to show the structure of the list items -->
@@ -81,7 +81,7 @@
 <script>
 
 
-let {Observable, Action} = require();
+const {Observable, Action} = require();
 
 const Reducer = Observable.reducer = function(...reducers) {
 
@@ -129,27 +129,15 @@ const Reducer = Observable.reducer = function(...reducers) {
 };
 
 
-const Computed = function(...observables) {
+const Computed = Observable.computed = function(...observables) {
 	const callback = observables.pop();
 	return Observable.combine(...observables).map(args => callback.apply(null, args)).shareReplay(1);
 };
 
 
-const _Action = Action;
-Action = class extends _Action {
-	constructor(type, ...args) {
-		const _f = super(type, ...args);
-
-		const f = (...args) => {
-			console.warn(type, ...args);
-			_f(...args);
-		};
-
-		Object.setPrototypeOf(f, this);
-		return f;
-	}
+const Effect = function(...observables) {
+	/// @TODO: view나 다른데서 subscribe를 하기 전까지 평가를 미루었다가 연결하는 개념.. pipe만 쥐고 있음..
 };
-
 
 /// Actions
 const FETCH_TODOS = new Action("FETCH_TODOS"); // @FIXME: Action prepiped
@@ -181,9 +169,9 @@ function AppTodoStore() {
 	const todos$ = Reducer(
 			[],
 
-			FETCH_TODOS,
+			FETCH_TODOS.take(1),
 
-			/// concat ??
+			/// concat???
 
 			ADD_TODO.filter({title: _.isStringLike})
 					.map({title: _.trim})
@@ -212,6 +200,7 @@ function AppTodoStore() {
 			PATCH_TODO_COMPLETED
 					.map(({todo, completed}) => _.patch(todo, {completed})),
 	);
+
 
 	/// VisibilityFilter
 	const visibilityFilter$ = Reducer(
@@ -264,11 +253,9 @@ function LocalStorageEffect(store) {
 	const LOCAL_STORAGE_KEY = "todo-mvc-mimosa";
 
 	// @TODO: Action make sharedReplay!!!!
-	FETCH_TODOS(JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || []);
+	FETCH_TODOS(_.localStorage.getItem(LOCAL_STORAGE_KEY, []));
 
-	store.todos$.subscribe(todos => {
-		localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
-	});
+	store.todos$.subscribe(_.localStorage.setItem(LOCAL_STORAGE_KEY));
 }
 
 
@@ -289,7 +276,7 @@ function RouteEffect(store) {
 			case "#/active":
 				return SET_VISIBILITY_FILTER(SHOW_ACTIVE);
 
-			case "#/complete":
+			case "#/completed":
 				return SET_VISIBILITY_FILTER(SHOW_COMPLETED);
 
 			default:
@@ -308,7 +295,7 @@ function RouteEffect(store) {
 				return;
 
 			case SHOW_COMPLETED:
-				location.hash = "#/complete";
+				location.hash = "#/completed";
 				return;
 		}
 	});
@@ -316,44 +303,43 @@ function RouteEffect(store) {
 
 
 function test(store, ...effects) {
-	store = store();
+	const app = store();
+	const state = Object.create(null);
 
-	store.state = Object.create(null);
-
-	for (const [key, value] of Object.entries(store)) {
+	for (const [key, value] of Object.entries(app)) {
 		if (value instanceof Action) {
 			value.subscribe(console.warn.bind(null, key));
 			continue;
 		}
 
 		if (value instanceof Observable) {
-			value.subscribe(value => store.state[key] = value);
+			value.subscribe(value => state[key] = value);
 			value.subscribe(console.log.bind(null, key));
 		}
 	}
 
-	Object.freeze(store);
+	Object.freeze(app);
 
 	for (const effect of effects) {
-		effect(store);
+		effect(app);
 	}
 
-	return callback => callback(store);
+	return callback => callback(app, state);
 }
+
+
+const {$compile} = require();
 
 
 const testApp = test(AppTodoStore, LocalStorageEffect, RouteEffect);
 
-testApp(app => {
+testApp((app, state) => {
+
 	window.app = app;
+	window.state = state;
 
-	ADD_TODO({title: "hello"});
-	ADD_TODO({title: "world"});
-	ADD_TODO({title: "world"});
-
-	TOGGLE_ALL(true);
-
-	SET_VISIBILITY_FILTER(SET_VISIBILITY_FILTER.SHOW_ACTIVE);
+	$module.bootstrap();
+	$compile(document.body, state);
 });
 </script>
 </body>

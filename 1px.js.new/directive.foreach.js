@@ -83,7 +83,9 @@
 			let container = [];
 			let prevArray = [];
 
+
 			context.watch$(script, array => {
+
 
 				let locals = array.slice();
 
