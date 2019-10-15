@@ -311,7 +311,7 @@
 
 			if (pipes.length) {
 				observable = observable.pipe(...pipes);
-				observable.subscribe();
+				// observable.subscribe();
 			}
 
 			super(observer => {

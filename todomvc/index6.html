@@ -81,13 +81,12 @@
 <script>
 
 
-const {Observable, Action} = require();
+let {Observable, Action} = require();
 
-Observable.reducer = function(...reducers) {
+const Reducer = Observable.reducer = function(...reducers) {
 
 	return new Observable(_observer => {
 		let value;
-
 		const observer = Object.setPrototypeOf({
 			next(_value) {
 				value = _value;
@@ -130,70 +129,47 @@ Observable.reducer = function(...reducers) {
 };
 
 
-function makeLocationDriver() {
+const Computed = function(...observables) {
+	const callback = observables.pop();
+	return Observable.combine(...observables).map(args => callback.apply(null, args)).shareReplay(1);
+};
 
-	/// Route는 side-effect일까?? location이 있으니 그렇겠지..
-	const location$ = Observable.reducer(
-			window.location,
-			Observable.fromEvent(window, "popstate", true).mapTo(window.location),
-	);
 
-	return {
-		from() {
-			return location$;
-		},
+const _Action = Action;
+Action = class extends _Action {
+	constructor(type, ...args) {
+		const _f = super(type, ...args);
 
-		write(soruce$) {
-			soruce$.subscribe(hash => {
-				location.hash = hash;
-			});
+		const f = (...args) => {
+			console.warn(type, ...args);
+			_f(...args);
+		};
 
-			// return location$;
-		},
+		Object.setPrototypeOf(f, this);
+		return f;
 	}
-}
+};
 
 
-function makeLocalStorageDriver() {
+/// Actions
+const FETCH_TODOS = new Action("FETCH_TODOS"); // @FIXME: Action prepiped
 
-	/// read
-	return {
-		fromKey(key, defaults) {
-			return new Observable(observer => {
-				const value = JSON.parse(window.localStorage.getItem(key)) || defaults;
-				observer.next(value);
-			});
-		},
+const ADD_TODO = new Action("ADD_TODO");
+const REMOVE_TODO = new Action("REMOVE_TODO");
+const TOGGLE_ALL = new Action("TOGGLE_ALL");
+const CLEAR_COMPLETED = new Action("CLEAR_COMPLETED");
 
+const PATCH_TODO_TITLE = new Action("PATCH_TODO_TITLE");
+const PATCH_TODO_COMPLETED = new Action("PATCH_TODO_COMPLETED");
 
-		/// write
-		write(source$) {
-			source$.subscribe(({key, value}) => {
-				window.localStorage.setItem(key, JSON.stringify(value));
-			});
-		},
-	}
-}
+const SET_VISIBILITY_FILTER = new Action("SET_VISIBILITY_FILTER");
+SET_VISIBILITY_FILTER.SHOW_ALL = "#/";
+SET_VISIBILITY_FILTER.SHOW_ACTIVE = "#/active";
+SET_VISIBILITY_FILTER.SHOW_COMPLETED = "#/completed";
 
 
-function AppTodo({Location, LocalStorage}) {
-
-	const ADD_TODO = new Action("ADD_TODO");
-	const REMOVE_TODO = new Action("REMOVE_TODO");
-	const TOGGLE_ALL = new Action("TOGGLE_ALL");
-	const CLEAR_COMPLETED = new Action("CLEAR_COMPLETED");
-
-	const PATCH_TODO_TITLE = new Action("PATCH_TODO_TITLE");
-	const PATCH_TODO_COMPLETED = new Action("PATCH_TODO_COMPLETED");
-
-	const SET_VISIBILITY_FILTER = new Action("SET_VISIBILITY_FILTER");
-	SET_VISIBILITY_FILTER.SHOW_ALL = "#/all";
-	SET_VISIBILITY_FILTER.SHOW_ACTIVE = "#/active";
-	SET_VISIBILITY_FILTER.SHOW_COMPLETED = "#/completed";
-
-
-	const LOCAL_STORAGE_KEY = "todo-mvc-mimosa";
-
+/// Store
+function AppTodoStore() {
 
 	///
 	const filterAll = (todo) => todo;
@@ -202,10 +178,12 @@ function AppTodo({Location, LocalStorage}) {
 
 
 	/// Todos
-	const initTodos$ = LocalStorage.fromKey(LOCAL_STORAGE_KEY, []);
+	const todos$ = Reducer(
+			[],
 
-	const todos$ = Observable.reducer(
-			initTodos$,
+			FETCH_TODOS,
+
+			/// concat ??
 
 			ADD_TODO.filter({title: _.isStringLike})
 					.map({title: _.trim})
@@ -224,8 +202,10 @@ function AppTodo({Location, LocalStorage}) {
 			PATCH_TODO_TITLE
 					.filter({title: _.isStringLike})
 					.map({title: _.trim})
-					/// cond??????
+
+					/// cond?????? action transform
 					.tap(({todo, title}) => !title.length && REMOVE_TODO(todo))
+
 					.filter({title: _.hasLength})
 					.map(({todo, title}) => _.patch(todo, {title})),
 
@@ -233,12 +213,12 @@ function AppTodo({Location, LocalStorage}) {
 					.map(({todo, completed}) => _.patch(todo, {completed})),
 	);
 
-
 	/// VisibilityFilter
-	const visibilityFilter$ = Observable.merge(
-			Observable.of(filterAll),
+	const visibilityFilter$ = Reducer(
+			() => filterAll,
 
 			SET_VISIBILITY_FILTER
+					.distinctUntilChanged()
 					.map(type => {
 						switch (type) {
 							case SET_VISIBILITY_FILTER.SHOW_ALL:
@@ -253,98 +233,128 @@ function AppTodo({Location, LocalStorage}) {
 							default:
 								return filterAll;
 						}
-					}),
-	).shareReplay(1);
-
-
-	/// Computed
-	const filteredTodos$ = Observable.combine(todos$, visibilityFilter$)
-			.map(([todos, visibilityFilter]) => todos.filter(visibilityFilter))
-			.shareReplay(1);
-
-	const num_items_left$ = filteredTodos$.map((todos) => todos.length - todos.filter(filterCompleted).length);
-	const all_checked$ = filteredTodos$.map(_.every(filterCompleted));
-
-
-	/// Route
-	const location$ = Location.from();
-
-
-	location$.map(({hash}) => hash).tap(SET_VISIBILITY_FILTER);
-
-
-	// location$.filter({hash: _.is("#/")}).tap(() => SET_VISIBILITY_FILTER(SET_VISIBILITY_FILTER.SHOW_ALL));
-	// location$.filter({hash: _.is("#/active")}).tap(() => SET_VISIBILITY_FILTER(SET_VISIBILITY_FILTER.SHOW_ACTIVE));
-	// location$.filter({hash: _.is("#/completed")}).tap(() => SET_VISIBILITY_FILTER(SET_VISIBILITY_FILTER.SHOW_COMPLETED));
-
-	const hash$ = Observable.reducer(
-
+					})
+					.map(_.itself),
 	);
 
 
-	return {
-		ADD_TODO, REMOVE_TODO, CLEAR_COMPLETED, TOGGLE_ALL, PATCH_TODO_TITLE, PATCH_TODO_COMPLETED,
-		SET_VISIBILITY_FILTER,
+	/// Computed
+	const filteredTodos$ =
+			Computed(todos$, visibilityFilter$, (todos, visibilityFilter) => todos.filter(visibilityFilter));
 
+	const num_items_left$ =
+			Computed(filteredTodos$, (filteredTodos) => filteredTodos.length - filteredTodos.filter(filterCompleted).length);
+
+	const all_checked$ =
+			Computed(filteredTodos$, _.every(filterCompleted));
+
+
+	return {
 		todos$,
 		filteredTodos$,
 		num_items_left$,
 		all_checked$,
-
-		LocalStorage: todos$.map(value => ({key: LOCAL_STORAGE_KEY, value})),
-		Location: SET_VISIBILITY_FILTER,
 	}
 }
 
 
-function test(app, params) {
-	app = app(params);
+/// Effect
+function LocalStorageEffect(store) {
 
-	app.state = Object.create(null);
+	const LOCAL_STORAGE_KEY = "todo-mvc-mimosa";
 
-	for (const [key, value] of Object.entries(app)) {
-		if (params[key]) {
-			console.log("driver??", key);
-			params[key].write(value);
-			continue;
+	// @TODO: Action make sharedReplay!!!!
+	FETCH_TODOS(JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || []);
+
+	store.todos$.subscribe(todos => {
+		localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+	});
+}
+
+
+function RouteEffect(store) {
+
+	const location$ = Reducer(
+			location,
+			Observable.fromEvent(window, "popstate", true).mapTo(location),
+	);
+
+	const {SHOW_ALL, SHOW_ACTIVE, SHOW_COMPLETED} = SET_VISIBILITY_FILTER;
+
+	location$.subscribe(location => {
+		switch (location.hash) {
+			case "#/":
+				return SET_VISIBILITY_FILTER(SHOW_ALL);
+
+			case "#/active":
+				return SET_VISIBILITY_FILTER(SHOW_ACTIVE);
+
+			case "#/complete":
+				return SET_VISIBILITY_FILTER(SHOW_COMPLETED);
+
+			default:
+				return SET_VISIBILITY_FILTER(SHOW_ALL);
 		}
+	});
 
+	SET_VISIBILITY_FILTER.subscribe(type => {
+		switch (type) {
+			case SHOW_ALL:
+				location.hash = "#/";
+				return;
+
+			case SHOW_ACTIVE:
+				location.hash = "#/active";
+				return;
+
+			case SHOW_COMPLETED:
+				location.hash = "#/complete";
+				return;
+		}
+	});
+}
+
+
+function test(store, ...effects) {
+	store = store();
+
+	store.state = Object.create(null);
+
+	for (const [key, value] of Object.entries(store)) {
 		if (value instanceof Action) {
 			value.subscribe(console.warn.bind(null, key));
 			continue;
 		}
 
 		if (value instanceof Observable) {
+			value.subscribe(value => store.state[key] = value);
 			value.subscribe(console.log.bind(null, key));
-			value.subscribe(value => app.state[key] = value);
 		}
 	}
 
-	Object.freeze(app);
-	return callback => callback(app);
+	Object.freeze(store);
+
+	for (const effect of effects) {
+		effect(store);
+	}
+
+	return callback => callback(store);
 }
 
 
-const testApp = test(AppTodo, {
-	Location: makeLocationDriver(),
-	LocalStorage: makeLocalStorageDriver(),
-
-});
-
+const testApp = test(AppTodoStore, LocalStorageEffect, RouteEffect);
 
 testApp(app => {
 	window.app = app;
 
-	app.ADD_TODO({title: "hello"});
-	app.ADD_TODO({title: "world"});
-	app.ADD_TODO({title: "world"});
+	ADD_TODO({title: "hello"});
+	ADD_TODO({title: "world"});
+	ADD_TODO({title: "world"});
 
-	app.TOGGLE_ALL(true);
+	TOGGLE_ALL(true);
 
-	app.SET_VISIBILITY_FILTER(app.SET_VISIBILITY_FILTER.SHOW_ACTIVE);
+	SET_VISIBILITY_FILTER(SET_VISIBILITY_FILTER.SHOW_ACTIVE);
 });
-
-
 </script>
 </body>
 </html>

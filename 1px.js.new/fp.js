@@ -22,6 +22,11 @@ const mapCallback = (callback) => {
 
 const _ = () => {};
 
+_.noop = () => {};
+_.itself = _.always = (a) => () => a;
+
+
+/// Array
 _.map = (callback) => (a) => a.map(mapCallback(callback));
 _.filter = (callback) => (a) => a.filter(filterCallback(callback));
 _.remove = _.reject = (callback) => (a) => a.filter((...args) => !callback(...args));
@@ -33,12 +38,21 @@ _.prepend = (item) => (array) => [item, ...array];
 _.patch = (a, b) => _.map(item => item !== a ? item : ({...item, ...b}));
 _.patchAll = (a) => _.map(item => ({...item, ...a}));
 
+
+/// Object
+_.merge = (object) => (source) => ({...source, ...object});
+
+/// Common
+_.not = (callback) => (...args) => !callback(...args);
 _.is = (a) => (b) => Object.is(a, b);
 _.isnot = (a) => (b) => !Object.is(a, b);
 _.isString = (a) => typeof a === "string";
 _.isStringLike = (a) => typeof a === "string";
 _.isFunction = (a) => typeof a === "function";
-_.hasLength = (a) => a.length > 0;
+_.isArray = (a) => Array.isArray(a);
+_.hasLength = (a) => a.length && a.length > 0;
 
+
+/// String
 _.trim = (a) => a.trim();
 _.log = (...args) => console.log.bind(console, ...args);
