@@ -23,6 +23,7 @@ const mapCallback = (callback) => {
 const _ = () => {};
 
 _.noop = () => {};
+_.pipe = (...pipes) => (value) => pipes.reduce((f, g) => g(f), value);
 _.itself = _.always = (a) => () => a;
 
 
@@ -55,7 +56,15 @@ _.hasLength = (a) => a.length && a.length > 0;
 
 /// Util
 _.castArray = (a) => _.isArray(a) ? a : [a];
-
+_.with = _.alias = (...args) => (callback) => callback(...args);
+_.throw = (error) => () => { throw error; };
+_.cond = (pairs) => (...args) => {
+	for (const [predicate, transform] of pairs) {
+		if (predicate(...args)) {
+			return transform(...args);
+		}
+	}
+};
 
 /// String
 _.trim = (a) => String(a).trim();
@@ -66,3 +75,6 @@ _.log = (...args) => console.log.bind(console, ...args);
 _.localStorage = {};
 _.localStorage.getItem = (key, defaults) => JSON.parse(localStorage.getItem(key)) || defaults;
 _.localStorage.setItem = (key) => (value) => localStorage.setItem(key, JSON.stringify(value));
+
+
+_.alert = (...args) => window.alert(...args);

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+
+
+<script>
+function html() {}
+
+
+//language=HTML
+const render = html`
+	<template @is="app-todo" @store="TodoApp" @effects="LocalStorageEffect, RouteEffect">
+		<section class="main" hidden [hidden]="!todos$.length">
+			<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked$" (input)="TOGGLE_ALL(el.checked)">
+			<label for="toggle-all">Mark all as complete</label>
+			<ul class="todo-list">
+
+				<li *foreach="filteredTodos$ as todo" [class.completed]="todo.completed" [class.editing]="editingTodo === todo">
+					<div class="view">
+						<input class="toggle" type="checkbox" [checked]="todo.completed" (input)="PATCH_TODO_COMPLETED({todo, completed})">
+						<label (dblclick)="editingTodo = todo">{{todo.title}}</label>
+						<button class="destroy" (click)="REMOVE_TODO(todo)"></button>
+					</div>
+					<input class="edit"
+							[value]="todo.title if editingTodo !== todo"
+							(blur)="PATCH_TODO_TITLE({todo, title:el.value}) if editingTodo === todo; editingTodo = null"
+							(keydown.enter)="el.blur()"
+							(keydown.escape)="editingTodo = null"
+							.focus()="editingTodo === todo"
+					>
+				</li>
+			</ul>
+		</section>
+	</template>
+`;
+
+
+render(document.body);
+
+
+</script>
+</body>
+</html>
