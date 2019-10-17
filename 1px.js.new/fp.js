@@ -22,37 +22,45 @@ const mapCallback = (callback) => {
 
 const _ = () => {};
 
+/// Common
 _.noop = () => {};
 _.pipe = (...pipes) => (value) => pipes.reduce((f, g) => g(f), value);
-_.itself = _.always = (a) => () => a;
+_.itself = _.always = (value) => () => value;
 
-
-/// Array
-_.map = (callback) => (a) => a.map(mapCallback(callback));
-_.filter = (callback) => (a) => a.filter(filterCallback(callback));
-_.remove = _.reject = (callback) => (a) => a.filter((...args) => !callback(...args));
-_.removeItem = (item) => _.remove(_.is(item));
-_.every = (callback) => (a) => a.every(filterCallback(callback));
-_.some = (callback) => (a) => a.some(filterCallback(callback));
-_.append = _.push = (...items) => (array) => [...array, ...items];
-_.prepend = _.unshift = (...items) => (array) => [...items, ...array];
-_.patch = (a, b) => _.map(item => item !== a ? item : ({...item, ...b}));
-_.patchAll = (a) => _.map(item => ({...item, ...a}));
-_.slice = (start, end) => (a) => a.slice(start, end);
-
-/// Object
-_.merge = (object) => (source) => ({...source, ...object});
-
-/// Common
-_.not = (callback) => (...args) => !callback(...args);
 _.is = (a) => (b) => Object.is(a, b);
 _.isnot = (a) => (b) => !Object.is(a, b);
 _.isNumber = (a) => +a === a;
 _.isString = (a) => typeof a === "string";
+_.isStringLike = (a) => _.isString(a) || _.isNumber(a);
 _.isFunction = (a) => typeof a === "function";
 _.isArray = (a) => Array.isArray(a);
-_.isStringLike = (a) => _.isString(a) || _.isNumber(a);
 _.hasLength = (a) => a.length && a.length > 0;
+_.instanceof = (constructor) => (object) => (object instanceof constructor);
+
+
+/// Array
+_.slice = (start, end) => (a) => a.slice(start, end);
+
+_.map = (callback) => (a) => a.map(mapCallback(callback));
+_.filter = (callback) => (a) => a.filter(filterCallback(callback));
+_.every = (callback) => (a) => a.every(filterCallback(callback));
+_.some = (callback) => (a) => a.some(filterCallback(callback));
+
+_.remove = (callback) => _.filter(_.not(callback));
+_.removeItem = (item) => _.remove(_.is(item));
+_.append = _.push = (...items) => (array) => [...array, ...items];
+_.prepend = _.unshift = (...items) => (array) => [...items, ...array];
+_.patch = (target, object) => _.map(item => item !== target ? item : ({...item, ...object}));
+_.patchAll = (object) => _.map(item => ({...item, ...object}));
+
+
+/// Object
+_.merge = (object) => (source) => ({...source, ...object});
+
+
+/// Function
+_.not = (func) => (...args) => !func(...args);
+
 
 /// Util
 _.castArray = (a) => _.isArray(a) ? a : [a];
@@ -66,9 +74,14 @@ _.cond = (pairs) => (...args) => {
 	}
 };
 
+
 /// String
 _.trim = (a) => String(a).trim();
+
+
+/// Effect
 _.log = (...args) => console.log.bind(console, ...args);
+_.warn = (...args) => console.warn.bind(console, ...args);
 
 
 /// localStorage
@@ -78,3 +91,20 @@ _.localStorage.setItem = (key) => (value) => localStorage.setItem(key, JSON.stri
 
 
 _.alert = (...args) => window.alert(...args);
+
+
+/// DOM
+// _.dispatchEvent = (type) => (el) => (value) => el.dispatchEvent(new CustomEvent(type));
+
+_.rAF = window.requestAnimationFrame.bind(window);
+_.rAF.cancel = window.cancelAnimationFrame.bind(window);
+
+
+/// _.arrayToTable???
+// options = options.reduce((o, option) => {
+// 	o[option] = true;
+// 	return o;
+// }, Object.create(null));
+
+/// traverseDOM
+

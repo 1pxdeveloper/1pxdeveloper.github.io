@@ -424,7 +424,7 @@
 			
 			const observer = Object.setPrototypeOf({
 				complete() {
-					console.log('exhaustMap inner complete.');
+					// console.log('exhaustMap inner complete.');
 					
 					if (outer_completed) {
 						inner_subscription && inner_subscription.unsubscribe();
@@ -436,23 +436,23 @@
 			
 			return {
 				next(value) {
-					console.log("[exhaustMap] next", value, inner_subscription, observer);
+					// console.log("[exhaustMap] next", value, inner_subscription, observer);
 					
 					if (inner_subscription && !inner_subscription.closed) return;
-
+					
 					const inner_observable = callback(value);
 					inner_subscription = inner_observable.subscribe(observer);
 				},
 				
 				error(error) {
-					console.log("[exhaustMap] error");
+					// console.log("[exhaustMap] error");
 					
 					outer_completed = true;
 					_observer.error(error);
 				},
 				
 				complete() {
-					console.log("[exhaustMap] complete");
+					// console.log("[exhaustMap] complete");
 					
 					outer_completed = true;
 					
@@ -462,7 +462,7 @@
 				
 				finalize() {
 					
-					console.log("[exhaustMap] finalize");
+					// console.log("[exhaustMap] finalize");
 					
 					
 					inner_subscription && inner_subscription.unsubscribe();
@@ -574,8 +574,6 @@
 			promise.then(
 				res => {
 					observer.next(res);
-					
-					console.log("promise complete!!");
 					observer.complete();
 				},
 				
@@ -833,8 +831,15 @@
 			error: noop
 		}));
 		
+		let okay = false;
 		return observable.lift((observer) => ({
+			next(value) {
+				okay = true;
+				observer.next(value);
+			},
+			
 			error(error) {
+				if (okay) return observer.error(error);
 				const o$ = callback(error, caught);
 				o$.subscribe(observer);
 			}
@@ -895,16 +900,28 @@
 	}));
 	
 	
-	const validate = (callback, error) => (observable) => observable.lift(observer => ({
-		next(value) {
-			if (callback(value)) return observer.error(error);
-			observer.next(value);
+	const timeout = (timeout) => lift((observer, id) => ({
+		start() {
+			clearTimeout(id);
+			id = setTimeout(() => {
+				observer.error();/// @TODO: 여기에 뭘 보내야 할까??
+			}, timeout);
 		},
 		
-		error(error) {
-			observer.error(error);
+		next(value) {
+			observer.next(value);
+			
+			clearTimeout(id);
+			id = setTimeout(() => {
+				observer.error();/// @TODO: 여기에 뭘 보내야 할까??
+			}, timeout);
+		},
+		
+		finalize() {
+			clearTimeout(id);
 		}
 	}));
+	
 	
 	Object.assign(Observable.operators, {
 		map,
@@ -920,7 +937,7 @@
 		distinctUntilChanged,
 		delay,
 		duration,
-		validate
+		timeout
 	});
 	
 	for (const [key, value] of Object.entries(Observable.operators)) {
