@@ -12,6 +12,7 @@
 		"fp.js",
 		"observable.js",
 		"observable.operators.js",
+		"action.js",
 
 		"module.js",
 
