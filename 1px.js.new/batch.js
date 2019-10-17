@@ -11,9 +11,9 @@
 	
 	window.Observable = Observable;
 	
-	$module.bootstrap = ((bootstrap) => () => {
-		$compile(document.body, null);
-		bootstrap();
-	})($module.bootstrap);
+	// $module.bootstrap = ((bootstrap) => () => {
+	// 	$compile(document.body, null);
+	// 	bootstrap();
+	// })($module.bootstrap);
 	
 }());

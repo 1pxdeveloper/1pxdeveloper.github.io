@@ -1,3 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="1px.js.new/1px.js"></script>
+</head>
+<body>
+
+
+<script>
 (function() {
 	"use strict";
 
@@ -60,9 +71,37 @@
 	$module.factory = (name, callback) => modules$.next([name, callback]);
 	$module.require = (callback, resolve) => Observable.of(callback).pipe(inject).subscribe(resolve);
 
-	// Object.freeze($module);
+	Object.freeze($module);
 
 
 	exports.$module = $module;
 	window.$module = $module;
 })();
+
+
+
+$module.factory("B", () => "B");
+
+$module.factory("A", (B, C) => {
+	return "A";
+});
+
+$module.factory("C", () => "C");
+
+
+$module.require(function(A, B) {
+	console.log("A,B", A, B);
+	return "ABC";
+});
+
+
+$module.require(function(C, D) {
+	console.log("C", C, D);
+	return "CCC";
+});
+
+
+</script>
+
+</body>
+</html>

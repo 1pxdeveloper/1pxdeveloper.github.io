@@ -246,6 +246,7 @@ function TodoMVCStore() {
 		todos$,
 		filteredTodos$,
 		num_items_left$,
+		visibilityFilter$,
 		all_checked$
 	}
 }
@@ -318,13 +319,12 @@ function test(store, ...effects) {
 
 	for (const [key, value] of Object.entries(app)) {
 		if (value instanceof Action) {
-			value.subscribe(console.warn.bind(null, key));
 			continue;
 		}
 
 		if (value instanceof Observable) {
 			value.subscribe(value => state[key] = value);
-			value.subscribe(console.log.bind(null, key));
+			value.trace(key).subscribe();
 		}
 	}
 
@@ -348,8 +348,13 @@ testApp((app, state) => {
 	window.app = app;
 	window.state = state;
 
-	$module.bootstrap();
-	$compile(document.body, state);
+
+	ADD_TODO({title:"Hello"});
+	ADD_TODO({title:"World"});
+
+	TOGGLE_ALL(true);
+
+
 });
 </script>
 </body>

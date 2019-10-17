@@ -59,7 +59,14 @@ _.merge = (object) => (source) => ({...source, ...object});
 
 
 /// Function
+_.apply = (func, thisObj) => (args) => Function.prototype.apply.call(func, thisObj, args);
 _.not = (func) => (...args) => !func(...args);
+_.memoize1 = (func) => {
+	const cache = Object.create(null);
+	return (key, ...args) => {
+		return (cache[key] = key in cache ? cache[key] : func(key, ...args));
+	};
+};
 
 
 /// Util
