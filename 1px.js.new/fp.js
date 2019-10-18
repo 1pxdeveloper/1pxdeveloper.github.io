@@ -29,12 +29,14 @@ _.itself = _.always = (value) => () => value;
 
 _.is = (a) => (b) => Object.is(a, b);
 _.isnot = (a) => (b) => !Object.is(a, b);
-_.isNumber = (a) => +a === a;
-_.isString = (a) => typeof a === "string";
-_.isStringLike = (a) => _.isString(a) || _.isNumber(a);
-_.isFunction = (a) => typeof a === "function";
-_.isArray = (a) => Array.isArray(a);
-_.hasLength = (a) => a.length && a.length > 0;
+_.isUndefined = (value) => value === undefined;
+_.isNumber = (value) => +value === value;
+_.isBoolean = (value) => typeof value === "boolean";
+_.isString = (value) => typeof value === "string";
+_.isStringLike = (value) => _.isString(value) || _.isNumber(value);
+_.isFunction = (value) => typeof value === "function";
+_.isArray = (value) => Array.isArray(value);
+_.hasLength = (value) => value.length && value.length > 0;
 _.instanceof = (constructor) => (object) => (object instanceof constructor);
 
 
@@ -70,6 +72,8 @@ _.memoize1 = (func) => {
 
 
 /// Util
+_.exist = (value) => value;
+_.toType = (obj) => ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
 _.castArray = (a) => _.isArray(a) ? a : [a];
 _.with = _.alias = (...args) => (callback) => callback(...args);
 _.throw = (error) => () => { throw error; };
@@ -80,7 +84,7 @@ _.cond = (pairs) => (...args) => {
 		}
 	}
 };
-
+_.switch = (table) => (id) => table[id];
 
 /// String
 _.trim = (a) => String(a).trim();
@@ -89,6 +93,14 @@ _.trim = (a) => String(a).trim();
 /// Effect
 _.log = (...args) => console.log.bind(console, ...args);
 _.warn = (...args) => console.warn.bind(console, ...args);
+
+_.debug = {};
+_.debug.group = (...args) => {
+	console.group(...args);
+	return () => {
+		console.groupEnd();
+	}
+};
 
 
 /// localStorage
