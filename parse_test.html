@@ -9,8 +9,8 @@
 
 <h1>{{ title }}</h1>
 <h2>this is a: {{ a }}</h2>
-<h2>this is a+ "xyz": {{ a + "xyz" }}</h2>
-<h2>this is a * 10: {{ a * 10 }}</h2>
+<h2 [style.color]="a">this is a+ "xyz": {{ a + "xyz" }}</h2>
+<h2 [style.color]="color">this is a * 10: {{ a * 10 }}</h2>
 <h2>this is a > 2 ? "2a" : "3a": {{a }} {{ a > 2 ? "2a" : "3a" }}</h2>
 <h2>this {{ d.test(a) }} {{ d.x }}</h2>
 
@@ -27,7 +27,7 @@ const evaluate$$ = (function() {
 	const $evaluateRules = Object.create(null);
 
 	const evaluate = (token) => {
-		console.log(token.id, token.length, token);
+		// console.log(token.id, token.length, token);
 		return $evaluateRules[token.id][token.length].apply(token, token);
 	};
 
@@ -150,7 +150,7 @@ const evaluate$$ = (function() {
 	// evaluateRule("if");
 	// evaluateRule("let");
 
-	console.log("$evaluateRules", $evaluateRules);
+	// console.log("$evaluateRules", $evaluateRules);
 
 	return evaluate;
 
@@ -191,31 +191,129 @@ const {traverseDOM} = require();
 function $compile(el, data) {
 
 	const context = new Context(data);
+	let ret;
 
 	traverseDOM(el, (node) => {
-
 		switch (node.nodeType) {
 			case Node.ELEMENT_NODE:
-				if (node.tagName === "SCRIPT") return false;
-				if (node.tagName === "STYLE") return false;
-				console.log(node);
-				return _$compile_element_node(node, context);
+				console.group(node.nodeName, node);
+				ret = _$compile_element_node(node, context);
+				console.groupEnd();
+				return ret;
 
 			case Node.TEXT_NODE:
-				console.log(node);
+				// console.log(node);
 				return _$compile_text_node(node, context);
 		}
 	});
 }
 
 function _$compile_element_node(el, context) {
+	if (el.tagName === "SCRIPT") return false;
+	if (el.tagName === "STYLE") return false;
+
 	const attributes = Array.from(el.attributes);
+	const to = el;
+
+	for (const attr of attributes) {
+
+		// /// Custom Directives
+		// /// @TODO: custom-directive 등록할때 아래처럼 syntax를 등록하는건 어떨까?
+		// let customDefaultPrevent = false;
+		// $module.directive.require([attr.nodeName, directive => {
+		// 	if (typeof directive === "function") {
+		// 		let ret = directive(context, el, attr.nodeValue);
+		// 		customDefaultPrevent = ret === false;
+		// 	}
+		// }]);
+		// if (customDefaultPrevent) continue;
+
+
+		/// Basic Directives
+		if (templateSyntax(context, to, attr, "(", _event, ")")) continue;
+		if (templateSyntax(context, to, attr, "[attr.", _attr, "]")) continue;
+		// if (templateSyntax(context, to, attr, "[visible.", _visible2, "]")) continue;
+		if (templateSyntax(context, to, attr, "[visible", _visible, "]")) continue;
+		if (templateSyntax(context, to, attr, "[class.", _class, "]")) continue;
+		if (templateSyntax(context, to, attr, "[style.", _style, "]")) continue;
+		// if (templateSyntax(context, to, attr, "[show.", _transition, "]")) continue;
+		if (templateSyntax(context, to, attr, "[(", _twoway, ")]")) continue;
+		if (templateSyntax(context, to, attr, "[", _prop, "]")) continue;
+		// if (templateSyntax(context, to, attr, "$", _ref2, "")) continue;
+		// if (templateSyntax(context, to, attr, "#", _ref, "")) continue;
+		// if (templateSyntax(context, to, attr, ".", _call, ")")) continue;
+	}
 }
+
+
+const rAF$ = (callback) => (value) => new Observable(observer => {
+	return _.rAF(() => {
+		callback(value);
+		// observer.next(value); // @TODO: log용
+		observer.complete();
+	})
+});
+
+const renderPipeLine = (callback) => $ => $.distinctUntilChanged().switchMap(rAF$(callback));
+
+
+function templateSyntax(context, el, attr, start, callback, end) {
+	const {nodeName, nodeValue} = attr;
+	if (nodeName.startsWith(start) && nodeName.endsWith(end)) {
+		callback(context, el, nodeValue, nodeName.slice(start.length, -end.length));
+		// el.removeAttributeNode(attr); // @TODO: DEBUG mode
+		return true;
+	}
+}
+
+function _event(context, el, script, name) {
+
+}
+
+function _attr(context, el, script, name) {
+
+}
+
+function _visible(context, el, script, name) {
+
+}
+
+function _class(context, el, script, name) {
+
+}
+
+function _style(context, el, script, name) {
+	const [prop, unit = ""] = name.split(".", 2);
+
+	context(script).pipe(renderPipeLine(value => {
+		switch (unit) {
+			case "url":
+				value = "url('" + encodeURI(value) + "')";
+				break;
+
+			default:
+				value = value + unit;
+				break;
+		}
+
+		el.style[prop] = value;
+
+	})).trace("Style!").subscribe();
+}
+
+function _twoway(context, el, script, name) {
+
+}
+
+function _prop(context, el, script, name) {
+
+}
+
 
 function _$compile_text_node(node, context) {
 	let index = node.nodeValue.indexOf("{{");
 
-	while (index >= 0) {
+	while(index >= 0) {
 		node = node.splitText(index);
 		index = node.nodeValue.indexOf("}}");
 		if (index === -1) return;
@@ -251,14 +349,16 @@ function _nodeValue(node, value) {
 }
 
 
-
 /// -----------------------------------------------------------------------
 /// Test
 /// -----------------------------------------------------------------------
 
 
+const colors = ["red", "blue", "orange", "black", "gray"];
+
+
 let data = {};
-data.a = Observable.interval(1000).take(5);
+data.a = Observable.interval(1000).map(i => colors[i]).take(5);
 data.c = ["A", "B", "C", "D", "E"];
 
 data.d = {
@@ -266,7 +366,7 @@ data.d = {
 
 	test: function(abc) {
 		return "xxxxx" + this.x + abc;
-	},
+	}
 };
 
 
@@ -277,6 +377,11 @@ watch$$(data, "title");
 
 
 $compile(document.body, data);
+
+
+for (const c of colors) {
+	data.color = c;
+}
 
 
 </script>

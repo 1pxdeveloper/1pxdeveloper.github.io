@@ -36,6 +36,7 @@ _.isString = (value) => typeof value === "string";
 _.isStringLike = (value) => _.isString(value) || _.isNumber(value);
 _.isFunction = (value) => typeof value === "function";
 _.isArray = (value) => Array.isArray(value);
+_.isObject = (value) => Object(value) === value;
 _.hasLength = (value) => value.length && value.length > 0;
 _.instanceof = (constructor) => (object) => (object instanceof constructor);
 
@@ -58,16 +59,14 @@ _.patchAll = (object) => _.map(item => ({...item, ...object}));
 
 /// Object
 _.merge = (object) => (source) => ({...source, ...object});
-
+_.mapValues = (callback) => (object) => Object.fromEntries(Object.entries(object).map(([key, value]) => [key, mapCallback(callback)(value)]));
 
 /// Function
 _.apply = (func, thisObj) => (args) => Function.prototype.apply.call(func, thisObj, args);
 _.not = (func) => (...args) => !func(...args);
 _.memoize1 = (func) => {
 	const cache = Object.create(null);
-	return (key, ...args) => {
-		return (cache[key] = key in cache ? cache[key] : func(key, ...args));
-	};
+	return (key, ...args) => (cache[key] = key in cache ? cache[key] : func(key, ...args));
 };
 
 
@@ -77,6 +76,7 @@ _.toType = (obj) => ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCas
 _.castArray = (a) => _.isArray(a) ? a : [a];
 _.with = _.alias = (...args) => (callback) => callback(...args);
 _.throw = (error) => () => { throw error; };
+_.if = (cond, callback, elseCallback = _.itself) => (value) => cond(value) ? callback(value) : elseCallback(value);
 _.cond = (pairs) => (...args) => {
 	for (const [predicate, transform] of pairs) {
 		if (predicate(...args)) {
@@ -84,7 +84,8 @@ _.cond = (pairs) => (...args) => {
 		}
 	}
 };
-_.switch = (table) => (id) => table[id];
+_.switch = (table) => (id) => table[id]; /// @FIXME:....
+
 
 /// String
 _.trim = (a) => String(a).trim();
@@ -94,13 +95,34 @@ _.trim = (a) => String(a).trim();
 _.log = (...args) => console.log.bind(console, ...args);
 _.warn = (...args) => console.warn.bind(console, ...args);
 
-_.debug = {};
-_.debug.group = (...args) => {
-	console.group(...args);
-	return () => {
+
+(function() {
+	let $uuid = 0;
+	let stack = [];
+	let queue = [];
+	
+	_.debug = {};
+	
+	_.debug.group = (...args) => {
+		console.group(...args);
+		stack.push($uuid);
+		return $uuid++;
+	};
+	
+	_.debug.groupEnd = (uuid = ($uuid - 1)) => {
+		if (stack[stack.length - 1] !== uuid) {
+			queue.push(uuid);
+			stack.pop();
+			return;
+		}
+		
 		console.groupEnd();
+		for (const q of queue) {
+			console.groupEnd();
+		}
+		queue = [];
 	}
-};
+})();
 
 
 /// localStorage
@@ -115,8 +137,12 @@ _.alert = (...args) => window.alert(...args);
 /// DOM
 // _.dispatchEvent = (type) => (el) => (value) => el.dispatchEvent(new CustomEvent(type));
 
-_.rAF = window.requestAnimationFrame.bind(window);
-_.rAF.cancel = window.cancelAnimationFrame.bind(window);
+_.rAF = (callback) => {
+	const handle = window.requestAnimationFrame(callback);
+	return () => {
+		window.cancelAnimationFrame(handle);
+	}
+};
 
 
 /// _.arrayToTable???
