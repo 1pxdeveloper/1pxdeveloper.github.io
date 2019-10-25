@@ -12,8 +12,17 @@
 <h2 [style.color]="a">this is a+ "xyz": {{ a + "xyz" }}</h2>
 <h2 [style.color]="color">this is a * 10: {{ a * 10 }}</h2>
 <h2>this is a > 2 ? "2a" : "3a": {{a }} {{ a > 2 ? "2a" : "3a" }}</h2>
-<h2>this {{ d.test(a) }} {{ d.x }}</h2>
+<!--<h2>this {{ d.test(a) }} {{ d.x }}</h2>-->
+<h3>{{ [1,2,3] }}</h3>
+<h3>{{ [1,2,3].length }}</h3>
+<h3>{{ [1,2,3].join('|') }}</h3>
 
+
+<ui>
+	<li *foreach="rows as row"></li>
+</ui>
+
+<button (click)="click()">click</button>
 
 <script>
 const {Observable} = require("observable");
@@ -40,17 +49,16 @@ const evaluate$$ = (function() {
 
 	evaluateRule("(literal)", function() { return of(this.value) });
 
-	/// @TODO:///
-	evaluateRule("this", function() {
-		return this.thisObj;
-	});
+	evaluateRule("this", function() { return of(this.thisObj) });
 
+
+	/// Operators
 	const unary = (callback) => (a) => evaluate(a).map(callback);
 	const binary = (callback) => (a, b) => combine(evaluate(a), evaluate(b)).map(callback);
-	// const params = (callback) => (a, b) => combine(evaluate(a), evaluate(b)).pipe(map(callback));
+	const params = (array) => combine(...array.map(evaluate));
 
 	/// [1,2,3]
-	evaluateRule("[", (a) => combine(...a.map(evaluate)));
+	evaluateRule("[", params);
 
 	/// {foo: 123, bsr: 'abc'} @TODO:
 	evaluateRule("{", (a) => {
@@ -60,10 +68,10 @@ const evaluate$$ = (function() {
 		// return combine(...a.pipe(map(evaluate)).pipe(map(o);
 
 
-		return of(a.reduce((object, o) => {
-			object[o.key] = evaluate(o);
-			return object;
-		}, {}));
+		// return of(a.reduce((object, o) => {
+		// 	object[o.key] = evaluate(o);
+		// 	return object;
+		// }, {}));
 	});
 
 	evaluateRule("+", unary(a => +a));
@@ -111,12 +119,10 @@ const evaluate$$ = (function() {
 	evaluateRule(".", function(a, b) {
 		return evaluate(a)
 			.tap(object => {
-
-				console.warn("object", object);
-
-
 				this.object = object;
 				this.prop = b.value;
+
+				console.log(object, b.value)
 			})
 
 			.mergeMap(object => watch$$(object, b.value));
@@ -135,7 +141,7 @@ const evaluate$$ = (function() {
 
 	/// foo(bar, ...baz)
 	evaluateRule("(", function(a, b) {
-		return combine(evaluate(a), combine(...b.map(evaluate)))
+		return combine(evaluate(a), params(b))
 			.map(([func, args]) => {
 				if (typeof func !== "function") return;
 				return Function.prototype.apply.call(func, a.object, args);
@@ -165,8 +171,9 @@ function _makeString(strings) {
 }
 
 class Context {
-	constructor(thisObj) {
+	constructor(thisObj, locals) {
 		this.thisObj = thisObj;
+		this.locals = locals;
 
 		const f = (...args) => {
 			const root = tokenize(_makeString(...args));
@@ -179,6 +186,19 @@ class Context {
 		Object.setPrototypeOf(f, this);
 		return f;
 	}
+
+	disconnect() {
+		console.log("disconnect")
+	}
+
+	fork() {
+		console.log("fork");
+		return this;
+	}
+
+	fromEvent(el, type, useCapture = false) {
+		return Observable.fromEvent(el, type, useCapture);
+	}
 }
 
 
@@ -188,7 +208,7 @@ class Context {
 const {traverseDOM} = require();
 
 
-function $compile(el, data) {
+const $compile = (el) => (data) => {
 
 	const context = new Context(data);
 	let ret;
@@ -206,14 +226,43 @@ function $compile(el, data) {
 				return _$compile_text_node(node, context);
 		}
 	});
-}
+};
 
+
+/// -----------------------------------------------------------------------
+/// Compile Element
+/// -----------------------------------------------------------------------
 function _$compile_element_node(el, context) {
 	if (el.tagName === "SCRIPT") return false;
 	if (el.tagName === "STYLE") return false;
 
 	const attributes = Array.from(el.attributes);
 	const to = el;
+
+
+	const hasTemplateDirective = ["*foreach", "*if", "*else"].some(attrName => {
+		const attr = el.getAttributeNode(attrName);
+		if (!attr) return false;
+
+		console.log(attr, attr.nodeName, attrName);
+
+
+		$module.directive.require([attr.nodeName, function(directive) {
+
+
+			console.log("directive!!!!!!!!!!!", directive);
+
+			directive(context, el, attr.nodeValue, attr.nodeName)
+
+
+		}]);
+		return true;
+	});
+
+	if (hasTemplateDirective) {
+		return false;
+	}
+
 
 	for (const attr of attributes) {
 
@@ -245,18 +294,6 @@ function _$compile_element_node(el, context) {
 	}
 }
 
-
-const rAF$ = (callback) => (value) => new Observable(observer => {
-	return _.rAF(() => {
-		callback(value);
-		// observer.next(value); // @TODO: log용
-		observer.complete();
-	})
-});
-
-const renderPipeLine = (callback) => $ => $.distinctUntilChanged().switchMap(rAF$(callback));
-
-
 function templateSyntax(context, el, attr, start, callback, end) {
 	const {nodeName, nodeValue} = attr;
 	if (nodeName.startsWith(start) && nodeName.endsWith(end)) {
@@ -266,39 +303,49 @@ function templateSyntax(context, el, attr, start, callback, end) {
 	}
 }
 
-function _event(context, el, script, name) {
+const rAF$ = (value) => new Observable(observer => _.rAF(() => {
+	observer.next(value);
+	observer.complete();
+}));
 
-}
+const renderPipeLine = $ => $.distinctUntilChanged().switchMap(rAF$);
 
-function _attr(context, el, script, name) {
-
-}
 
 function _visible(context, el, script, name) {
 
 }
 
-function _class(context, el, script, name) {
+function _attr(context, el, script, attr) {
+	return context(script)
+		.pipe(renderPipeLine)
+		.tap(value => _.isStringLike(value) ? el.setAttribute(attr, value) : el.removeAttribute(attr))
+		.subscribe()
+}
 
+function _class(context, el, script, name) {
+	return context(script)
+		.pipe(renderPipeLine)
+		.tap(value => _.isStringLike(value) ? el.classList.add(name) : el.classList.remove(name))
+		.subscribe()
 }
 
 function _style(context, el, script, name) {
 	const [prop, unit = ""] = name.split(".", 2);
 
-	context(script).pipe(renderPipeLine(value => {
-		switch (unit) {
-			case "url":
-				value = "url('" + encodeURI(value) + "')";
-				break;
+	return context(script)
+		.pipe(renderPipeLine)
+		.map(value => {
+			switch (unit) {
+				case "url":
+					return "url('" + encodeURI(value) + "')";
 
-			default:
-				value = value + unit;
-				break;
-		}
-
-		el.style[prop] = value;
-
-	})).trace("Style!").subscribe();
+				default:
+					return value + unit;
+			}
+		})
+		.tap(value => el.style[prop] = value)
+		.trace("Style!")
+		.subscribe();
 }
 
 function _twoway(context, el, script, name) {
@@ -306,10 +353,59 @@ function _twoway(context, el, script, name) {
 }
 
 function _prop(context, el, script, name) {
+	return context(script)
+	// .pipe(renderPipeLine) // @TODO: hasOwnProperty가 없는데 HTMLElement가 가지고 있는 경우에는 renderPipe를 통해야함. ex) id, src 등...
+		.tap(value => el[name] = value)
+		.subscribe()
+}
 
+Event.pipes = {
+	prevent: $ => $.tap(e => e.preventDefault()),
+	stop: $ => $.tap(e => e.stopPropagation()),
+	capture: $ => $,
+	self: ($, element) => $.filter(e => e.target === element),
+	once: $ => $.take(1),
+	shift: $ => $.filter(e => e.shiftKey),
+	alt: $ => $.filter(e => e.altKey),
+	ctrl: $ => $.filter(e => e.ctrlKey),
+	meta: $ => $.filter(e => e.metaKey),
+	cmd: $ => $.filter(e => e.ctrlKey || e.metaKey)
+};
+
+function _event(context, el, script, value) {
+
+	let [type, ...options] = value.split(/\s*\|\s*/);
+	const useCapture = options.includes("capture");
+
+	/// @FIXME: Keyboard Event
+	const keys = [];
+	if (type.startsWith("keydown") || type.startsWith("keypress") || type.startsWith("keyup")) {
+		[type, ...keys] = type.split(".");
+	}
+
+	/// Normal Event
+	let event$ = context.fromEvent(el, type, useCapture);
+	if (keys.length) {
+		event$ = event$.filter(e => keys.includes(e.key.toLowerCase()))
+	}
+
+	/// Event Pipe
+	options.forEach(pipe => {
+		let handler = Event.pipes[pipe];
+		if (!handler) throw new Error(pipe + " is not registered event pipe.");
+		event$ = handler(event$, el);
+	});
+
+	/// Event Handler
+	return event$
+		.switchMap(event => context.fork({event, el})(script).take(1))
+		.subscribe()
 }
 
 
+/// -----------------------------------------------------------------------
+/// Text Node
+/// -----------------------------------------------------------------------
 function _$compile_text_node(node, context) {
 	let index = node.nodeValue.indexOf("{{");
 
@@ -321,16 +417,13 @@ function _$compile_text_node(node, context) {
 		let next = node.splitText(index + 2);
 		let script = node.nodeValue.slice(2, -2);
 		node.nodeValue = "";
-		context(script).subscribe(_nodeValue.bind(null, node));
+		context(script).pipe(renderPipeLine).subscribe(_nodeValue.bind(null, node));
 
 		node = next;
 		index = node.nodeValue.indexOf("{{");
 	}
 }
 
-/// -----------------------------------------------------------------------
-/// Render Values
-/// -----------------------------------------------------------------------
 function _nodeValue(node, value) {
 	/// HTML Element
 	if (node.__node__) {
@@ -354,34 +447,46 @@ function _nodeValue(node, value) {
 /// -----------------------------------------------------------------------
 
 
-const colors = ["red", "blue", "orange", "black", "gray"];
+$module.factory("App", function() {
 
 
-let data = {};
-data.a = Observable.interval(1000).map(i => colors[i]).take(5);
-data.c = ["A", "B", "C", "D", "E"];
+	return function App() {
+		const colors = ["red", "blue", "orange", "black", "gray"];
 
-data.d = {
-	x: 100,
+		this.a = Observable.interval(1000).map(i => colors[i]).take(5);
+		this.c = ["A", "B", "C", "D", "E"];
 
-	test: function(abc) {
-		return "xxxxx" + this.x + abc;
+		this.d = {
+			x: 100,
+
+			test: function(abc) {
+				return "xxxxx" + this.x + abc;
+			}
+		};
+
+		this.test = x => x * 10;
+		this.title = "Asdklfjasdlkfjaklsd";
+
+
+		this.rows = colors;
+
+		this.click = () => {
+			this.title = Math.random().toString(32).slice(2);
+		}
 	}
-};
 
 
-data.test = x => x * 10;
-
-data.title = "Asdklfjasdlkfjaklsd";
-watch$$(data, "title");
+});
 
 
-$compile(document.body, data);
+$module.require(function(App) {
 
 
-for (const c of colors) {
-	data.color = c;
-}
+	console.log("App", App);
+
+
+	$compile(document.body)(new App);
+});
 
 
 </script>

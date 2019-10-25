@@ -56,12 +56,13 @@
 	);
 	
 	const makeSubfactory = (module, postfix) => {
-		const factory = (name, callback) => $module.factory(name + postfix, callback);
+		const factory = (name, callback) => module.factory(name + postfix, callback);
 		factory.value = (name, value) => factory(name, () => value);
+		
 		factory.require = (callback, resolve) => {
 			callback = makeInjectable(callback);
-			callback.$inject.map(name => name + postfix);
-			Observable.of(callback).pipe(inject).subscribe(resolve);
+			callback.$inject = callback.$inject.map(name => name + postfix);
+			return module.require(callback, resolve);
 		};
 		
 		return factory;
@@ -74,6 +75,19 @@
 	
 	$module.directive = makeSubfactory($module, "Directive");
 	$module.pipe = makeSubfactory($module, "Pipe");
+	
+	
+	$module.directive.value("*test", "*value");
+	
+	
+	$module.directive.require(["*test", function(ab) {
+		
+		
+		console.log(ab);
+		
+		
+	}]);
+	
 	
 	exports.$module = $module;
 	window.$module = $module;

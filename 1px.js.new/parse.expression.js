@@ -101,7 +101,7 @@
 	};
 
 	function symbol(id) {
-		let s = $symbol_table[id] = $symbol_table[id] || Object.create($symbol_prototype);
+		const s = $symbol_table[id] = $symbol_table[id] || Object.create($symbol_prototype);
 		s.id = id;
 		return s;
 	}
