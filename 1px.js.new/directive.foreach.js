@@ -59,24 +59,36 @@
 	/// Default Template Directive
 	$module.directive("*foreach", function() {
 		
-		/// @FIXME: 고급스럽게 전환하기
-		function createRepeatNode(repeatNode, context, local) {
-			let node = repeatNode.cloneNode(true);
+		function createRepeatNode(context, repeatNode, value, index, ROW, INDEX) {
+			const local = Object.create(null);
+			ROW && (local[ROW] = value);
+			INDEX && (local[INDEX] = index);
+			
 			context = context.fork(local);
+			
+			const node = repeatNode.cloneNode(true);
 			$compile(node, context);
-			return {node, context, local}
+			return {node, context, local};
 		}
 		
-		
-		return function(context, el, script) {
-			console.group("*foreach", context, el, script);
+		return function(context, el, _script) {
+			console.group("*foreach", context, el, _script);
+			
+			
+			/// Parse [script] as [ROW], [INDEX]
+			const [script, ROW, INDEX] = _.go(_script,
+				_.rpartition(" as "),
+				_.spread((script, sep, rest) => ([script, ...rest.split(/\s*,\s*/, 2)])),
+				_.map(_.trim)
+			);
+			console.log("[script, ROW, INDEX]", script, ROW, INDEX);
 			
 			
 			/// Prepare Placeholder
 			const repeatNode = el.cloneNode(true);
 			repeatNode.removeAttribute("*foreach");
 			
-			const placeholder = document.createComment("foreach: " + script);
+			const placeholder = document.createComment("foreach: " + _script);
 			const placeholderEnd = document.createComment("endforeach");
 			el.before(placeholder);
 			el.replaceWith(placeholderEnd);
@@ -89,17 +101,11 @@
 			
 			context(script).subscribe(array => {
 				
-				let locals = array.slice();
-				
-				/// @FIXME: 고급스럽게 전환하기
-				array = array.map(v => v["@@entries"][0]);
-				
-				
 				/// LCS 알고리즘을 통해 삭제할 노드와 남길 노드를 분리한다.
-				let [d, e] = LCS(prevArray, array);
+				const [d, e] = LCS(prevArray, array);
 				
-				let fixed_container = [];
-				let values_for_reuse = [];
+				const fixed_container = [];
+				const values_for_reuse = [];
 				
 				prevArray.forEach((value, index) => {
 					if (d[index] === undefined) {
@@ -119,41 +125,33 @@
 				let placeholder = fixed_container[placeholder_index].node;
 				
 				container = array.map((value, index) => {
-					if (e[index] === undefined) {
-						let idx = values_for_reuse.indexOf(value);
-						let r = container[idx];
-						if (r) {
-							placeholder.before(r.node);
-							delete container[idx];
-						}
-						else {
-							r = createRepeatNode(repeatNode, context, locals[index]);
-							placeholder.before(r.node);
-							
-							/// @FIXME...
-							if (r.node.hasAttribute("css-transition")) {
-								requestAnimationFrame(function() {
-									requestAnimationFrame(function() {
-										let enter = r.node.getAttribute("css-transition") || "transition";
-										r.node.classList.add(enter + "-enter");
-									});
-								});
-							}
-						}
-						
+					if (e[index]) {
+						const r = fixed_container[++placeholder_index];
+						placeholder = r.node;
 						return r;
 					}
 					
-					let r = fixed_container[placeholder_index];
-					placeholder = fixed_container[++placeholder_index].node;
+					
+					let idx = values_for_reuse.indexOf(value);
+					let r = container[idx];
+					if (r) {
+						placeholder.before(r.node);
+						delete container[idx];
+					}
+					else {
+						r = createRepeatNode(context, repeatNode, value, index, ROW, INDEX);
+						placeholder.before(r.node);
+					}
+					
 					return r;
 				});
 				
 				prevArray = array.slice();
 			});
 			
-			
 			console.groupEnd();
+			
+			return false;
 		}
 	});
 	

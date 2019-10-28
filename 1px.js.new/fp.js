@@ -25,6 +25,7 @@ const _ = () => {};
 /// Common
 _.noop = () => {};
 _.pipe = (...pipes) => (value) => pipes.reduce((f, g) => g(f), value);
+_.go = (value, ...pipes) => _.pipe(...pipes)(value);
 _.itself = _.always = (value) => () => value;
 
 _.is = (a) => (b) => Object.is(a, b);
@@ -64,6 +65,7 @@ _.mapValues = (callback) => (object) => Object.fromEntries(Object.entries(object
 /// Function
 _.apply = (func, thisObj) => (args) => Function.prototype.apply.call(func, thisObj, args);
 _.not = (func) => (...args) => !func(...args);
+_.spread = (callback) => (array) => callback(...array);
 _.memoize1 = (func) => {
 	const cache = Object.create(null);
 	return (key, ...args) => (cache[key] = key in cache ? cache[key] : func(key, ...args));
@@ -85,11 +87,18 @@ _.cond = (pairs) => (...args) => {
 	}
 };
 _.switch = (table) => (id) => table[id]; /// @FIXME:....
-
+_.tap = (callback) => (value) => (callback(value), value);
 
 /// String
+_.capitalize = (string) => string.slice(0, 1).toUpperCase() + string.slice(1)
 _.trim = (a) => String(a).trim();
-
+_.split = (...args) => (string) => string.split(...args);
+_.splitAt = (index) => (string) => [string.slice(0, index), string.slice(index)];
+_.rpartition = (sep) => (string) => {
+	const lastIndex = string.lastIndexOf(sep);
+	if (lastIndex === -1) return [string, "", ""];
+	return [string.slice(0, lastIndex), string.slice(lastIndex, lastIndex + sep.length), string.slice(lastIndex + sep.length)];
+};
 
 /// Effect
 _.log = (...args) => console.log.bind(console, ...args);

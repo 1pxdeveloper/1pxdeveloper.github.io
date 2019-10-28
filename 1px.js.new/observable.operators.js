@@ -21,23 +21,30 @@
 	});
 	
 	const filterCallback = (callback) => {
+		if (Object(callback) !== callback) return _.is(callback);
 		if (typeof callback === "function") return callback;
-		return (o) => {
-			for (const [key, _callback] of Object.entries(callback)) {
-				if (_callback(o[key])) return true;
+		
+		return (object) => {
+			for (let [key, _callback] of Object.entries(callback)) {
+				if (typeof _callback !== "function") _callback = _.is(_callback);
+				if (_callback(object[key])) return true;
 			}
 			return false;
 		}
 	};
 	
 	const mapCallback = (callback) => {
+		if (Object(callback) !== callback) return callback;
 		if (typeof callback === "function") return callback;
-		return (o) => {
-			o = {...o};
-			for (const [key, _callback] of Object.entries(callback)) {
-				o[key] = _callback(o[key]);
+		
+		return (object) => {
+			object = {...object};
+			for (let [key, _callback] of Object.entries(callback)) {
+				if (typeof _callback !== "function") object[key] = _callback;
+				else object[key] = _callback(object[key]);
 			}
-			return o;
+			
+			return object;
 		}
 	};
 	
@@ -523,7 +530,7 @@
 	/// -------------------------------------------------------------------------------------------
 	Observable.defer = function(callback, thisObj, ...args) {
 		return new Observable(observer => {
-			return Observable.castAsync(callback.apply(thisObj, args)).subscribe(observer);
+			return Observable.castAsync(Function.prototype.apply.call(callback, thisObj, args)).subscribe(observer);
 		});
 	};
 	
@@ -891,30 +898,30 @@
 		}
 	}));
 	
-	const trace = (tag) => lift(observer => ({
+	const trace = (...tag) => lift(observer => ({
 		start() {
 			// console.group(tag);
 			// console.groupEnd();
 		},
 		
 		next(value) {
-			console.log(tag, value);
+			console.log(...tag, value);
 			observer.next(value);
 		},
 		
 		error(error) {
-			console.error(tag, error);
+			console.error(...tag, error);
 			observer.error(error);
-		},
-		
-		complete() {
-			console.log(tag, "completed!");
-			observer.complete();
-		},
-		
-		finalize() {
-			// console.groupEnd();
 		}
+		
+		// complete() {
+		// 	console.log(...tag, "completed!");
+		// 	observer.complete();
+		// },
+		
+		// finalize() {
+		// 	// console.groupEnd();
+		// }
 	}));
 	
 	
