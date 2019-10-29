@@ -178,23 +178,10 @@
 	
 	/// foo(bar, ...baz)
 	evaluateRule("(", function(a, b) {
-		
-		
-		evaluate(a).trace("func!!!!!!").subscribe()
-		params(b).trace("params!!!!!!!!!").subscribe()
-		
-		
+
 		return combine(evaluate(a), params(b))
 			.map(([func, args]) => {
-				console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@", func, a.object, args);
-				
-				
 				if (typeof func !== "function") return;
-				
-				
-				console.log(func, a.object, args);
-				
-				
 				return Function.prototype.apply.call(func, a.object, args);
 			});
 	});

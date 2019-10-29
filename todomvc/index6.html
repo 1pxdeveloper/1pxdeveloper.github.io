@@ -22,7 +22,7 @@
 		</header>
 
 		<!-- This section should be hidden by default and shown when there are todos -->
-		<section class="main" _hidden [hidden]="!todos$.length">
+		<section class="main" hidden [hidden]="!todos$.length">
 			<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked$" (input)="TOGGLE_ALL(el.checked)">
 			<label for="toggle-all">Mark all as complete</label>
 			<ul class="todo-list">
@@ -147,24 +147,51 @@ const Effect = function(...observables) {
 };
 
 /// Actions
-const FETCH_TODOS = new Action("FETCH_TODOS", $ => $.shareReplay(1));
+$module.factory("actions", function() {
 
-const ADD_TODO = new Action("ADD_TODO");
-const REMOVE_TODO = new Action("REMOVE_TODO");
-const TOGGLE_ALL = new Action("TOGGLE_ALL");
-const CLEAR_COMPLETED = new Action("CLEAR_COMPLETED");
+	const FETCH_TODOS = new Action("FETCH_TODOS", $ => $.shareReplay(1));
 
-const PATCH_TODO_TITLE = new Action("PATCH_TODO_TITLE");
-const PATCH_TODO_COMPLETED = new Action("PATCH_TODO_COMPLETED");
+	const ADD_TODO = new Action("ADD_TODO");
+	const REMOVE_TODO = new Action("REMOVE_TODO");
+	const TOGGLE_ALL = new Action("TOGGLE_ALL");
+	const CLEAR_COMPLETED = new Action("CLEAR_COMPLETED");
 
-const SET_VISIBILITY_FILTER = new Action("SET_VISIBILITY_FILTER");
-SET_VISIBILITY_FILTER.SHOW_ALL = "#/";
-SET_VISIBILITY_FILTER.SHOW_ACTIVE = "#/active";
-SET_VISIBILITY_FILTER.SHOW_COMPLETED = "#/completed";
+	const PATCH_TODO_TITLE = new Action("PATCH_TODO_TITLE");
+	const PATCH_TODO_COMPLETED = new Action("PATCH_TODO_COMPLETED");
+
+	const SET_VISIBILITY_FILTER = new Action("SET_VISIBILITY_FILTER", $ => $.shareReplay(1));
+	SET_VISIBILITY_FILTER.SHOW_ALL = "#/";
+	SET_VISIBILITY_FILTER.SHOW_ACTIVE = "#/active";
+	SET_VISIBILITY_FILTER.SHOW_COMPLETED = "#/completed";
+
+
+	return {
+		FETCH_TODOS,
+		ADD_TODO,
+		REMOVE_TODO,
+		TOGGLE_ALL,
+		CLEAR_COMPLETED,
+		PATCH_TODO_TITLE,
+		PATCH_TODO_COMPLETED,
+		SET_VISIBILITY_FILTER,
+	}
+});
 
 
 /// Store
-$module.factory("store", function() {
+$module.factory("store", function(actions) {
+
+	const {
+		FETCH_TODOS,
+		ADD_TODO,
+		REMOVE_TODO,
+		TOGGLE_ALL,
+		CLEAR_COMPLETED,
+		PATCH_TODO_TITLE,
+		PATCH_TODO_COMPLETED,
+		SET_VISIBILITY_FILTER,
+	} = actions;
+
 
 	///
 	const filterAll = (todo) => todo;
@@ -262,26 +289,32 @@ $module.factory("store", function() {
 });
 
 
-/// Effect
-$module.factory("LocalStorageEffect", function(store) {
+/// LocalStorage Effect
+$module.factory("LocalStorageEffect", function(actions, store) {
+
+	const {FETCH_TODOS} = actions;
 
 	const LOCAL_STORAGE_KEY = "todo-mvc-mimosa";
 
-	// @TODO: Action make sharedReplay!!!!
 	FETCH_TODOS(_.localStorage.getItem(LOCAL_STORAGE_KEY, []));
 
-	store.todos$.skip(1).trace("save Todos!!").subscribe(_.localStorage.setItem(LOCAL_STORAGE_KEY));
+	store.todos$
+			.skip(1)
+			.subscribe(_.localStorage.setItem(LOCAL_STORAGE_KEY));
 });
 
 
-$module.factory("RouteEffect", function(store) {
+/// Route Effect
+$module.factory("RouteEffect", function(actions) {
+
+	const {SET_VISIBILITY_FILTER} = actions;
+	const {SHOW_ALL, SHOW_ACTIVE, SHOW_COMPLETED} = SET_VISIBILITY_FILTER;
 
 	const location$ = Reducer(
 			location,
 			Observable.fromEvent(window, "popstate", true).mapTo(location)
 	);
 
-	const {SHOW_ALL, SHOW_ACTIVE, SHOW_COMPLETED} = SET_VISIBILITY_FILTER;
 
 	location$.subscribe(location => {
 		switch (location.hash) {
@@ -298,6 +331,7 @@ $module.factory("RouteEffect", function(store) {
 				return SET_VISIBILITY_FILTER(SHOW_ALL);
 		}
 	});
+
 
 	SET_VISIBILITY_FILTER.subscribe(type => {
 		switch (type) {
@@ -317,45 +351,11 @@ $module.factory("RouteEffect", function(store) {
 });
 
 
-// class TodoController {
-// 	constructor(store) {
-// 		this.editingTodo = null;
-// 	}
-// }
-//
-//
-// function test(store, ...effects) {
-// 	const app = store();
-// 	const state = Object.create(null);
-//
-// 	for (const [key, value] of Object.entries(app)) {
-// 		if (value instanceof Action) {
-// 			continue;
-// 		}
-//
-// 		if (value instanceof Observable) {
-// 			value.subscribe(value => state[key] = value);
-// 			value.trace(key).subscribe();
-// 		}
-// 	}
-//
-// 	Object.freeze(app);
-//
-// 	for (const effect of effects) {
-// 		effect(app);
-// 	}
-//
-// 	return callback => callback(app, state);
-// }
-
-
+/// @FIXME
 const {$compile} = require();
 
 $module.require(function(store, LocalStorageEffect, RouteEffect) {
 
-	console.log(store, LocalStorageEffect, RouteEffect);
-
-	window.app = store;
 	$compile(document.body, store);
 
 	console.timeEnd("start");

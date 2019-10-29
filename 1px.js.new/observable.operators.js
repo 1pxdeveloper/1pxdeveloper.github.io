@@ -355,7 +355,7 @@
 	};
 	
 	Observable.prototype.switchMap = function(callback) {
-		return this.lift(observer => {
+		return this.lift((observer, index = 0) => {
 			let completed = false;
 			let subscription;
 			const complete = () => completed && subscription.closed && observer.complete();
@@ -363,7 +363,7 @@
 			return {
 				next(value) {
 					if (subscription) subscription.unsubscribe();
-					const observable = callback(value);
+					const observable = callback(value, index++);
 					subscription = observable.subscribe(Object.setPrototypeOf({complete}, observer));
 				},
 				
