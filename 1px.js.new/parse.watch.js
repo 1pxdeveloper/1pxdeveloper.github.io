@@ -53,7 +53,7 @@
 		if (desc && desc.set && desc.set.observable$) {
 			return desc.set.observable$;
 		}
-		
+
 		let observable$ = null;
 		
 		return (observable$ = new Observable(observer => {
@@ -62,18 +62,16 @@
 				return desc.set.observable$.subscribe(observer);
 			}
 			
+			if (!desc && !Object.isExtensible(object)) {
+				observer.complete();
+				return;
+			}
+			
 			let subscription;
 			
 			let value = object[prop];
-			if (desc) {
-				if (desc.configurable === false) {
-					observer.next(value);
-					observer.complete();
-					return;
-				}
-			}
-			
-			if (value instanceof Observable) {
+
+			if (value instanceof Observable && typeof value !== "function") {
 				subscription = value.subscribe(observer);
 			}
 			else {
@@ -82,7 +80,6 @@
 					observer.next(value);
 				}
 			}
-			
 			
 			function set(newValue) {
 				if (Object.is(value, newValue)) {
@@ -95,7 +92,7 @@
 					subscription = null;
 				}
 				
-				if (value instanceof Observable) {
+				if (value instanceof Observable && typeof value !== "function") {
 					subscription = value.subscribe(observer);
 				}
 				else {
@@ -106,12 +103,16 @@
 			
 			set.observable$ = observable$;
 			
-			Object.defineProperty(object, prop, {
-				enumerable: true,
-				configurable: true,
-				get: () => value,
-				set: set
-			});
+			try {
+				Object.defineProperty(object, prop, {
+					enumerable: true,
+					configurable: true,
+					get: () => value,
+					set: set
+				});
+			} catch(e) {
+			
+			}
 			
 			return () => {
 				if (subscription) {
@@ -119,13 +120,18 @@
 					subscription = null;
 				}
 				
-				if (desc && "value" in desc) {
-					desc.value = value;
-					Object.defineProperty(object, prop, desc);
-				}
-				else {
-					delete object[prop];
-					object[prop] = value;
+				try {
+					if (desc && "value" in desc) {
+						desc.value = value;
+						Object.defineProperty(object, prop, desc);
+					}
+					else {
+						delete object[prop];
+						object[prop] = value;
+					}
+				} catch(e) {
+				
+				
 				}
 			}
 			

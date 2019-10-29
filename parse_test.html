@@ -19,146 +19,18 @@
 
 
 <ui>
-	<li *foreach="rows as row, index" [style.color]="row">#{{ index }} - {{ row }}</li>
+	<li *foreach="rows$ as row, index" [style.color]="row" (click)="ADD_TODO(index)">#{{ index }} - {{ row }}</li>
 </ui>
 
 <button (click)="click()">click</button>
 
 <script>
-const {Observable} = require("observable");
-const {tokenize, watch$$} = require("parse");
-
-const {combine, of} = Observable;
-
-const evaluate$$ = (function() {
-
-	const $evaluateRules = Object.create(null);
-
-	const evaluate = (token) => {
-		// console.log(token.id, token.length, token);
-		return $evaluateRules[token.id][token.length].apply(token, token);
-	};
-
-	/// Operators
-	const unary = (callback) => (a) => evaluate(a).map(callback);
-	const binary = (callback) => (a, b) => combine(evaluate(a), evaluate(b)).map(callback);
-	const params = (array) => combine(...array.map(evaluate));
-
-
-	/// Rules
-	const evaluateRule = (id, callback) => {
-		$evaluateRules[id] = $evaluateRules[id] || Object.create(null);
-		$evaluateRules[id][callback.length] = callback;
-	};
-
-	evaluateRule("(end)", () => of(undefined));
-
-	evaluateRule("(literal)", function() { return of(this.value) });
-
-	evaluateRule("this", function() { return of(this.context.thisObj) });
-
-	/// [1,2,3]
-	evaluateRule("[", params);
-
-	/// {foo: 123, bsr: 'abc'} @TODO:
-	evaluateRule("{", (a) => {
-
-		console.log(a);
-
-		// return combine(...a.pipe(map(evaluate)).pipe(map(o);
-
-
-		// return of(a.reduce((object, o) => {
-		// 	object[o.key] = evaluate(o);
-		// 	return object;
-		// }, {}));
-	});
-
-	evaluateRule("+", unary(a => +a));
-	evaluateRule("-", unary(a => -a));
-	evaluateRule("!", unary(a => !a));
-
-	evaluateRule("+", binary(([a, b]) => a + b));
-	evaluateRule("-", binary(([a, b]) => a - b));
-	evaluateRule("*", binary(([a, b]) => a * b));
-	evaluateRule("/", binary(([a, b]) => a / b));
-	evaluateRule("%", binary(([a, b]) => a % b));
-
-	evaluateRule("&&", binary(([a, b]) => a && b));
-	evaluateRule("||", binary(([a, b]) => a || b));
-	evaluateRule("===", binary(([a, b]) => a === b));
-	evaluateRule("!==", binary(([a, b]) => a !== b));
-	evaluateRule("==", binary(([a, b]) => a == b));
-	evaluateRule("!=", binary(([a, b]) => a != b));
-	evaluateRule("<", binary(([a, b]) => a < b));
-	evaluateRule("<=", binary(([a, b]) => a <= b));
-	evaluateRule(">", binary(([a, b]) => a > b));
-	evaluateRule(">=", binary(([a, b]) => a >= b));
-	evaluateRule(";", binary(([a, b]) => b));
-
-	evaluateRule("?", (a, b, c) => evaluate(a).switchMap(bool => bool ? evaluate(b) : evaluate(c)));
-
-
-	/// foo
-	evaluateRule("(name)", function() {
-		const scope = this.context.scope;
-		const value = watch$$(scope, this.value);
-
-		// @TODO:...
-		this.object = scope;
-		this.prop = this.value;
-
-		return value;
-	});
-
-
-	/// foo.bar
-	evaluateRule(".", function(a, b) {
-		return evaluate(a)
-			.tap(object => {
-				this.object = object;
-				this.prop = b.value;
-			})
-			.mergeMap(object => watch$$(object, b.value));
-	});
-
-	/// foo[bar]
-	evaluateRule("[", function(a, b) {
-		return combine(evaluate(a), evaluate(b))
-			.tap(([object, prop]) => {
-				this.object = object;
-				this.prop = prop;
-			})
-			.mergeMap(([object, prop]) => watch$$(object, prop));
-	});
-
-	/// foo(bar, ...baz)
-	evaluateRule("(", function(a, b) {
-		return combine(evaluate(a), params(b))
-			.map(([func, args]) => {
-				if (typeof func !== "function") return;
-				return Function.prototype.apply.call(func, a.object, args);
-			});
-	});
-
-
-	// evaluateRule("=");
-	// evaluateRule("|");
-	// evaluateRule("=>");
-	// evaluateRule("as");
-	// evaluateRule("if");
-	// evaluateRule("let");
-
-	// console.log("$evaluateRules", $evaluateRules);
-
-	return evaluate;
-
-}());
 
 
 /// -----------------------------------------------------------------------
 /// Test
 /// -----------------------------------------------------------------------
+const {Action} = require();
 const {$compile} = require();
 
 $module.factory("App", function() {
@@ -183,11 +55,23 @@ $module.factory("App", function() {
 
 
 		this.rows = colors.slice();
+		this.rows$ = Observable.of(this.rows);
 
 		this.click = () => {
 			this.title = Math.random().toString(32).slice(2);
 			this.rows.sort(() => Math.random() - 0.5);
 		}
+
+		this.test = (index) => {
+			this.title = index;
+		}
+
+		this.ADD_TODO = new Action("ADD_TODO");
+
+		console.log(typeof this.ADD_TODO);
+
+
+		this.ADD_TODO.subscribe(index => this.title = index);
 	}
 
 

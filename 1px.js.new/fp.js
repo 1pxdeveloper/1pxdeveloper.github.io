@@ -24,6 +24,7 @@ const _ = () => {};
 
 /// Common
 _.noop = () => {};
+_.identity = (value) => value;
 _.pipe = (...pipes) => (value) => pipes.reduce((f, g) => g(f), value);
 _.go = (value, ...pipes) => _.pipe(...pipes)(value);
 _.itself = _.always = (value) => () => value;
@@ -31,6 +32,8 @@ _.itself = _.always = (value) => () => value;
 _.is = (a) => (b) => Object.is(a, b);
 _.isnot = (a) => (b) => !Object.is(a, b);
 _.isUndefined = (value) => value === undefined;
+_.isTrue = (value) => value === true;
+_.isFalse = (value) => value === false;
 _.isNumber = (value) => +value === value;
 _.isBoolean = (value) => typeof value === "boolean";
 _.isString = (value) => typeof value === "string";
@@ -88,6 +91,8 @@ _.cond = (pairs) => (...args) => {
 };
 _.switch = (table) => (id) => table[id]; /// @FIXME:....
 _.tap = (callback) => (value) => (callback(value), value);
+_.kindOf = (...callbacks) => (value) => callbacks.map(callback => callback(value) ? value : undefined);
+
 
 /// String
 _.capitalize = (string) => string.slice(0, 1).toUpperCase() + string.slice(1)

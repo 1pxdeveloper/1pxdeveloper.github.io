@@ -1,8 +1,8 @@
 (function() {
 	"use strict";
 	
-	const {Subject} = require("./observable");
-	const {$module} = require("./1px.module");
+	const {$module} = require("./module");
+	const {Context} = require("./parse.evaluate");
 	
 	
 	/// -----------------------------------------------------------------------
@@ -38,41 +38,8 @@
 	
 	
 	/// -----------------------------------------------------------------------
-	/// Context
+	/// Compile
 	/// -----------------------------------------------------------------------
-	function _makeString(strings) {
-		return Object(strings) === strings ? String.raw.apply(String, arguments) : String(strings);
-	}
-	
-	class Context {
-		constructor(thisObj, scope = thisObj) {
-			this.thisObj = thisObj;
-			this.scope = scope;
-			this._disconnect$ = new Subject();
-			
-			const f = (...args) => {
-				const root = tokenize(_makeString(...args));
-				for (const token of root.tokens) { token.context = this }
-				return evaluate$$(root).takeUntil(this._disconnect$);
-			};
-			
-			Object.setPrototypeOf(f, this);
-			return f;
-		}
-		
-		disconnect() {
-			this._disconnect$.complete();
-		}
-		
-		fork(locals) {
-			return new Context(this.thisObj, Object.setPrototypeOf(locals, this.scope));
-		}
-		
-		fromEvent(el, type, useCapture = false) {
-			return Observable.fromEvent(el, type, useCapture);
-		}
-	}
-	
 	const $compile = (el, context) => {
 		
 		if (!(context instanceof Context)) {
@@ -82,9 +49,9 @@
 		traverseDOM(el, (node) => {
 			switch (node.nodeType) {
 				case Node.ELEMENT_NODE:
-					console.group(node.nodeName, node);
+					// console.group(node.nodeName, node);
 					const ret = _$compile_element_node(node, context);
-					console.groupEnd();
+					// console.groupEnd();
 					return ret;
 				
 				case Node.TEXT_NODE:
@@ -110,12 +77,10 @@
 			const attr = el.getAttributeNode(attrName);
 			if (!attr) return false;
 			
-			console.log(attr, attr.nodeName, attrName);
-			
 			$module.directive.require([attr.nodeName, (directive) => {
-				console.log("directive!!!!!!!!!!!", directive);
 				directive(context, el, attr.nodeValue, attr.nodeName)
 			}]);
+			
 			return true;
 		});
 		
@@ -184,7 +149,7 @@
 	function _class(context, el, script, name) {
 		return context(script)
 			.pipe(renderPipeLine)
-			.tap(value => _.isStringLike(value) ? el.classList.add(name) : el.classList.remove(name))
+			.tap(value => value ? el.classList.add(name) : el.classList.remove(name))
 			.subscribe()
 	}
 	
@@ -237,7 +202,7 @@
 		const useCapture = options.includes("capture");
 		
 		/// @FIXME: Keyboard Event
-		const keys = [];
+		let keys = [];
 		if (type.startsWith("keydown") || type.startsWith("keypress") || type.startsWith("keyup")) {
 			[type, ...keys] = type.split(".");
 		}
@@ -257,7 +222,9 @@
 		
 		/// Event Handler
 		return event$
-			.switchMap(event => context.fork({event, el})(script).take(1))
+			.trace("event", type)
+			.switchMap(event => context.fork({event, el})(script))
+			.trace("event", "result")
 			.subscribe()
 	}
 	
