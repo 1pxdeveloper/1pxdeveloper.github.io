@@ -1,94 +1,86 @@
 (function() {
 	"use strict";
-	
-	const {ReplaySubject} = require("./observable");
-	
+
+	const {Subject, ReplaySubject} = require("./observable");
+
 	const modules$ = new ReplaySubject();
-	
+	const bootStrap$ = new Subject();
+
 	const makeInjectable = (callback) => {
 		if (_.isArray(callback)) {
 			const array = callback;
 			callback = array[array.length - 1];
 			callback.$inject = array.slice(0, -1);
 		}
-		
+
 		if (!_.isFunction(callback)) {
 			throw TypeError("factory must be array or function.");
 		}
-		
+
 		if (!callback.$inject) {
 			const s = callback.toString();
 			callback.$inject = s.slice(s.indexOf("(") + 1, s.indexOf(")")).split(/\s*,\s*/).filter(_.exist);
 		}
-		
+
 		return callback;
 	};
-	
-	
+
+
 	const inject = callback$ => callback$
-		
+
 		.map(makeInjectable)
-		
+
 		.mergeMap(callback => Observable.combine(Observable.of(callback), Observable.combine(...callback.$inject.map(get))))
-		
+
 		.map(([callback, args]) => _.apply(callback)(args));
-	
-	
+
+
 	const get = _.memoize1((name) => modules$
-		
+
 		.filter(pair => pair[0] === name)
-		
+
 		.map(([name, callback]) => callback)
-		
-		
+
+
 		.tap(() => console.group("get", name))
-		
+
 		.pipe(inject)
-		
+
 		// .timeout(1000)
-		
+
 		// .catch(() => ...)
-		
+
 		.tap(() => console.groupEnd())
-		
-		
+
+
 		.shareReplay(1)
 	);
-	
+
 	const makeSubfactory = (module, postfix) => {
 		const factory = (name, callback) => module.factory(name + postfix, callback);
 		factory.value = (name, value) => factory(name, () => value);
-		
+
 		factory.require = (callback, resolve) => {
 			callback = makeInjectable(callback);
 			callback.$inject = callback.$inject.map(name => name + postfix);
 			return module.require(callback, resolve);
 		};
-		
+
 		return factory;
 	};
-	
+
 	const $module = {};
 	$module.factory = (name, callback) => modules$.next([name, callback]);
 	$module.value = (name, value) => $module.factory(name, () => value);
-	$module.require = (callback, resolve) => void Observable.of(callback).pipe(inject).subscribe(resolve);
-	
+	$module.require = (callback, resolve) => Observable.of(callback).delayWhen(() => bootStrap$).pipe(inject).subscribe(resolve);
+
 	$module.directive = makeSubfactory($module, "Directive");
 	$module.pipe = makeSubfactory($module, "Pipe");
-	
-	
-	$module.directive.value("*test", "*value");
-	
-	
-	$module.directive.require(["*test", function(ab) {
-		
-		
-		console.log(ab);
-		
-		
-	}]);
-	
-	
+
+	$module.bootstrap = () => bootStrap$.next();
+
 	exports.$module = $module;
+	exports.makeInjectable = makeInjectable;
+
 	window.$module = $module;
 })();

@@ -19,7 +19,6 @@
 		"parse.expression.js",
 		"parse.watch.js",
 		"parse.evaluate.js",
-		"parse.context.js",
 
 		"compile.js",
 

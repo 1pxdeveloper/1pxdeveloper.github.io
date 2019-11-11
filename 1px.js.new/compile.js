@@ -16,6 +16,9 @@
 		while (queue.length) {
 			node = queue.shift();
 
+			if (!node) continue;
+
+
 			// Option: Closing,
 			if (typeof node === "function") {
 				node();
@@ -47,6 +50,8 @@
 		}
 
 		traverseDOM(el, (node) => {
+			if (!node) return;
+
 			switch (node.nodeType) {
 				case Node.ELEMENT_NODE:
 					// console.group(node.nodeName, node);
@@ -65,13 +70,18 @@
 	/// -----------------------------------------------------------------------
 	/// Compile Element
 	/// -----------------------------------------------------------------------
+	const localSVG = {};
+
 	function _$compile_element_node(el, context) {
 		if (el.tagName === "SCRIPT") return false;
 		if (el.tagName === "STYLE") return false;
 
+
 		const attributes = Array.from(el.attributes);
 		const to = el;
 
+
+		let ret;
 
 		const hasTemplateDirective = ["*foreach", "*if", "*else"].some(attrName => {
 			const attr = el.getAttributeNode(attrName);
@@ -87,6 +97,30 @@
 		if (hasTemplateDirective) {
 			return false;
 		}
+
+
+		/// @TODO: make Directive Hook
+		if (el.tagName.toLowerCase() === "svg") {
+			const svg = el;
+
+			let src = svg.getAttributeNode("src");
+			if (src) {
+				if (localSVG[src.nodeValue]) {
+					svg.replaceWith(localSVG[src.nodeValue]);
+				}
+				else {
+					fetch(src.nodeValue).then(res => res.text()).then(res => {
+
+						let template = document.createElement("template");
+						template.innerHTML = res;
+						localSVG[src.nodeValue] = template.content;
+
+						svg.replaceWith(localSVG[src.nodeValue]);
+					});
+				}
+			}
+		}
+
 
 		for (const attr of attributes) {
 
@@ -112,7 +146,7 @@
 			// if (templateSyntax(context, to, attr, "[show.", _transition, "]")) continue;
 			if (templateSyntax(context, to, attr, "[(", _twoway, ")]")) continue;
 			if (templateSyntax(context, to, attr, "[", _prop, "]")) continue;
-			// if (templateSyntax(context, to, attr, "$", _ref2, "")) continue;
+			if (templateSyntax(context, to, attr, "$", _ref2, "")) continue;
 			// if (templateSyntax(context, to, attr, "#", _ref, "")) continue;
 			// if (templateSyntax(context, to, attr, ".", _call, ")")) continue;
 		}
@@ -121,7 +155,7 @@
 	function templateSyntax(context, el, attr, start, callback, end) {
 		const {nodeName, nodeValue} = attr;
 		if (nodeName.startsWith(start) && nodeName.endsWith(end)) {
-			callback(context, el, nodeValue, nodeName.slice(start.length, -end.length));
+			callback(context, el, nodeValue, nodeName.slice(start.length, -end.length || undefined));
 			// el.removeAttributeNode(attr); // @TODO: DEBUG mode
 			return true;
 		}
@@ -145,7 +179,10 @@
 
 
 	function _visible(context, el, script, name) {
-
+		return context(script)
+		// .pipe(renderPipeLine) // @TODO: hasOwnProperty가 없는데 HTMLElement가 가지고 있는 경우에는 renderPipe를 통해야함. ex) id, src 등...
+			.tap(value => el["hidden"] = !value)
+			.subscribe()
 	}
 
 	function _attr(context, el, script, attr) {
@@ -189,7 +226,11 @@
 		return context(script)
 		// .pipe(renderPipeLine) // @TODO: hasOwnProperty가 없는데 HTMLElement가 가지고 있는 경우에는 renderPipe를 통해야함. ex) id, src 등...
 			.tap(value => el[name] = value)
-			.subscribe()
+			.subscribe();
+	}
+
+	function _ref2(context, el, script, name) {
+		context.thisObj["$" + name] = el;
 	}
 
 	Event.pipes = {
@@ -258,6 +299,7 @@
 	}
 
 	function _nodeValue(node, value) {
+
 		/// HTML Element
 		if (node.__node__) {
 			for (const n of node.__node__) n.remove();
