@@ -41,16 +41,18 @@
 		.map(([name, callback]) => callback)
 		
 		
-		.tap(() => console.group("get", name))
+		.tap(() => console.group("import", name))
 		
 		.pipe(inject)
 		
-		// .timeout(1000)
-		
-		// .catch(() => ...)
+		.timeoutFirstOnly(1000)
+
+		.catch(() => {
+			console.warn(name + " is not loaded.");
+			return Observable.of();
+		})
 		
 		.tap(() => console.groupEnd())
-		
 		
 		.shareReplay(1)
 	);
@@ -71,24 +73,13 @@
 	const $module = {};
 	$module.factory = (name, callback) => modules$.next([name, callback]);
 	$module.value = (name, value) => $module.factory(name, () => value);
-	$module.require = (callback, resolve) => void Observable.of(callback).pipe(inject).subscribe(resolve);
+	$module.require = (callback, resolve) => Observable.of(callback).pipe(inject).subscribe(resolve);
 	
 	$module.directive = makeSubfactory($module, "Directive");
 	$module.pipe = makeSubfactory($module, "Pipe");
-	
-	
-	$module.directive.value("*test", "*value");
-	
-	
-	$module.directive.require(["*test", function(ab) {
-		
-		
-		console.log(ab);
-		
-		
-	}]);
-	
-	
+
+	exports.makeInjectable = makeInjectable;
 	exports.$module = $module;
+	
 	window.$module = $module;
 })();
