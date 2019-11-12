@@ -19,7 +19,11 @@
 
 
 <ui>
-	<li *foreach="rows$ as row, index" [style.color]="row" (click)="ADD_TODO(index)">#{{ index }} - {{ row }}</li>
+	<li *foreach="rows$ as row, index" [style.color]="row" (click)="ADD_TODO(index)">
+		#{{ index }} - {{ row }}
+
+		<div *foreach="rows$ as row2">{{ row2 }}</div>
+	</li>
 </ui>
 
 <button (click)="click()">click</button>

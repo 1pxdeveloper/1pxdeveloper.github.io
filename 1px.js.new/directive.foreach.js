@@ -62,14 +62,17 @@
 			context = context.fork(local);
 
 			const node = repeatNode.cloneNode(true);
-			$compile(node, context);
+
+
+			/// @FIXME:..
+			Promise.resolve().then(() => {
+				$compile(node, context);
+			});
+
 			return {node, context, local};
 		}
 
 		return function(context, el, _script) {
-			console.group("*foreach", context, el, _script);
-
-
 			/// Parse [script] as [ROW], [INDEX]
 			const [script, ROW, INDEX] = _.go(
 				_script,
@@ -77,8 +80,6 @@
 				_.spread((script, sep, rest) => ([script, ...rest.split(",", 2)])),
 				_.map(_.trim)
 			);
-			console.log("[script, ROW, INDEX]", script, ROW, INDEX);
-
 
 			/// Prepare Placeholder
 			const repeatNode = el.cloneNode(true);
@@ -96,6 +97,7 @@
 
 
 			context(script)
+				.filter(_.isArrayLike)
 				.map(array => Array.from(array))
 				.subscribe(array => {
 
@@ -115,9 +117,6 @@
 					});
 					nochanged.push({node: placeholderEnd});
 					placeholder = nochanged[0].node;
-
-					console.log("removed, nochanged, e", removed, nochanged, e);
-
 
 					container = array.map((value, index) => {
 						/// 변화없음.

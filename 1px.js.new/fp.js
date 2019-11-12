@@ -40,6 +40,11 @@ _.isString = (value) => typeof value === "string";
 _.isStringLike = (value) => _.isString(value) || _.isNumber(value);
 _.isFunction = (value) => typeof value === "function";
 _.isArray = (value) => Array.isArray(value);
+_.isArrayLike = (value) => {
+	const type = typeof value;
+	return "array" === type || "object" === type && "number" === typeof value.length;
+};
+
 _.isObject = (value) => Object(value) === value;
 _.hasLength = (value) => value.length && value.length > 0;
 _.instanceof = (constructor) => (object) => (object instanceof constructor);
@@ -60,6 +65,7 @@ _.prepend = _.unshift = (...items) => (array) => [...items, ...array];
 _.patch = (target, object) => _.map(item => item !== target ? item : ({...item, ...object}));
 _.patchAll = (object) => _.map(item => ({...item, ...object}));
 
+_.sort = (callback) => (array) => (array => (array.sort(callback), array))(array.slice());
 
 /// Object
 _.merge = (object) => (source) => ({...source, ...object});
@@ -114,22 +120,22 @@ _.warn = (...args) => console.warn.bind(console, ...args);
 	let $uuid = 0;
 	let stack = [];
 	let queue = [];
-	
+
 	_.debug = {};
-	
+
 	_.debug.group = (...args) => {
 		console.group(...args);
 		stack.push($uuid);
 		return $uuid++;
 	};
-	
+
 	_.debug.groupEnd = (uuid = ($uuid - 1)) => {
 		if (stack[stack.length - 1] !== uuid) {
 			queue.push(uuid);
 			stack.pop();
 			return;
 		}
-		
+
 		console.groupEnd();
 		for (const q of queue) {
 			console.groupEnd();
