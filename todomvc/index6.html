@@ -173,7 +173,7 @@ $module.factory("actions", function() {
 		CLEAR_COMPLETED,
 		PATCH_TODO_TITLE,
 		PATCH_TODO_COMPLETED,
-		SET_VISIBILITY_FILTER,
+		SET_VISIBILITY_FILTER
 	}
 });
 
@@ -189,7 +189,7 @@ $module.factory("store", function(actions) {
 		CLEAR_COMPLETED,
 		PATCH_TODO_TITLE,
 		PATCH_TODO_COMPLETED,
-		SET_VISIBILITY_FILTER,
+		SET_VISIBILITY_FILTER
 	} = actions;
 
 
@@ -360,6 +360,8 @@ $module.require(function(store, LocalStorageEffect, RouteEffect) {
 
 	console.timeEnd("start");
 });
+
+
 </script>
 </body>
 </html>
