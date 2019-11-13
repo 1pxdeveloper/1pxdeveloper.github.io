@@ -71,23 +71,17 @@
 	/// Symbol
 	const $symbol_table = {};
 
-	let $symbol_prototype = {
+	const $symbol_prototype = {
 		length: 0,
 
 		lbp: 0,
 		nbp: 0,
 
-		error(err) {
-			throw SyntaxError($script + " " + err);
-		},
+		error(err) { throw SyntaxError($script + " " + err) },
 
-		nud() {
-			throw SyntaxError("Unexpected token " + this.id);
-		},
+		nud() { throw SyntaxError("Unexpected token " + this.id) },
 
-		led() {
-			throw SyntaxError("Missing Operator " + this.id);
-		},
+		led() { throw SyntaxError("Missing Operator " + this.id) },
 
 		push() {
 			let token;
@@ -187,11 +181,12 @@
 	infixr(["===", "!==", "==", "!=", "<", "<=", ">", ">=", "&&", "||"]);
 
 
-	/// foo.bar
+	/// @foo
 	prefix("@", function() {
 		this.push(next("(name)"));
 	});
 
+	/// #foo
 	prefix("#", function() {
 		this.push(next("(name)"));
 	});

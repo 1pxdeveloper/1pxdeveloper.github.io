@@ -12,6 +12,8 @@
 		return Object(strings) === strings ? String.raw.apply(String, arguments) : String(strings);
 	}
 
+	const _watch$$ = (object, prop) => Observable.of(object[prop]);
+
 	class Context {
 		constructor(thisObj, scope = thisObj) {
 			this.thisObj = thisObj;
@@ -20,12 +22,24 @@
 
 			const f = (...args) => {
 				const root = tokenize(_makeString(...args));
-				for (const token of root.tokens) { token.context = this }
+				for (const token of root.tokens) {
+					token.context = this;
+					token.watch = watch$$;
+				}
 				return evaluate(root).takeUntil(this._disconnect$);
 			};
 
 			Object.setPrototypeOf(f, this);
 			return f;
+		}
+
+		evaluate(...args) {
+			const root = tokenize(_makeString(...args));
+			for (const token of root.tokens) {
+				token.context = this;
+				token.watch = _watch$$;
+			}
+			return evaluate(root).takeUntil(this._disconnect$);
 		}
 
 		disconnect() {
@@ -137,7 +151,7 @@
 				this.object = scope;
 				this.prop = this.value;
 			})
-			.switchMap(scope => watch$$(scope, this.value));
+			.switchMap(scope => this.watch(scope, this.value));
 	});
 
 
@@ -148,7 +162,7 @@
 				this.object = object;
 				this.prop = b.value;
 			})
-			.switchMap(object => watch$$(object, b.value));
+			.switchMap(object => this.watch(object, b.value));
 	});
 
 	/// foo[bar]
@@ -158,7 +172,7 @@
 				this.object = object;
 				this.prop = prop;
 			})
-			.switchMap(([object, prop]) => watch$$(object, prop));
+			.switchMap(([object, prop]) => this.watch(object, prop));
 	});
 
 	/// foo(bar, ...baz)

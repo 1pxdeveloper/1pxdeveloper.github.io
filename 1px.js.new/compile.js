@@ -73,13 +73,14 @@
 	const localSVG = {};
 
 	function _$compile_element_node(el, context) {
-		if (el.tagName === "SCRIPT") return false;
-		if (el.tagName === "STYLE") return false;
+		const tagName = el.tagName.toLowerCase();
+
+		if (tagName === "script") return false;
+		if (tagName === "style") return false;
 
 
 		const attributes = Array.from(el.attributes);
 		const to = el;
-
 
 		let ret;
 
@@ -100,7 +101,7 @@
 
 
 		/// @TODO: make Directive Hook
-		if (el.tagName.toLowerCase() === "svg") {
+		if (tagName === "svg") {
 			const svg = el;
 
 			let src = svg.getAttributeNode("src");
@@ -120,7 +121,6 @@
 				}
 			}
 		}
-
 
 		for (const attr of attributes) {
 
@@ -149,6 +149,23 @@
 			if (templateSyntax(context, to, attr, "$", _ref2, "")) continue;
 			// if (templateSyntax(context, to, attr, "#", _ref, "")) continue;
 			// if (templateSyntax(context, to, attr, ".", _call, ")")) continue;
+		}
+
+
+		/// Iframe Component
+		if (tagName === "iframe" && el.hasAttribute("is")) {
+
+			const iframe = el;
+			const is = el.getAttribute("is");
+
+			window.customElements.whenDefined(is).then(() => {
+				const Component = window.customElements.get(is);
+				const component = new Component;
+				component.iframe = iframe;
+				iframe.contentDocument.body.appendChild(component);
+			});
+
+			return false;
 		}
 	}
 
@@ -272,7 +289,7 @@
 
 		/// Event Handler
 		return event$
-			.switchMap(event => context.fork({event, el})(script))
+			.switchMap(event => context.fork({event, el}).evaluate(script))
 			.subscribe()
 	}
 
