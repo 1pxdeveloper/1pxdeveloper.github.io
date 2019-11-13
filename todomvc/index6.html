@@ -13,12 +13,12 @@
 
 <body>
 
-<section @store="store" @effects="LocalStorageEffect, RouteEffect" @controller="TodoController">
+<section @store="store" @effects="TodoEffect, LocalStorageEffect, RouteEffect" @controller="TodoController">
 
 	<section class="todoapp">
 		<header class="header">
 			<h1>todos</h1>
-			<input class="new-todo" placeholder="What needs to be done?" autofocus (keydown.enter)="ADD_TODO({title:el.value}); el.value = ''">
+			<input class="new-todo" placeholder="What needs to be done?" autofocus (keypress.enter)="addTodo(el.value); el.value = ''">
 		</header>
 
 		<!-- This section should be hidden by default and shown when there are todos -->
@@ -28,18 +28,18 @@
 			<ul class="todo-list">
 				<!-- These are here just to show the structure of the list items -->
 				<!-- List items should get the class `editing` when editing and `completed` when marked as completed -->
-				<li *foreach="filteredTodos$ as todo" [class.completed]="todo.completed" [class.editing]="editingTodo === todo">
+				<li *foreach="filteredTodos$ as todo" [class.completed]="todo.completed" [class.editing]="editingTodo === todo.id">
 					<div class="view">
 						<input class="toggle" type="checkbox" [checked]="todo.completed" (input)="PATCH_TODO_COMPLETED({todo, completed:el.checked})">
-						<label (dblclick)="editingTodo = todo">{{ todo.title }}</label>
+						<label (dblclick)="editingTodo = todo.id">{{ todo.title }}</label>
 						<button class="destroy" (click)="REMOVE_TODO(todo)"></button>
 					</div>
 					<input class="edit"
-							[value]="todo.title if editingTodo !== todo"
-							(blur)="PATCH_TODO_TITLE({todo, title:el.value}) if editingTodo === todo; editingTodo = null"
-							(keydown.enter)="el.blur()"
-							(keydown.escape)="editingTodo = null"
-							.focus()="editingTodo === todo"
+							[value]="todo.title if editingTodo !== todo.id"
+							(blur)="PATCH_TODO_TITLE({todo, title:el.value}) if editingTodo === todo.id; editingTodo = null"
+							(keypress.enter)="el.blur()"
+							(keypress.escape)="editingTodo = null"
+							.focus()="editingTodo === todo.id"
 					>
 				</li>
 			</ul>
@@ -69,10 +69,8 @@
 
 	<footer class="info">
 		<p>Double-click to edit a todo</p>
-		<!-- Remove the below line ↓ -->
-		<p>Template by <a href="http://sindresorhus.com">Sindre Sorhus</a></p>
 		<!-- Change this out with your name and url ↓ -->
-		<p>Created by <a href="http://todomvc.com">you</a></p>
+		<p>Created by <a href="http://todomvc.com">yu yong tae</a></p>
 		<p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
 	</footer>
 </section>
@@ -82,74 +80,22 @@
 <script src="node_modules/todomvc-common/base.js"></script>
 <script src="js/app.js"></script>
 
+
 <script>
 console.time("start");
 
 
-const {Observable, Action} = require();
+const {Observable} = require();
 
-const Reducer = Observable.reducer = function(...reducers) {
+const Reducer = Observable.reducer;
+const Computed = Observable.computed;
 
-	return new Observable(_observer => {
-		let value;
-
-		const observer = Object.setPrototypeOf({
-			next(_value) {
-				value = _value;
-				_observer.next(value);
-			}
-		}, _observer);
-
-
-		const subscriptions = [];
-
-		for (const reducer of reducers) {
-
-			_.cond([
-				[_.instanceof(Observable), observable => {
-					const subscription = observable.subscribe(payload => {
-						const [callback, just] = _.kindOf(_.isFunction, _.identity)(payload);
-
-						if (callback) {
-							observer.next(callback(value));
-							return;
-						}
-
-						observer.next(just);
-					});
-
-					subscriptions.push(subscription);
-				}],
-
-				[_.isFunction, callback => observer.next(callback(value))],
-
-				[_.identity, value => observer.next(value)]
-
-			])(reducer);
-		}
-
-		return () => {
-			for (const s of subscriptions) s.unsubscribe();
-		}
-
-	}).shareReplay(1);
-};
-
-
-const Computed = Observable.computed = function(...observables) {
-	const callback = observables.pop();
-	return Observable.combine(...observables).map(args => callback.apply(null, args)).shareReplay(1);
-};
-
-
-const Effect = function(...observables) {
-	/// @TODO: view나 다른데서 subscribe를 하기 전까지 평가를 미루었다가 연결하는 개념.. pipe만 쥐고 있음..
-};
 
 /// Actions
-$module.factory("actions", function() {
+$module.factory("actions", function(Action) {
 
-	const FETCH_TODOS = new Action("FETCH_TODOS", $ => $.shareReplay(1));
+	const APP_START = new Action("APP_START");
+	const FETCH_TODOS = new Action("FETCH_TODOS");
 
 	const ADD_TODO = new Action("ADD_TODO");
 	const REMOVE_TODO = new Action("REMOVE_TODO");
@@ -159,13 +105,13 @@ $module.factory("actions", function() {
 	const PATCH_TODO_TITLE = new Action("PATCH_TODO_TITLE");
 	const PATCH_TODO_COMPLETED = new Action("PATCH_TODO_COMPLETED");
 
-	const SET_VISIBILITY_FILTER = new Action("SET_VISIBILITY_FILTER", $ => $.shareReplay(1));
+	const SET_VISIBILITY_FILTER = new Action("SET_VISIBILITY_FILTER");
 	SET_VISIBILITY_FILTER.SHOW_ALL = "#/";
 	SET_VISIBILITY_FILTER.SHOW_ACTIVE = "#/active";
 	SET_VISIBILITY_FILTER.SHOW_COMPLETED = "#/completed";
 
-
 	return {
+		APP_START,
 		FETCH_TODOS,
 		ADD_TODO,
 		REMOVE_TODO,
@@ -180,6 +126,7 @@ $module.factory("actions", function() {
 
 /// Store
 $module.factory("store", function(actions) {
+
 
 	const {
 		FETCH_TODOS,
@@ -208,7 +155,7 @@ $module.factory("store", function(actions) {
 			ADD_TODO.filter({title: _.isStringLike})
 					.map({title: _.trim})
 					.filter({title: _.hasLength})
-					.map(({title, completed = false}) => _.append({title, completed})),
+					.map(({id, title, completed = false}) => _.append({id, title, completed})),
 
 			REMOVE_TODO
 					.map((todo) => _.removeItem(todo)),
@@ -222,10 +169,6 @@ $module.factory("store", function(actions) {
 			PATCH_TODO_TITLE
 					.filter({title: _.isStringLike})
 					.map({title: _.trim})
-
-					/// cond?????? action transform
-					.tap(({todo, title}) => !title.length && REMOVE_TODO(todo))
-
 					.filter({title: _.hasLength})
 					.map(({todo, title}) => _.patch(todo, {title})),
 
@@ -243,19 +186,18 @@ $module.factory("store", function(actions) {
 					.map(type => {
 						switch (type) {
 							case SET_VISIBILITY_FILTER.SHOW_ALL:
-								return filterAll;
+								return () => filterAll;
 
 							case SET_VISIBILITY_FILTER.SHOW_ACTIVE:
-								return filterActive;
+								return () => filterActive;
 
 							case SET_VISIBILITY_FILTER.SHOW_COMPLETED:
-								return filterCompleted;
+								return () => filterCompleted;
 
 							default:
-								return filterAll;
+								return () => filterAll;
 						}
 					})
-					.map(_.itself)
 	);
 
 
@@ -271,15 +213,6 @@ $module.factory("store", function(actions) {
 
 
 	return {
-		FETCH_TODOS,
-		ADD_TODO,
-		REMOVE_TODO,
-		TOGGLE_ALL,
-		CLEAR_COMPLETED,
-		PATCH_TODO_TITLE,
-		PATCH_TODO_COMPLETED,
-		SET_VISIBILITY_FILTER,
-
 		todos$,
 		filteredTodos$,
 		num_items_left$,
@@ -289,25 +222,36 @@ $module.factory("store", function(actions) {
 });
 
 
+/// TodoApp Effect
+$module.factory("TodoEffect", function(actions) {
+
+	actions.PATCH_TODO_TITLE
+			.filter({title: _.isStringLike})
+			.map({title: _.trim})
+			.filter({title: (title) => !title.length})
+			.tap(({todo}) => actions.REMOVE_TODO(todo))
+			.subscribe()
+});
+
+
 /// LocalStorage Effect
 $module.factory("LocalStorageEffect", function(actions, store) {
 
-	const {FETCH_TODOS} = actions;
-
 	const LOCAL_STORAGE_KEY = "todo-mvc-mimosa";
 
-	FETCH_TODOS(_.localStorage.getItem(LOCAL_STORAGE_KEY, []));
+	actions.APP_START
+			.subscribe(() => {
+				actions.FETCH_TODOS(_.localStorage.getItem(LOCAL_STORAGE_KEY, []));
 
-	store.todos$
-			.skip(1)
-			.subscribe(_.localStorage.setItem(LOCAL_STORAGE_KEY));
+				store.todos$.subscribe(_.localStorage.setItem(LOCAL_STORAGE_KEY));
+			});
 });
 
 
 /// Route Effect
 $module.factory("RouteEffect", function(actions) {
 
-	const {SET_VISIBILITY_FILTER} = actions;
+	const {APP_START, SET_VISIBILITY_FILTER} = actions;
 	const {SHOW_ALL, SHOW_ACTIVE, SHOW_COMPLETED} = SET_VISIBILITY_FILTER;
 
 	const location$ = Reducer(
@@ -316,20 +260,22 @@ $module.factory("RouteEffect", function(actions) {
 	);
 
 
-	location$.subscribe(location => {
-		switch (location.hash) {
-			case "#/":
-				return SET_VISIBILITY_FILTER(SHOW_ALL);
+	APP_START.subscribe(() => {
+		location$.subscribe(location => {
+			switch (location.hash) {
+				case "#/":
+					return SET_VISIBILITY_FILTER(SHOW_ALL);
 
-			case "#/active":
-				return SET_VISIBILITY_FILTER(SHOW_ACTIVE);
+				case "#/active":
+					return SET_VISIBILITY_FILTER(SHOW_ACTIVE);
 
-			case "#/completed":
-				return SET_VISIBILITY_FILTER(SHOW_COMPLETED);
+				case "#/completed":
+					return SET_VISIBILITY_FILTER(SHOW_COMPLETED);
 
-			default:
-				return SET_VISIBILITY_FILTER(SHOW_ALL);
-		}
+				default:
+					return SET_VISIBILITY_FILTER(SHOW_ALL);
+			}
+		});
 	});
 
 
@@ -354,9 +300,23 @@ $module.factory("RouteEffect", function(actions) {
 /// @FIXME
 const {$compile} = require();
 
-$module.require(function(store, LocalStorageEffect, RouteEffect) {
+$module.require(function(store, actions, TodoEffect, LocalStorageEffect, RouteEffect) {
 
-	$compile(document.body, store);
+	class App {
+		constructor() {
+			this.editingTodo = null;
+
+			window.app = this;
+		}
+
+		addTodo(title) {
+			return actions.ADD_TODO({id: Math.random().toString(36).slice(2), title})
+		}
+	}
+
+	$compile(document.body, Object.assign(new App, store, actions));
+
+	actions.APP_START();
 
 	console.timeEnd("start");
 });

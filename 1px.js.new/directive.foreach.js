@@ -140,11 +140,10 @@
 
 						}
 
+						
 						/// 교체
-
 						/// @FIXME: next 호출이 좀 이상하네.. pure하게 assign하는 방법을 강구하자.
-						Object.assign(container[index].context.scope$.value, local);
-						container[index].context.scope$.next(container[index].context.scope$.value);
+						container[index].context.locals$.next(local);
 
 						removed = removed.filter(x => x !== container[index]);
 

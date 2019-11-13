@@ -212,6 +212,7 @@
 	function _class(context, el, script, name) {
 		return context(script)
 			.pipe(renderPipeLine)
+			.trace("_class", script)
 			.tap(value => value ? el.classList.add(name) : el.classList.remove(name))
 			.subscribe()
 	}
