@@ -40,9 +40,8 @@
 		
 		.map(([name, callback]) => callback)
 		
-		
 		.tap(() => console.group("import", name))
-		
+
 		.pipe(inject)
 		
 		.timeoutFirstOnly(1000)

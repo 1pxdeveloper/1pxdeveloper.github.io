@@ -25,7 +25,12 @@
 		"directive.foreach.js",
 		"directive.if.js",
 
+		"component.js",
+
 		"batch.js",
+
+		"http.js",
+
 
 	].forEach(src => {
 		document.write(`<script src="${pref}${src}"></script>`);

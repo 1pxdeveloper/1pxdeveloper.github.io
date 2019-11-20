@@ -43,16 +43,16 @@
 	const getOwnObservable = (object, prop) => {
 		const value = object[prop];
 
+		if (Object.isFrozen(object)) {
+			return Observable.of(value);
+		}
+
 		if (Object(object) !== object) {
 			return Observable.of(value);
 		}
 
 		if (Array.isArray(object) && +prop === prop) {
-			return Observable.of(value);
-		}
-
-		if (Object.isFrozen(object)) {
-			return Observable.of(value);
+			return mutationObservable$(value);
 		}
 
 		const desc = Object.getOwnPropertyDescriptor(object, prop);
@@ -64,18 +64,18 @@
 
 		// 수정불가
 		if (desc && desc.configurable === false) {
-			return Observable.of(value);
+			return mutationObservable$(value);
 		}
 
 		// 기 생성된 observable
 		if (desc && desc.set && desc.set.observable$) {
 			return desc.set.observable$;
 		}
-
-		// 이미 getter, setter가 있는 경우..
-		if (desc && desc.set) {
-			/// @TODO:
-		}
+		
+		// // 이미 getter, setter가 있는 경우..
+		// if (desc && desc.set) {
+		// 	/// @TODO:
+		// }
 	};
 
 	function watch$$(object, prop) {
@@ -124,7 +124,6 @@
 			}
 
 			set.observable$ = observable$;
-
 
 			Object.defineProperty(object, prop, {
 				configurable: true,

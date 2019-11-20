@@ -23,20 +23,20 @@
 
 		<!-- This section should be hidden by default and shown when there are todos -->
 		<section class="main" hidden [hidden]="!todos$.length">
-			<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked$" (input)="TOGGLE_ALL(el.checked)">
+			<input id="toggle-all" class="toggle-all" type="checkbox" [checked]="all_checked$" (input)="#TOGGLE_ALL(el.checked)">
 			<label for="toggle-all">Mark all as complete</label>
 			<ul class="todo-list">
 				<!-- These are here just to show the structure of the list items -->
 				<!-- List items should get the class `editing` when editing and `completed` when marked as completed -->
 				<li *foreach="filteredTodos$ as todo" [class.completed]="todo.completed" [class.editing]="editingTodo === todo.id">
 					<div class="view">
-						<input class="toggle" type="checkbox" [checked]="todo.completed" (input)="PATCH_TODO_COMPLETED({todo, completed:el.checked})">
+						<input class="toggle" type="checkbox" [checked]="todo.completed" (input)="#PATCH_TODO_COMPLETED({todo, completed:el.checked})">
 						<label (dblclick)="editingTodo = todo.id">{{ todo.title }}</label>
-						<button class="destroy" (click)="REMOVE_TODO(todo)"></button>
+						<button class="destroy" (click)="#REMOVE_TODO(todo)"></button>
 					</div>
 					<input class="edit"
 							[value]="todo.title if editingTodo !== todo.id"
-							(blur)="PATCH_TODO_TITLE({todo, title:el.value}) if editingTodo === todo.id; editingTodo = null"
+							(blur)="#PATCH_TODO_TITLE({todo, title:el.value}) if editingTodo === todo.id; editingTodo = null"
 							(keypress.enter)="el.blur()"
 							(keypress.escape)="editingTodo = null"
 							.focus()="editingTodo === todo.id"
@@ -53,17 +53,17 @@
 			<!-- Remove this if you don't implement routing -->
 			<ul class="filters">
 				<li>
-					<a [class.selected]="hash === '#/'" href="#/">All</a>
+					<a [class.selected]="visibilityFilterType$ === '#/'" href="#/">All</a>
 				</li>
 				<li>
-					<a [class.selected]="hash === '#/active'" href="#/active">Active</a>
+					<a [class.selected]="visibilityFilterType$ === '#/active'" href="#/active">Active</a>
 				</li>
 				<li>
-					<a [class.selected]="hash === '#/completed'" href="#/completed">Completed</a>
+					<a [class.selected]="visibilityFilterType$ === '#/completed'" href="#/completed">Completed</a>
 				</li>
 			</ul>
 			<!-- Hidden if no completed items are left ↓ -->
-			<button class="clear-completed" hidden [hidden]="todos$.length === num_items_left$" (click)="CLEAR_COMPLETED()">Clear completed</button>
+			<button class="clear-completed" hidden [hidden]="todos$.length === num_items_left$" (click)="#CLEAR_COMPLETED()">Clear completed</button>
 		</footer>
 	</section>
 
@@ -110,7 +110,7 @@ $module.factory("actions", function(Action) {
 	SET_VISIBILITY_FILTER.SHOW_ACTIVE = "#/active";
 	SET_VISIBILITY_FILTER.SHOW_COMPLETED = "#/completed";
 
-	return {
+	const actions = {
 		APP_START,
 		FETCH_TODOS,
 		ADD_TODO,
@@ -120,13 +120,16 @@ $module.factory("actions", function(Action) {
 		PATCH_TODO_TITLE,
 		PATCH_TODO_COMPLETED,
 		SET_VISIBILITY_FILTER
-	}
+	};
+
+	/// @FIXME:...
+	window.actions = $module.actions = actions;
+	return actions;
 });
 
 
 /// Store
 $module.factory("store", function(actions) {
-
 
 	const {
 		FETCH_TODOS,
@@ -158,7 +161,7 @@ $module.factory("store", function(actions) {
 					.map(({id, title, completed = false}) => _.append({id, title, completed})),
 
 			REMOVE_TODO
-					.map((todo) => _.removeItem(todo)),
+					.map((todo) => _.remove({id: todo.id})),
 
 			CLEAR_COMPLETED
 					.map(() => _.remove(filterCompleted)),
@@ -178,6 +181,12 @@ $module.factory("store", function(actions) {
 
 
 	/// VisibilityFilter
+	const visibilityFilterType$ = Reducer(
+			SET_VISIBILITY_FILTER.SHOW_ALL,
+			SET_VISIBILITY_FILTER.distinctUntilChanged()
+	);
+
+
 	const visibilityFilter$ = Reducer(
 			() => filterAll,
 
@@ -217,6 +226,7 @@ $module.factory("store", function(actions) {
 		filteredTodos$,
 		num_items_left$,
 		visibilityFilter$,
+		visibilityFilterType$,
 		all_checked$
 	}
 });
@@ -300,7 +310,7 @@ $module.factory("RouteEffect", function(actions) {
 /// @FIXME
 const {$compile} = require();
 
-$module.require(function(store, actions, TodoEffect, LocalStorageEffect, RouteEffect) {
+$module.require(function(actions, store, TodoEffect, LocalStorageEffect, RouteEffect) {
 
 	class App {
 		constructor() {
@@ -314,7 +324,8 @@ $module.require(function(store, actions, TodoEffect, LocalStorageEffect, RouteEf
 		}
 	}
 
-	$compile(document.body, Object.assign(new App, store, actions));
+
+	$compile(document.body, Object.assign(new App, store));
 
 	actions.APP_START();
 

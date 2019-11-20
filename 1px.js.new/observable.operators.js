@@ -1,7 +1,7 @@
 (function() {
 	"use strict";
 	
-	const {Observable} = require("observable");
+	const {Observable} = require("public/aitutor_v3/1px.js/observable");
 	
 	/// -------------------------------------------------------------------------------------------
 	/// Operators
@@ -27,7 +27,7 @@
 		return (object) => {
 			for (let [key, _callback] of Object.entries(callback)) {
 				if (typeof _callback !== "function") _callback = _.is(_callback);
-				if (_callback(object[key])) return true;
+				if (_callback(object && object[key])) return true;
 			}
 			return false;
 		}
@@ -373,70 +373,21 @@
 	};
 	
 	
-	Observable.prototype.concat = function(observable) {
-		return new Observable(observer => {
-			let s1, s2, _value;
-			let completed = false;
-			
-			const next = value => (_value = observer.next(value) || value);
-			const error = observer.error.bind(observer);
-			const complete = () => completed = true;
-			const nextObserver = typeof observable === "function"
-				? () => s2 = completed && Observable.defer(observable.bind(null, _value)).subscribe(observer)
-				: () => s2 = completed && observable.subscribe(observer);
-			
-			s1 = this.finalize(nextObserver).subscribe(next, error, complete);
-			
-			return () => {
-				s1.unsubscribe();
-				s2 && s2.unsubscribe();
-			}
-		})
-	};
-	
-	
-	Observable.prototype.mergeAll = function() {
-		return this.lift((observer, ret = []) => ({
-			next(value) { ret.push(value) },
-			complete() { observer.next(ret) }
-		}));
-	};
+	const mergeAll = () => lift((observer, ret = []) => ({
+		next(value) { ret.push(value) },
+		complete() { observer.next(ret) }
+	}));
 	
 	
 	/// @TODO: inclusive
-	Observable.prototype.takeWhile = function(callback = just, inclusive) {
-		return this.lift((observer, index = 0) => ({
-			next(value) {
-				Observable.castAsync(callback(value, index++)).subscribe(cond => {
-					observer.next(value);
-					if (!cond) observer.complete();
-				});
-			}
-		}));
-	};
-	
-	Observable.prototype.toPromise = function() {
-		return new Promise((resolve, reject) => {
-			let _value;
-			let s;
-			
-			s = this.subscribe({
-				next(value) {
-					_value = value;
-				},
-				
-				error(error) {
-					if (s && s.closed) return;
-					reject(error);
-				},
-				
-				complete() {
-					if (s && s.closed) return;
-					resolve(_value);
-				}
-			})
-		});
-	};
+	const takeWhile = (callback = just, inclusive) => lift((observer, index = 0) => ({
+		next(value) {
+			Observable.castAsync(callback(value, index++)).subscribe(cond => {
+				observer.next(value);
+				if (!cond) observer.complete();
+			});
+		}
+	}));
 	
 	
 	Observable.prototype.share = function() {
@@ -510,9 +461,29 @@
 	};
 	
 	
-	/// -------------------------------------------------------------------------------------------
-	/// Utils
-	/// -------------------------------------------------------------------------------------------
+	Observable.prototype.toPromise = function() {
+		return new Promise((resolve, reject) => {
+			let _value;
+			let s;
+			
+			s = this.subscribe({
+				next(value) {
+					_value = value;
+				},
+				
+				error(error) {
+					if (s && s.closed) return;
+					reject(error);
+				},
+				
+				complete() {
+					if (s && s.closed) return;
+					resolve(_value);
+				}
+			})
+		});
+	};
+	
 	Observable.prototype.retry = function(count = Infinity, error) {
 		if (count <= 0) {
 			return Observable.throw(error);
@@ -535,6 +506,26 @@
 		})
 	};
 	
+	Observable.prototype.concat = function(observable) {
+		return new Observable(observer => {
+			let s1, s2, _value;
+			let completed = false;
+			
+			const next = value => (_value = observer.next(value) || value);
+			const error = observer.error.bind(observer);
+			const complete = () => completed = true;
+			const nextObserver = typeof observable === "function"
+				? () => s2 = completed && Observable.defer(observable.bind(null, _value)).subscribe(observer)
+				: () => s2 = completed && observable.subscribe(observer);
+			
+			s1 = this.finalize(nextObserver).subscribe(next, error, complete);
+			
+			return () => {
+				s1.unsubscribe();
+				s2 && s2.unsubscribe();
+			}
+		})
+	};
 	
 	/// -------------------------------------------------------------------------------------------
 	/// Flatten Map Functions
@@ -563,30 +554,28 @@
 		});
 	};
 	
-	Observable.prototype.switchMap = function(callback) {
-		return this.lift(observer => {
-			let completed = false;
-			let subscription;
-			const complete = () => completed && subscription.closed && observer.complete();
+	const switchMap = (callback) => lift(observer => {
+		let subscription;
+		let completed = false;
+		
+		const complete = () => completed && subscription.closed && observer.complete();
+		const switchMapObserver = Object.setPrototypeOf({complete}, observer);
+		
+		return {
+			next(value) {
+				if (subscription) subscription.unsubscribe();
+				subscription = callback(value).subscribe(switchMapObserver);
+			},
 			
-			return {
-				next(value) {
-					if (subscription) subscription.unsubscribe();
-					const observable = callback(value);
-					subscription = observable.subscribe(Object.setPrototypeOf({complete}, observer));
-				},
-				
-				complete() {
-					completed = true;
-					// complete();
-				},
-				
-				finalize() {
-					if (subscription) subscription.unsubscribe();
-				}
+			complete() {
+				completed = true;
+			},
+			
+			finalize() {
+				if (subscription) subscription.unsubscribe();
 			}
-		});
-	};
+		}
+	});
 	
 	
 	Observable.prototype.connectMap = function(callback) {
@@ -773,13 +762,12 @@
 		});
 	};
 	
-	Observable.fromEvent = function(el, type, useCapture) {
-		return new Observable(observer => {
-			const handler = observer.next.bind(observer);
-			el.addEventListener(type, handler, useCapture);
-			return () => el.removeEventListener(type, handler, useCapture);
-		}).share();
-	};
+	Observable.fromEvent = (el, type, useCapture) => new Observable(observer => {
+		const handler = observer.next.bind(observer);
+		el.addEventListener(type, handler, useCapture);
+		return () => el.removeEventListener(type, handler, useCapture);
+	}).share();
+	
 	
 	Observable.throw = (error) => new Observable(observer => observer.error(error));
 	
@@ -1002,10 +990,6 @@
 		}).shareReplay(1);
 	};
 	
-	Observable.computed = function(...observables) {
-		const callback = observables.pop();
-		return Observable.combine(...observables).map(args => callback.apply(null, args)).shareReplay(1);
-	};
 	
 	const bindAction = (action) => lift((observer, _value) => ({
 		start() {
@@ -1055,14 +1039,17 @@
 		last,
 		map,
 		mapTo,
+		mergeAll,
 		reject,
 		scan,
 		skip,
 		startWith,
+		switchMap,
 		tap,
 		take,
 		takeLast,
 		takeUntil,
+		takeWhile,
 		timeout,
 		timeoutFirstOnly,
 		throttle,

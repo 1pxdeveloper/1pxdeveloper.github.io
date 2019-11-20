@@ -106,7 +106,14 @@
 		}, {}));
 	});
 	
-	evaluateRule("#", (a) => Observable.of($module.actions[a.value]));
+	evaluateRule("#", (a) => {
+			
+			
+			console.log($module.$actions);
+			
+			return Observable.of($module.$actions[a.value])
+		}
+	);
 	
 	evaluateRule("+", unary(a => +a));
 	evaluateRule("-", unary(a => -a));
@@ -137,19 +144,18 @@
 	evaluateRule("(name)", function() {
 		
 		const prop = this.value;
-
+		
 		return this.context.locals$
 			.switchMap(locals => {
 				if (prop in locals) {
-					return Observable.of(locals[prop]);
+					return this.watch(locals, prop);
 				}
 				
-				return Observable.of(this.context.thisObj)
-					.tap(object => {
-						this.object = object;
-						this.prop = prop;
-					})
-					.switchMap(object => this.watch(object, prop));
+				const object = this.context.thisObj;
+				this.object = object;
+				this.prop = prop;
+				
+				return this.watch(object, prop);
 			});
 	});
 	
@@ -189,9 +195,9 @@
 	/// foo.bar = baz
 	evaluateRule("=", (a, b) => combine(evaluate(a), evaluate(b))
 		.tap(([__, value]) => {
-			
-			console.warn(a.object, a.prop, value);
-			
+			if (Object(a.object) !== a.object) {
+				return;
+			}
 			
 			a.object[a.prop] = value;
 		})

@@ -64,6 +64,8 @@
 					return _$compile_text_node(node, context);
 			}
 		});
+		
+		return context;
 	};
 
 
@@ -211,8 +213,9 @@
 
 	function _class(context, el, script, name) {
 		return context(script)
+			.switchMap(value => Observable.castAsync(value))
 			.pipe(renderPipeLine)
-			.trace("_class", script)
+			.trace(`[class.${name}]`, script)
 			.tap(value => value ? el.classList.add(name) : el.classList.remove(name))
 			.subscribe()
 	}
@@ -232,7 +235,6 @@
 				}
 			})
 			.tap(value => el.style[prop] = value)
-			.trace("Style!")
 			.subscribe();
 	}
 
@@ -290,6 +292,7 @@
 
 		/// Event Handler
 		return event$
+			.trace("(event)", type)
 			.switchMap(event => context.fork({event, el}).evaluate(script))
 			.subscribe()
 	}
