@@ -41,7 +41,7 @@
 	}
 
 	const getOwnObservable = (object, prop) => {
-		const value = object[prop];
+		const value = object && object[prop];
 
 		if (Object.isFrozen(object)) {
 			return Observable.of(value);
@@ -52,7 +52,7 @@
 		}
 
 		if (Array.isArray(object) && +prop === prop) {
-			return mutationObservable$(value);
+			return Observable.of(value);
 		}
 
 		const desc = Object.getOwnPropertyDescriptor(object, prop);
@@ -64,7 +64,7 @@
 
 		// 수정불가
 		if (desc && desc.configurable === false) {
-			return mutationObservable$(value);
+			return Observable.of(value);
 		}
 
 		// 기 생성된 observable
@@ -98,9 +98,7 @@
 			}
 			else {
 				subscription = mutationObservable$(value).subscribe(observer);
-				if (prop in object) {
-					observer.next(value);
-				}
+				observer.next(value);
 			}
 
 			function set(newValue) {
@@ -133,6 +131,10 @@
 			});
 
 			return () => {
+				
+				console.warn("clean!!", object, prop);
+				
+				
 				if (subscription) {
 					subscription.unsubscribe();
 					subscription = null;

@@ -47,7 +47,7 @@
 			
 			context(script)
 				.trace(script)
-				.filter(_.isArrayLike)
+				.map(value => _.isArrayLike(value) ? value : [])
 				.map(array => Array.from(array))
 				.subscribe(array => {
 					/// @TODO: LCS를 이용해서 같은건 유지하고, 삭제할 노드와 replace될 노드를 구분하는 로직을 짤것.

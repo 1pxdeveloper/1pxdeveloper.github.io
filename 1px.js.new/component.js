@@ -1,7 +1,7 @@
 (function() {
 	"use strict";
 	
-	const {$compile} = require();
+	const {$compile, Context} = require();
 	
 	class WebComponent extends HTMLElement {
 		connectedCallback() {
@@ -10,10 +10,10 @@
 			wrap.innerHTML = html;
 			const template = wrap.content.querySelector("template") || wrap;
 			
+			const context = $compile(template, this, this);
 			this.innerHTML = "";
 			this.appendChild(template.content);
 			
-			const context = $compile(this, this);
 			this.init(context);
 			this.connected();
 		}
