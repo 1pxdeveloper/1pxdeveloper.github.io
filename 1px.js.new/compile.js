@@ -169,6 +169,15 @@
 			
 			return false;
 		}
+
+
+		if (el.hasAttribute("is")) {
+			return false;
+		}
+
+		if (window.customElements.get(tagName)) {
+			return false;
+		}
 	}
 	
 	function templateSyntax(context, el, attr, start, callback, end) {
@@ -200,7 +209,7 @@
 	function _visible(context, el, script, name) {
 		return context(script)
 			.pipe(renderPipeLine)
-			.trace(`[visible]`, script)
+			// .trace(`[visible]`, script)
 			.tap(value => el["hidden"] = !value)
 			.subscribe()
 	}
@@ -208,7 +217,7 @@
 	function _attr(context, el, script, attr) {
 		return context(script)
 			.pipe(renderPipeLine)
-			.tap(value => _.isStringLike(value) ? el.setAttribute(attr, value) : el.removeAttribute(attr))
+			.tap(value => (value || _.isStringLike(value)) ? el.setAttribute(attr, value) : el.removeAttribute(attr))
 			.subscribe()
 	}
 	
@@ -216,7 +225,7 @@
 		return context(script)
 			.switchMap(value => Observable.castAsync(value))
 			.pipe(renderPipeLine)
-			.trace(`[class.${name}]`, script)
+			// .trace(`[class.${name}]`, script)
 			.tap(value => value ? el.classList.add(name) : el.classList.remove(name))
 			.subscribe()
 	}
@@ -293,7 +302,7 @@
 		
 		/// Event Handler
 		return event$
-			.trace("(event)", type)
+			// .trace("(event)", type)
 			.switchMap(event => context.fork({event, el}).evaluate(script))
 			.subscribe()
 	}

@@ -131,10 +131,6 @@
 			});
 
 			return () => {
-				
-				console.warn("clean!!", object, prop);
-				
-				
 				if (subscription) {
 					subscription.unsubscribe();
 					subscription = null;

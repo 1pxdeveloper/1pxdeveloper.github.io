@@ -5,7 +5,13 @@
 	
 	class WebComponent extends HTMLElement {
 		connectedCallback() {
-			const html = this.constructor.templateHTML;
+			let html = this.constructor.templateHTML;
+
+			/// @FIXME:
+			if (this.hasAttribute("inline-template")) {
+				html = this.innerHTML;
+			}
+
 			const wrap = document.createElement("template");
 			wrap.innerHTML = html;
 			const template = wrap.content.querySelector("template") || wrap;

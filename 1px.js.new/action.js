@@ -141,4 +141,9 @@
 	exports.Action = Action;
 	exports.RequestAction = RequestAction;
 	exports.StreamAction = StreamAction;
+
+
+	Action.RequestAction = RequestAction;
+	Action.StreamAction = StreamAction;
+
 }());

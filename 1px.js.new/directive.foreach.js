@@ -8,16 +8,10 @@
 	$module.directive("*foreach", function() {
 		
 		function createRepeatNode(context, repeatNode, local) {
-			context = context.fork(local);
-			
 			const node = repeatNode.cloneNode(true);
-			
-			
-			/// @FIXME:..
-			Promise.resolve().then(() => {
-				$compile(node, context);
-			});
-			
+			context = context.fork(local);
+			$compile(node, context);
+
 			return {node, context, local};
 		}
 		

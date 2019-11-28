@@ -27,5 +27,34 @@
 	// 	$compile(document.body, null);
 	// 	bootstrap();
 	// })($module.bootstrap);
-	
+
+
+	function DOMReady(callback) {
+		if (document.body) return callback();
+		window.addEventListener("DOMContentLoaded", callback);
+	}
+
+
+	$module.controller = (name, block) => {
+
+		$module.require(block, (Controller) => {
+
+			DOMReady(() => {
+
+				Array.from(document.querySelectorAll(`*[is="${name}"]`)).forEach(el => {
+
+
+					el.removeAttribute("is");
+					const controller = new Controller();
+					const context = $compile(el, controller);
+					controller.init && controller.init(context);
+				});
+
+
+			})
+		})
+	};
+
+
+	$module.bootstrap = _.noop;
 }());
