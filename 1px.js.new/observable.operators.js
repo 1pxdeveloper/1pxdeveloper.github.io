@@ -785,9 +785,10 @@
 	};
 
 	Observable.fromEvent = (el, type, useCapture) => new Observable(observer => {
+		type = _.castArray(type);
 		const handler = observer.next.bind(observer);
-		el.addEventListener(type, handler, useCapture);
-		return () => el.removeEventListener(type, handler, useCapture);
+		type.forEach(type => el.addEventListener(type, handler, useCapture));
+		return () => type.forEach(type => el.removeEventListener(type, handler, useCapture));
 	}).share();
 
 
