@@ -40,7 +40,6 @@
 			
 			
 			context(script)
-				.trace(script)
 				.map(value => _.isArrayLike(value) ? value : [])
 				.map(array => Array.from(array))
 				.subscribe(array => {

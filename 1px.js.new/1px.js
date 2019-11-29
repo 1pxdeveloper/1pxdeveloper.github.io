@@ -24,6 +24,7 @@
 
 		"directive.foreach.js",
 		"directive.if.js",
+		"directive.template.js",
 
 		"component.js",
 

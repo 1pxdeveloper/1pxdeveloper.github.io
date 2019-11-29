@@ -1,7 +1,7 @@
 const filterCallback = (callback) => {
 	if (Object(callback) !== callback) return _.is(callback);
 	if (typeof callback === "function") return callback;
-	
+
 	return (object) => {
 		for (let [key, _callback] of Object.entries(callback)) {
 			if (typeof _callback !== "function") _callback = _.is;
@@ -14,14 +14,18 @@ const filterCallback = (callback) => {
 const mapCallback = (callback) => {
 	if (Object(callback) !== callback) return callback;
 	if (typeof callback === "function") return callback;
-	
+
 	return (object) => {
 		object = {...object};
 		for (let [key, _callback] of Object.entries(callback)) {
-			if (typeof _callback !== "function") object[key] = _callback;
-			else object[key] = _callback(object[key]);
+			if (typeof _callback !== "function") {
+				object[key] = _callback;
+			}
+			else {
+				object[key] = _callback(object[key]);
+			}
 		}
-		
+
 		return object;
 	}
 };
@@ -37,7 +41,6 @@ _.go = (value, ...pipes) => _.pipe(...pipes)(value);
 _.itself = _.always = (value) => () => value;
 
 _.is = (a) => (b) => Object.is(a, b);
-_.isnot = (a) => (b) => !Object.is(a, b);
 _.isUndefined = (value) => value === undefined;
 _.isNumber = (value) => +value === value;
 _.isNumberLike = (value) => _.isNumber(+value);
@@ -48,6 +51,10 @@ _.isFunction = (value) => typeof value === "function";
 _.isArray = (value) => Array.isArray(value);
 _.isArrayLike = (value) => Array.isArray(value) || Object(value) === value && "number" === typeof value.length;
 _.isObject = (value) => Object(value) === value;
+_.isNil = (value) => value === undefined || value === null;
+
+_.isNot = (a) => (b) => !Object.is(a, b);
+
 _.hasLength = (value) => value.length && value.length > 0;
 _.instanceof = (constructor) => (object) => (object instanceof constructor);
 
@@ -78,6 +85,23 @@ _.last = (array) => array[array.length - 1];
 
 
 /// Object
+_.cloneObject = (obj) => {
+	const type = _.typeof(obj);
+	if ("object" === type || "array" === type) {
+		if ("function" === typeof obj.clone) {
+			return obj.clone();
+		}
+
+		let clone = "array" === type ? [] : {}, key;
+		for (key in obj) {
+			clone[key] = _.cloneObject(obj[key]);
+		}
+		return clone;
+	}
+
+	return obj;
+};
+
 _.merge = (object) => (source) => ({...source, ...object});
 _.defaults = (object) => (source) => ({...object, ...source});
 _.mapValues = (callback) => (object) => Object.fromEntries(Object.entries(object).map(([key, value]) => [key, mapCallback(callback)(value)]));
@@ -96,6 +120,45 @@ _.memoize1 = (func) => {
 
 
 /// Util
+_.typeof = (value) => {
+	const s = typeof value;
+
+	if ("object" === s) {
+		if (value) {
+			if (value instanceof Array) {
+				return "array";
+			}
+			if (value instanceof Object) {
+				return s;
+			}
+
+			const className = Object.prototype.toString.call(value);
+
+			if ("[object Window]" === className) {
+				return "object";
+			}
+
+			if ("[object Array]" === className || "number" == typeof value.length && "undefined" != typeof value.splice && "undefined" != typeof value.propertyIsEnumerable && !value.propertyIsEnumerable("splice")) {
+				return "array";
+			}
+
+			if ("[object Function]" === className || "undefined" != typeof value.call && "undefined" != typeof value.propertyIsEnumerable && !value.propertyIsEnumerable("call")) {
+				return "function";
+			}
+		}
+		else {
+			return "null";
+		}
+	}
+	else {
+		if ("function" === s && "undefined" == typeof value.call) {
+			return "object";
+		}
+	}
+
+	return s;
+};
+
 _.identity = _.exist = (value) => value;
 _.toType = (obj) => ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
 _.castArray = (a) => _.isArray(a) ? a : [a];
@@ -134,25 +197,25 @@ _.warn = (...args) => console.warn.bind(console, ...args);
 	let $uuid = 0;
 	let stack = [];
 	let queue = [];
-	
+
 	_.debug = {};
-	
+
 	_.debug.group = (...args) => {
 		console.group(...args);
 		stack.push($uuid);
 		return $uuid++;
 	};
-	
+
 	_.debug.groupEnd = (uuid = ($uuid - 1)) => {
 		console.groupEnd();
 		return;
-		
+
 		if (stack[stack.length - 1] !== uuid) {
 			queue.push(uuid);
 			stack.pop();
 			return;
 		}
-		
+
 		console.groupEnd();
 		for (const q of queue) {
 			console.groupEnd();
@@ -187,11 +250,11 @@ _.alert = (...args) => window.alert(...args);
 _.LCS = (s1, s2) => {
 	s1 = s1 || [];
 	s2 = s2 || [];
-	
+
 	let M = [];
 	for (let i = 0; i <= s1.length; i++) {
 		M.push([]);
-		
+
 		for (let j = 0; j <= s2.length; j++) {
 			let currValue = 0;
 			if (i === 0 || j === 0) {
@@ -203,25 +266,25 @@ _.LCS = (s1, s2) => {
 			else {
 				currValue = Math.max(M[i][j - 1], M[i - 1][j]);
 			}
-			
+
 			M[i].push(currValue);
 		}
 	}
-	
+
 	let i = s1.length;
 	let j = s2.length;
-	
+
 	// let s3 = [];
 	let s4 = Array(i).fill(null);
 	let s5 = Array(j).fill(null);
-	
-	while(M[i][j] > 0) {
+
+	while (M[i][j] > 0) {
 		if (s1[i - 1] === s2[j - 1] && (M[i - 1][j - 1] + 1 === M[i][j])) {
 			// s3.unshift(s1[i - 1]);
-			
+
 			s4[i - 1] = s1[i - 1];
 			s5[j - 1] = s1[i - 1];
-			
+
 			i--;
 			j--;
 		}
@@ -232,6 +295,6 @@ _.LCS = (s1, s2) => {
 			j--;
 		}
 	}
-	
+
 	return [s4, s5];
 }

@@ -7,7 +7,7 @@
 	$module.directive("*if", function() {
 		return function(context, el, script) {
 			el.removeAttribute("*if");
-			el.childNodes.forEach(node => $compile(node, context));
+			$compile(el.childNodes, context);
 
 			let placeholder = document.createComment("if: " + script);
 			el._ifScript = placeholder._ifScript = script;
@@ -21,7 +21,6 @@
 					el.replaceWith(placeholder);
 				}
 			});
-
 		}
 	});
 

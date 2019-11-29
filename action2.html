@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="1px.js.new/1px.js"></script>
+</head>
+
+
+<style>
+	*[state="red"] {
+		color: blue;
+	}
+
+</style>
+<body>
+
+
+<my-app></my-app>
+
+
+<script>
+
+$module.factory("actions", function(Action, RequestAction) {
+
+	return {
+		ADD_TODO: new Action("ADD_TODO"),
+		REMOVE_TODO: new Action("REMOVE_TODO"),
+		FETCH_TODOS: new RequestAction("FETCH_TODOS")
+	}
+});
+
+
+$module.factory("store", function(Observable, actions) {
+
+
+
+	const todos$ = Observable.reducer(
+		["1"],
+
+		actions.ADD_TODO
+			.map(value => _.append(value)),
+
+		actions.REMOVE_TODO
+			.map(value => _.removeItem(value)),
+
+		actions.FETCH_TODOS.SUCCESS
+			.map()
+	);
+
+	todos$
+		.trace("todos")
+		.subscribe();
+
+
+
+
+	// /// 비동기,, impure
+	FETCH_TODOS
+		.exhaustMap(value => http.GET("sdddd"))
+		.map()
+		.trace()
+		.tap(FETCH_TODOS.SUCCESS, FETCH_TODOS.FAILURE)
+		.subscribe()
+
+
+
+
+
+	actions.ADD_TODO("Hello");
+	actions.ADD_TODO("asdf");
+	actions.ADD_TODO("asdfasdf");
+
+	actions.REMOVE_TODO("asdf");
+
+
+	return {
+		todos$
+	}
+});
+
+
+
+$module.factory("ssdsd", function(store) {
+
+
+
+
+
+
+})
+
+</script>
+
+
+</body>
+</html>

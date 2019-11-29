@@ -22,7 +22,8 @@ $module.factory("http", function() {
 					init = {...this.init, body};
 				}
 
-				if (init.method === "GET" || init.method === "HEAD") {
+				/// @FIXME:
+				if (init.method === "GET" || init.method === "DELETE" || init.method === "HEAD") {
 					init = {...this.init};
 					delete init.body;
 				}
@@ -61,23 +62,23 @@ $module.factory("http", function() {
 
 		headers(headers) { return this.resource({headers}) }
 
-		method(method, url = this.init.url) { return this.resource({method, url}) }
+		method(method, ...url) { return this.resource({method, url: url.join("/")}) }
 
 		body(body) { return this.resource({body}) }
 
-		GET(url) { return this.method("GET", url) }
+		GET(...url) { return this.method("GET", ...url) }
 
-		POST(url) { return this.method("POST", url) }
+		POST(...url) { return this.method("POST", ...url) }
 
-		PUT(url) { return this.method("PUT", url) }
+		PUT(...url) { return this.method("PUT", ...url) }
 
-		DELETE(url) { return this.method("DELETE", url) }
+		DELETE(...url) { return this.method("DELETE", ...url) }
 
-		PATCH(url) { return this.method("PATCH", url) }
+		PATCH(...url) { return this.method("PATCH", ...url) }
 
-		HEAD(url) { return this.method("HEAD", url) }
+		HEAD(...url) { return this.method("HEAD", ...url) }
 
-		OPTION(url) { return this.method("OPTION", url) }
+		OPTION(...url) { return this.method("OPTION", ...url) }
 
 
 		/// Request

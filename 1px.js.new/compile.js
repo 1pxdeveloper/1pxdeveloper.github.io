@@ -86,7 +86,7 @@
 
 		let ret;
 
-		const hasTemplateDirective = ["*foreach", "*if", "*else"].some(attrName => {
+		const hasTemplateDirective = ["*foreach", "*if", "*else", "*template"].some(attrName => {
 			const attr = el.getAttributeNode(attrName);
 			if (!attr) return false;
 
@@ -174,29 +174,20 @@
 		/// Controller!!!!!!
 		if (el.hasAttribute("is")) {
 
-				console.log("controller????????????????????????????", el.getAttribute("is"));
-
-
-
-
 			$module.controller.require([el.getAttribute("is"), (Controller) => {
-
-
-				console.log("loaded????????????????????????????", el.getAttribute("is"));
-
-
-
 				const controller = new Controller;
-				$compile(el.childNodes, controller);
-				controller.init && controller.init();
+				const context = $compile(el.content || el.childNodes, controller);
+
+				_.isFunction(controller.init) && controller.init(context);
+
+				if (el.content) {
+					el.replaceWith(el.content);
+				}
+
+				ret = false;
 			}]);
 
-			return false;
-		}
-
-
-		if (window.customElements.get(tagName)) {
-			return false;
+			return ret;
 		}
 	}
 
@@ -229,7 +220,6 @@
 	function _visible(context, el, script, name) {
 		return context(script)
 			.pipe(renderPipeLine)
-			// .trace(`[visible]`, script)
 			.tap(value => el["hidden"] = !value)
 			.subscribe()
 	}
@@ -243,9 +233,8 @@
 
 	function _class(context, el, script, name) {
 		return context(script)
-			.switchMap(value => Observable.castAsync(value))
+			.mergeMap(value => Observable.castAsync(value))
 			.pipe(renderPipeLine)
-			// .trace(`[class.${name}]`, script)
 			.tap(value => value ? el.classList.add(name) : el.classList.remove(name))
 			.subscribe()
 	}
@@ -268,8 +257,18 @@
 			.subscribe();
 	}
 
-	function _twoway(context, el, script, name) {
+	function _twoway(context, el, script, value) {
 
+		let [prop, eventType, ...options] = value.split(".");
+
+		context.fromEvent(el, eventType || "input")
+			.mergeMap(() => context.assign(script, el[prop]))
+			.subscribe();
+
+		return context(script)
+			.reject(_.isUndefined)
+			.tap(value => el[prop] = value)
+			.subscribe();
 	}
 
 	function _prop(context, el, script, name) {
