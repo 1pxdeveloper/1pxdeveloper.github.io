@@ -7,20 +7,20 @@
 	$module.directive("*if", function() {
 		return function(context, el, script) {
 			el.removeAttribute("*if");
-			$compile(el.childNodes, context);
+			$compile(el, context);
 
 			let placeholder = document.createComment("if: " + script);
 			el._ifScript = placeholder._ifScript = script;
 
-			context(script).subscribe((bool) => {
-
-				if (bool) {
-					placeholder.replaceWith(el);
-				}
-				else {
-					el.replaceWith(placeholder);
-				}
-			});
+			context(script)
+				.subscribe((bool) => {
+					if (bool) {
+						placeholder.replaceWith(el);
+					}
+					else {
+						el.replaceWith(placeholder);
+					}
+				});
 		}
 	});
 

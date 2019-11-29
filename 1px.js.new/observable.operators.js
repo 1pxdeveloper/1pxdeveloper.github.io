@@ -600,138 +600,131 @@
 	});
 
 
-	Observable.prototype.connectMap = function(callback) {
-		return this.lift(observer => {
-			let subscription;
+	const connectMap = (callback) => lift(observer => {
+		let subscription;
 
-			return {
-				next(value) {
-					if (subscription) subscription.unsubscribe();
-					const observable = Observable.castAsync(callback(value));
-					subscription = observable.subscribe(observer);
-				},
-
-				complete() {},
-
-				finalize() {
-					if (subscription) subscription.unsubscribe();
-				}
-			}
-		});
-	};
-
-
-	Observable.prototype.exhaustMap = function(callback) {
-		return this.lift(_observer => {
-
-			let outer_completed = false;
-			let inner_subscription;
-
-			const observer = Object.setPrototypeOf({
-				complete() {
-					// console.log('exhaustMap inner complete.');
-
-					if (outer_completed) {
-						inner_subscription && inner_subscription.unsubscribe();
-						_observer.complete();
-					}
-				}
-			}, _observer);
-
-
-			return {
-				next(value) {
-					// console.log("[exhaustMap] next", value, inner_subscription, observer);
-
-					if (inner_subscription && !inner_subscription.closed) return;
-
-					const inner_observable = Observable.fromAsync(callback(value));
-					inner_subscription = inner_observable.subscribe(observer);
-				},
-
-				error(error) {
-					// console.log("[exhaustMap] error");
-
-					outer_completed = true;
-					_observer.error(error);
-				},
-
-				complete() {
-					// console.log("[exhaustMap] complete");
-
-					outer_completed = true;
-
-					if (inner_subscription && !inner_subscription.closed) return;
-					_observer.complete();
-				},
-
-				finalize() {
-					// console.log("[exhaustMap] finalize");
-
-					inner_subscription && inner_subscription.unsubscribe();
-				}
-			}
-		});
-	};
-
-
-	Observable.prototype.concatMap = function(callback = just) {
-
-		return this.lift(observer => {
-
-			const queue = [];
-
-			let allSourceCompleted = false;
-			let running = false;
-			let subscription;
-
-			function doQueue() {
-				if (queue.length === 0) {
-					if (allSourceCompleted) {
-						observer.complete();
-					}
-					return;
-				}
-
-				if (running) return;
-				running = true;
-
-				const value = queue.shift();
+		return {
+			next(value) {
+				if (subscription) subscription.unsubscribe();
 				const observable = Observable.castAsync(callback(value));
+				subscription = observable.subscribe(observer);
+			},
 
-				let completed = false;
-				const o = Object.setPrototypeOf({
-					complete: () => {
-						completed = true;
-					}
-				}, observer);
+			complete() {},
 
-				subscription = observable.finalize(() => {
-					if (completed) {
-						running = false;
-						doQueue();
-					}
-
-				}).subscribe(o);
+			finalize() {
+				if (subscription) subscription.unsubscribe();
 			}
+		}
+	});
 
-			return {
-				next(value) {
-					queue.push(value);
-					doQueue();
-				},
 
-				complete() {
-					allSourceCompleted = true;
-				},
+	const exhaustMap = (callback) => lift(_observer => {
 
-				finalize() {
-					queue.splice(0, 0);
-					if (subscription) subscription.unsubscribe();
+		let outer_completed = false;
+		let inner_subscription;
+
+		const observer = Object.setPrototypeOf({
+			complete() {
+				// console.log('exhaustMap inner complete.');
+
+				if (outer_completed) {
+					inner_subscription && inner_subscription.unsubscribe();
+					_observer.complete();
 				}
 			}
-		})
-	};
+		}, _observer);
+
+
+		return {
+			next(value) {
+				// console.log("[exhaustMap] next", value, inner_subscription, observer);
+
+				if (inner_subscription && !inner_subscription.closed) return;
+
+				const inner_observable = Observable.fromAsync(callback(value));
+				inner_subscription = inner_observable.subscribe(observer);
+			},
+
+			error(error) {
+				// console.log("[exhaustMap] error");
+
+				outer_completed = true;
+				_observer.error(error);
+			},
+
+			complete() {
+				// console.log("[exhaustMap] complete");
+
+				outer_completed = true;
+
+				if (inner_subscription && !inner_subscription.closed) return;
+				_observer.complete();
+			},
+
+			finalize() {
+				// console.log("[exhaustMap] finalize");
+
+				inner_subscription && inner_subscription.unsubscribe();
+			}
+		}
+	});
+
+
+	const concatMap = (callback = just) => lift(observer => {
+
+		const queue = [];
+
+		let allSourceCompleted = false;
+		let running = false;
+		let subscription;
+
+		function doQueue() {
+			if (queue.length === 0) {
+				if (allSourceCompleted) {
+					observer.complete();
+				}
+				return;
+			}
+
+			if (running) return;
+			running = true;
+
+			const value = queue.shift();
+			const observable = Observable.castAsync(callback(value));
+
+			let completed = false;
+			const o = Object.setPrototypeOf({
+				complete: () => {
+					completed = true;
+				}
+			}, observer);
+
+			subscription = observable.finalize(() => {
+				if (completed) {
+					running = false;
+					doQueue();
+				}
+
+			}).subscribe(o);
+		}
+
+		return {
+			next(value) {
+				queue.push(value);
+				doQueue();
+			},
+
+			complete() {
+				allSourceCompleted = true;
+			},
+
+			finalize() {
+				queue.splice(0, 0);
+				if (subscription) subscription.unsubscribe();
+			}
+		}
+	});
 
 
 	/// -------------------------------------------------------------------------------------------
@@ -747,42 +740,34 @@
 	/// -------------------------------------------------------------------------------------------
 	/// Creation
 	/// -------------------------------------------------------------------------------------------
-	Observable.defer = function(callback, thisObj, ...args) {
-		return new Observable(observer => {
-			return Observable.castAsync(Function.prototype.apply.call(callback, thisObj, args)).subscribe(observer);
-		});
-	};
+	Observable.defer = (callback, thisObj, ...args) => new Observable(observer => {
+		return Observable.castAsync(Function.prototype.apply.call(callback, thisObj, args)).subscribe(observer);
+	});
 
-	Observable.timeout = function(timeout, value) {
-		return new Observable((observer, id) => {
-			id = setTimeout(() => {
-				observer.next(value);
+	Observable.timeout = (timeout, value) => new Observable((observer, id) => {
+		id = setTimeout(() => {
+			observer.next(value);
+			observer.complete();
+		}, timeout);
+
+		return () => clearTimeout(id);
+	});
+
+	Observable.interval = (timeout) => new Observable((observer, i = 0, id) => {
+		id = setInterval(() => observer.next(i++), timeout);
+		return () => clearInterval(id);
+	});
+
+	Observable.fromPromise = (promise) => new Observable(observer => {
+		promise.then(
+			res => {
+				observer.next(res);
 				observer.complete();
-			}, timeout);
+			},
 
-			return () => clearTimeout(id);
-		});
-	};
-
-	Observable.interval = function(timeout) {
-		return new Observable((observer, i = 0, id) => {
-			id = setInterval(() => observer.next(i++), timeout);
-			return () => clearInterval(id);
-		});
-	};
-
-	Observable.fromPromise = function(promise) {
-		return new Observable(observer => {
-			promise.then(
-				res => {
-					observer.next(res);
-					observer.complete();
-				},
-
-				err => observer.error(err)
-			)
-		});
-	};
+			err => observer.error(err)
+		)
+	});
 
 	Observable.fromEvent = (el, type, useCapture) => new Observable(observer => {
 		type = _.castArray(type);
@@ -799,7 +784,7 @@
 	/// Utils
 	/// -------------------------------------------------------------------------------------------
 	// @FIXME: 내가 만든거
-	Observable.fromAsync = Observable.castAsync = function(value) {
+	Observable.fromAsync = Observable.castAsync = (value) => {
 		if (value instanceof Observable) {
 			return value;
 		}
@@ -815,81 +800,76 @@
 	/// -------------------------------------------------------------------------------------------
 	/// Combination
 	/// -------------------------------------------------------------------------------------------
-	Observable.forkjoin = function(...observables) {
-		return new Observable(observer => {
-			let ret = new Array(observables.length);
-			let count = 0;
+	Observable.forkjoin = (...observables) => new Observable(observer => {
+		let ret = new Array(observables.length);
+		let count = 0;
 
-			if (ret.length === 0) {
-				observer.next(ret);
-				observer.complete();
-				return;
-			}
+		if (ret.length === 0) {
+			observer.next(ret);
+			observer.complete();
+			return;
+		}
 
-			observables.forEach((observable, index) => {
-				observable.last().subscribe(value => {
-					ret[index] = value;
-					if (++count === ret.length) {
-						observer.next(ret);
-						observer.complete();
-					}
-				});
-			})
+		observables.forEach((observable, index) => {
+			observable.last().subscribe(value => {
+				ret[index] = value;
+				if (++count === ret.length) {
+					observer.next(ret);
+					observer.complete();
+				}
+			});
 		})
-	};
+	});
 
-	Observable.concat = function(...observables) {
+	Observable.concat = (...observables) => {
 		let [observable, ...rest] = observables;
 
 		for (const o of rest) {
 			observable = observable.concat(o);
 		}
+
 		return observable;
 	};
 
-	Observable.zip = function(...observables) {
-		return new Observable(observer => {
-			const stack = new Array(observables.length).fill(null).map(() => []);
-			const subscriptions = observables.map((observable, index) => {
+	Observable.zip = (...observables) => new Observable(observer => {
+		const stack = new Array(observables.length).fill(null).map(() => []);
+		const subscriptions = observables.map((observable, index) => {
 
-				return observable.subscribe(value => {
-					stack[index].push(value);
-					// console.log(JSON.stringify(stack), index);
+			return observable.subscribe(value => {
+				stack[index].push(value);
+				// console.log(JSON.stringify(stack), index);
 
-					if (stack.every(v => v.length > 0)) {
-						const ret = [];
-						stack.forEach(v => ret.push(v.shift()));
-						observer.next(ret);
-					}
-				});
-			});
-
-			return function() {
-				for (const s of subscriptions) s.unsubscribe();
-			}
-		});
-	};
-
-
-	Observable.merge = function(...observables) {
-		return new Observable(observer => {
-			const length = observables.length;
-			let count = 0;
-
-			const o = Object.setPrototypeOf({
-				complete() {
-					if (++count === length) {
-						observer.complete();
-					}
+				if (stack.every(v => v.length > 0)) {
+					const ret = [];
+					stack.forEach(v => ret.push(v.shift()));
+					observer.next(ret);
 				}
-			}, observer);
-
-			const subscriptions = observables.map(observable => observable.subscribe(o));
-			return function() {
-				for (const s of subscriptions) s.unsubscribe();
-			}
+			});
 		});
-	};
+
+		return function() {
+			for (const s of subscriptions) s.unsubscribe();
+		}
+	});
+
+
+	Observable.merge = (...observables) => new Observable(observer => {
+		const length = observables.length;
+		let count = 0;
+
+		const o = Object.setPrototypeOf({
+			complete() {
+				if (++count === length) {
+					observer.complete();
+				}
+			}
+		}, observer);
+
+		const subscriptions = observables.map(observable => observable.subscribe(o));
+		return () => {
+			for (const s of subscriptions) s.unsubscribe();
+		}
+	});
 
 
 	Observable.combine = (...observables) => new Observable(observer => {
@@ -1015,34 +995,6 @@
 	};
 
 
-	const bindAction = (action) => lift((observer, _value) => ({
-		start() {
-
-		},
-
-		next(value) {
-			_value = value;
-			observer.next(value);
-		},
-
-		error(error) {
-			if (typeof action.FAILURE === "function") {
-				action.FAILURE(error);
-				return;
-			}
-
-			observer.error(error);
-		},
-
-		complete() {
-			if (typeof action.SUCCESS === "function") {
-				action.SUCCESS(_value);
-			}
-
-			observer.complete();
-		}
-	}));
-
 	/// 임시 Operators
 	Observable.operators = {};
 	for (const method of Object.getOwnPropertyNames(Observable.prototype)) {
@@ -1050,14 +1002,16 @@
 	}
 
 	Object.assign(Observable.operators, {
-		bindAction,
 		catch: catchError,
 		catchError,
 		count,
+		concatMap,
+		connectMap,
 		debounce,
 		delay,
 		distinctUntilChanged,
 		duration,
+		exhaustMap,
 		filter,
 		finalize,
 		initialize,

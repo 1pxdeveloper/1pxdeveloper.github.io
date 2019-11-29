@@ -42,6 +42,8 @@ _.itself = _.always = (value) => () => value;
 
 _.is = (a) => (b) => Object.is(a, b);
 _.isUndefined = (value) => value === undefined;
+_.isTrue = (value) => value === true;
+_.isFalse = (value) => value === false;
 _.isNumber = (value) => +value === value;
 _.isNumberLike = (value) => _.isNumber(+value);
 _.isBoolean = (value) => typeof value === "boolean";
@@ -73,6 +75,8 @@ _.append = _.push = (item) => (array) => [...array, item];
 _.prepend = _.unshift = (item) => (array) => [item, ...array];
 _.patch = (target, object) => _.map(item => item !== target ? item : ({...item, ...object}));
 _.patchAll = (object) => _.map(item => ({...item, ...object}));
+
+_.sort = (callback) => (array) => (array => (array.sort(callback), array))(array.slice());
 
 _.replaceIndex = (object, index) => (array) => {
 	if (index < 0) index = array.length + index;
@@ -164,6 +168,7 @@ _.toType = (obj) => ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCas
 _.castArray = (a) => _.isArray(a) ? a : [a];
 _.with = _.alias = (...args) => (callback) => callback(...args);
 _.throw = (error) => () => { throw error; };
+_.if = (cond, callback, elseCallback = _.itself) => (value) => cond(value) ? callback(value) : elseCallback(value);
 _.cond = (pairs) => (...args) => {
 	for (const [predicate, transform] of pairs) {
 		if (predicate(...args)) {

@@ -7,11 +7,11 @@
 
 		connectedCallback() {
 
-			/// Make Once
-			if (this.constructor.__connected) {
+			/// @FIXME: Make Once
+			if (this.__connected) {
 				return;
 			}
-			this.constructor.__connected = true;
+			this.__connected = true;
 			console.warn("connectedCallback");
 
 

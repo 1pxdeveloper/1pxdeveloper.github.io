@@ -8,7 +8,7 @@
 	/// -----------------------------------------------------------------------
 	/// traverseDOM
 	/// -----------------------------------------------------------------------
-	function traverseDOM(node, callback) {
+	const traverseDOM = (node, callback) => {
 		if (!node) return;
 
 		const queue = ("length" in node) ? Array.from(node) : [node];
@@ -17,7 +17,6 @@
 			node = queue.shift();
 
 			if (!node) continue;
-
 
 			// Option: Closing,
 			if (typeof node === "function") {
@@ -37,7 +36,7 @@
 				queue.unshift.apply(queue, node.childNodes);
 			}
 		}
-	}
+	};
 
 
 	/// -----------------------------------------------------------------------
@@ -106,23 +105,40 @@
 		if (tagName === "svg") {
 			const svg = el;
 
-			let src = svg.getAttributeNode("src");
-			if (src) {
-				if (localSVG[src.nodeValue]) {
-					svg.replaceWith(localSVG[src.nodeValue]);
-				}
-				else {
-					fetch(src.nodeValue).then(res => res.text()).then(res => {
+			const loadSVG = () => {
+				let src = svg.getAttributeNode("src");
+				if (!src.nodeValue) return;
 
-						let template = document.createElement("template");
-						template.innerHTML = res;
-						localSVG[src.nodeValue] = template.content;
-
+				if (src) {
+					if (localSVG[src.nodeValue]) {
 						svg.replaceWith(localSVG[src.nodeValue]);
-					});
+					}
+					else {
+						fetch(src.nodeValue).then(res => res.text()).then(res => {
+
+							let template = document.createElement("template");
+							template.innerHTML = res;
+							localSVG[src.nodeValue] = template.content;
+
+							svg.replaceWith(localSVG[src.nodeValue]);
+						});
+					}
 				}
-			}
+			};
+
+
+			const observer = new MutationObserver(function(mutations) {
+				mutations.forEach((mutation) => {
+					if (mutation.attributeName === "src") {
+						loadSVG();
+					}
+				});
+			});
+
+			observer.observe(svg, {attributes: true});
+			loadSVG();
 		}
+
 
 		for (const attr of attributes) {
 
@@ -141,7 +157,6 @@
 			/// Basic Directives
 			if (templateSyntax(context, to, attr, "(", _event, ")")) continue;
 			if (templateSyntax(context, to, attr, "[attr.", _attr, "]")) continue;
-			// if (templateSyntax(context, to, attr, "[visible.", _visible2, "]")) continue;
 			if (templateSyntax(context, to, attr, "[visible", _visible, "]")) continue;
 			if (templateSyntax(context, to, attr, "[class.", _class, "]")) continue;
 			if (templateSyntax(context, to, attr, "[style.", _style, "]")) continue;
@@ -151,34 +166,36 @@
 			if (templateSyntax(context, to, attr, "$", _ref2, "")) continue;
 			// if (templateSyntax(context, to, attr, "#", _ref, "")) continue;
 			// if (templateSyntax(context, to, attr, ".", _call, ")")) continue;
+
+			if (el !== to) {
+				to.setAttributeNode(attr.cloneNode(true));
+			}
 		}
 
 
-		/// Iframe Component
-		if (tagName === "iframe" && el.hasAttribute("is")) {
+		/// @TODO: Iframe Component
+		// if (tagName === "iframe" && el.hasAttribute("is")) {
+		//
+		// 	const iframe = el;
+		// 	const is = el.getAttribute("is");
+		//
+		// 	window.customElements.whenDefined(is).then(() => {
+		// 		const Component = window.customElements.get(is);
+		// 		const component = new Component;
+		// 		component.iframe = iframe;
+		// 		iframe.contentDocument.body.appendChild(component);
+		// 	});
+		//
+		// 	return false;
+		// }
 
-			const iframe = el;
-			const is = el.getAttribute("is");
 
-			window.customElements.whenDefined(is).then(() => {
-				const Component = window.customElements.get(is);
-				const component = new Component;
-				component.iframe = iframe;
-				iframe.contentDocument.body.appendChild(component);
-			});
-
-			return false;
-		}
-
-
-		/// Controller!!!!!!
+		/// Bind Controller
 		if (el.hasAttribute("is")) {
-
 			$module.controller.require([el.getAttribute("is"), (Controller) => {
 				const controller = new Controller;
 				const context = $compile(el.content || el.childNodes, controller);
-
-				_.isFunction(controller.init) && controller.init(context);
+				typeof controller.init === "function" && controller.init(context);
 
 				if (el.content) {
 					el.replaceWith(el.content);
@@ -217,6 +234,7 @@
 	const renderPipeLine = $ => $.distinctUntilChanged().switchMap(rAF$);
 
 
+	/// Render From Template Syntax
 	function _visible(context, el, script, name) {
 		return context(script)
 			.pipe(renderPipeLine)
@@ -271,10 +289,10 @@
 			.subscribe();
 	}
 
-	function _prop(context, el, script, name) {
+	function _prop(context, el, script, prop) {
 		return context(script)
 		// .pipe(renderPipeLine) // @TODO: hasOwnProperty가 없는데 HTMLElement가 가지고 있는 경우에는 renderPipe를 통해야함. ex) id, src 등...
-			.tap(value => el[name] = value)
+			.tap(value => el[prop] = value)
 			.subscribe();
 	}
 
