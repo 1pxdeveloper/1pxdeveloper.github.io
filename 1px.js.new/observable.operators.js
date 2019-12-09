@@ -1,7 +1,7 @@
 (function() {
 	"use strict";
 	
-	const {Observable} = require("public/aitutor_v3/1px.js/observable");
+	const {Observable} = require("observable");
 	
 	/// -------------------------------------------------------------------------------------------
 	/// Operators
@@ -56,7 +56,6 @@
 	Observable.prototype.pipe = function(...operators) { return pipe(...operators)(this) };
 	Observable.prototype.lift = function(callback) { return lift(callback)(this) };
 	
-	
 	Observable.prototype.toPromise = function() {
 		return new Promise((resolve, reject) => {
 			let _value;
@@ -84,15 +83,21 @@
 	/// Operators
 	/// -------------------------------------------------------------------------------------------
 	const map = (callback) => lift((observer, index = 0) => ({
-		next(value) { observer.next(mapCallback(callback)(value, index++)) }
+		next(value) {
+			observer.next(mapCallback(callback)(value, index++))
+		}
 	}));
 	
 	const mapTo = (value) => lift(observer => ({
-		next() { observer.next(value) }
+		next() {
+			observer.next(value)
+		}
 	}));
 	
 	const filter = (callback) => lift((observer, index = 0) => ({
-		next(value) { if (filterCallback(callback)(value, index++)) observer.next(value) }
+		next(value) {
+			if (filterCallback(callback)(value, index++)) observer.next(value)
+		}
 	}));
 	
 	const scan = (accumulator, seed) => lift((observer, ret = seed) => ({
@@ -164,7 +169,6 @@
 		return observable.subscribe(o);
 	});
 	
-	
 	const count = () => lift((observer, count = 0) => ({
 		next() { count++ },
 		complete() { observer.next(count) }
@@ -179,6 +183,7 @@
 	
 	const last = () => lift((observer, ret) => ({
 		next(value) {ret = value},
+		
 		complete() {
 			observer.next(ret);
 			observer.complete();
@@ -272,7 +277,6 @@
 	
 	const timeout = (timeout) => lift((observer, id) => ({
 		start() {
-			clearTimeout(id);
 			id = setTimeout(() => {
 				observer.error();/// @TODO: 여기에 뭘 보내야 할까??
 			}, timeout);
@@ -312,6 +316,32 @@
 	}));
 	
 	
+	const debug = (...tag) => lift(observer => ({
+		start() {
+			console.warn(...tag, ".start");
+		},
+		
+		next(value) {
+			console.log(...tag, ".next", value);
+			observer.next(value);
+		},
+		
+		error(error) {
+			console.error(...tag, ".error", error);
+			observer.error(error);
+		},
+		
+		complete() {
+			console.warn(...tag, ".complete");
+			observer.complete();
+		},
+		
+		finalize() {
+			// console.groupEnd();
+		}
+	}));
+	
+	
 	const trace = (...tag) => lift(observer => ({
 		start() {
 			// console.group(tag);
@@ -339,7 +369,7 @@
 	}));
 	
 	
-	const throttle = (callback) => lift((observer, pending = false) => ({
+	const throttle = (callback) => lift((observer, pending = false, s) => ({
 		
 		next(value) {
 			if (!pending) {
@@ -347,11 +377,16 @@
 			}
 			
 			pending = true;
-			callback(value).subscribe({
+			
+			s = Observable.castAsync(callback(value)).subscribe({
 				complete() {
 					pending = false;
 				}
 			})
+		},
+		
+		finalize() {
+			if (s) s.unsubscribe();
 		}
 	}));
 	
@@ -376,7 +411,10 @@
 						}
 						queue = [];
 					},
-					error: observer.error.bind(observer)
+					
+					error(error) {
+						observer.error(error)
+					}
 				});
 			},
 			
@@ -534,15 +572,16 @@
 	/// -------------------------------------------------------------------------------------------
 	/// Flatten Map Functions
 	/// -------------------------------------------------------------------------------------------
-	const mergeMap = (callback) => lift((observer) => {
+	const mergeMap = (callback = just) => lift((observer) => {
 		let completed = false;
-		const subscriptions = [];
+		let subscriptions = [];
+		
 		const complete = () => completed && subscriptions.every(s => s.closed) && observer.complete();
+		const mergeMapObserver = Object.setPrototypeOf({complete}, observer);
 		
 		return {
 			next(value) {
-				value = callback(value);
-				subscriptions.push(value.subscribe(Object.setPrototypeOf({complete}, observer)))
+				subscriptions.push(Observable.castAsync(callback(value)).subscribe(mergeMapObserver))
 			},
 			
 			complete() {
@@ -556,9 +595,9 @@
 		}
 	});
 	
-	const switchMap = (callback) => lift(observer => {
-		let subscription;
+	const switchMap = (callback = just) => lift(observer => {
 		let completed = false;
+		let subscription;
 		
 		const complete = () => completed && subscription.closed && observer.complete();
 		const switchMapObserver = Object.setPrototypeOf({complete}, observer);
@@ -566,11 +605,12 @@
 		return {
 			next(value) {
 				if (subscription) subscription.unsubscribe();
-				subscription = callback(value).subscribe(switchMapObserver);
+				subscription = Observable.castAsync(callback(value)).subscribe(switchMapObserver);
 			},
 			
 			complete() {
 				completed = true;
+				complete();
 			},
 			
 			finalize() {
@@ -580,72 +620,44 @@
 	});
 	
 	
-	const connectMap = (callback) => lift(observer => {
+	const exhaustMap = (callback = just) => lift(observer => {
+		let completed = false;
+		let subscription;
+		
+		const complete = () => completed && subscription.closed && observer.complete();
+		const exhaustMapObserver = Object.setPrototypeOf({complete}, observer);
+		
+		return {
+			next(value) {
+				if (subscription && !subscription.closed) return;
+				subscription = Observable.castAsync(callback(value)).subscribe(exhaustMapObserver);
+			},
+			
+			complete() {
+				completed = true;
+				complete();
+			},
+			
+			finalize() {
+				if (subscription) subscription.unsubscribe();
+			}
+		}
+	});
+	
+	
+	const connectMap = (callback = just) => lift(observer => {
 		let subscription;
 		
 		return {
 			next(value) {
 				if (subscription) subscription.unsubscribe();
-				const observable = Observable.castAsync(callback(value));
-				subscription = observable.subscribe(observer);
+				subscription = Observable.castAsync(callback(value)).subscribe(observer);
 			},
 			
 			complete() {},
 			
 			finalize() {
 				if (subscription) subscription.unsubscribe();
-			}
-		}
-	});
-	
-	
-	const exhaustMap = (callback) => lift(_observer => {
-		
-		let outer_completed = false;
-		let inner_subscription;
-		
-		const observer = Object.setPrototypeOf({
-			complete() {
-				// console.log('exhaustMap inner complete.');
-				
-				if (outer_completed) {
-					inner_subscription && inner_subscription.unsubscribe();
-					_observer.complete();
-				}
-			}
-		}, _observer);
-		
-		
-		return {
-			next(value) {
-				// console.log("[exhaustMap] next", value, inner_subscription, observer);
-				
-				if (inner_subscription && !inner_subscription.closed) return;
-				
-				const inner_observable = Observable.fromAsync(callback(value));
-				inner_subscription = inner_observable.subscribe(observer);
-			},
-			
-			error(error) {
-				// console.log("[exhaustMap] error");
-				
-				outer_completed = true;
-				_observer.error(error);
-			},
-			
-			complete() {
-				// console.log("[exhaustMap] complete");
-				
-				outer_completed = true;
-				
-				if (inner_subscription && !inner_subscription.closed) return;
-				_observer.complete();
-			},
-			
-			finalize() {
-				// console.log("[exhaustMap] finalize");
-				
-				inner_subscription && inner_subscription.unsubscribe();
 			}
 		}
 	});
@@ -660,6 +672,8 @@
 		let subscription;
 		
 		function doQueue() {
+			if (running) return;
+			
 			if (queue.length === 0) {
 				if (allSourceCompleted) {
 					observer.complete();
@@ -667,26 +681,21 @@
 				return;
 			}
 			
-			if (running) return;
 			running = true;
-			
 			const value = queue.shift();
 			const observable = Observable.castAsync(callback(value));
 			
 			let completed = false;
-			const o = Object.setPrototypeOf({
-				complete: () => {
-					completed = true;
-				}
-			}, observer);
+			const _observer = Object.setPrototypeOf({complete: () => completed = true}, observer);
 			
-			subscription = observable.finalize(() => {
-				if (completed) {
-					running = false;
-					doQueue();
-				}
-				
-			}).subscribe(o);
+			subscription = observable
+				.finalize(() => {
+					if (completed) {
+						running = false;
+						doQueue();
+					}
+				})
+				.subscribe(_observer);
 		}
 		
 		return {
@@ -697,10 +706,13 @@
 			
 			complete() {
 				allSourceCompleted = true;
+				if (running === false && queue.length === 0) {
+					observer.complete();
+				}
 			},
 			
 			finalize() {
-				queue.splice(0, 0);
+				queue.length = 0;
 				if (subscription) subscription.unsubscribe();
 			}
 		}
@@ -772,6 +784,10 @@
 			return Observable.fromPromise(value);
 		}
 		
+		if (typeof value === "function") {
+			return Observable.defer(value);
+		}
+		
 		return Observable.of(value);
 	};
 	
@@ -828,7 +844,7 @@
 		const length = observables.length;
 		let count = 0;
 		
-		const o = Object.setPrototypeOf({
+		const mergeObserver = Object.setPrototypeOf({
 			complete() {
 				if (++count === length) {
 					observer.complete();
@@ -836,15 +852,17 @@
 			}
 		}, observer);
 		
-		const subscriptions = observables.map(observable => observable.subscribe(o));
+		const subscriptions = observables.map(observable => observable.subscribe(mergeObserver));
+		
 		return () => {
 			for (const s of subscriptions) s.unsubscribe();
 		}
 	});
 	
 	
-	Observable.combine = (...observables) => new Observable(observer => {
+	Observable.combine = Observable.combineLatest = (...observables) => new Observable(observer => {
 		const arr = Array(observables.length);
+		
 		if (!arr.length) {
 			observer.next([]);
 			observer.complete();
@@ -967,12 +985,7 @@
 	
 	
 	/// 임시 Operators
-	Observable.operators = {};
-	for (const method of Object.getOwnPropertyNames(Observable.prototype)) {
-		Observable.operators[method] = (...args) => (observable) => observable[method](...args);
-	}
-	
-	Object.assign(Observable.operators, {
+	Observable.operators = {
 		catch: catchError,
 		catchError,
 		concat,
@@ -980,6 +993,7 @@
 		connectMap,
 		count,
 		debounce,
+		debug,
 		delay,
 		distinctUntilChanged,
 		duration,
@@ -1012,7 +1026,7 @@
 		trace,
 		withLatestFrom,
 		until
-	});
+	};
 	
 	for (const [key, value] of Object.entries(Observable.operators)) {
 		if (!Observable.prototype[key]) {
