@@ -8,7 +8,7 @@
 	const {Observable, Subject, AsyncSubject, BehaviorSubject, ReplaySubject} = require("./observable");
 	const {Action, RequestAction, StreamAction} = require("./action");
 	const {WebComponent} = require("./component");
-	const {JSContext, $compile, traverseDOM} = require("./compile");
+	const {JSContext, $compile, traverseDOM} = require("./compiler/compile");
 
 	window.Observable = Observable;
 

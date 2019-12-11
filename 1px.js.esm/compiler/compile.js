@@ -1,7 +1,7 @@
 (function() {
 	"use strict";
 
-	const {$module} = require("./module");
+	const {$module} = require("../module");
 	const {Context} = require("./parse/parse.evaluate");
 
 

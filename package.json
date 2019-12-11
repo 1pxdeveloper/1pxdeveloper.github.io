@@ -1,0 +1,27 @@
+{
+  "name": "1pxdeveloper.github.io",
+  "version": "1.0.0",
+  "description": "",
+  "main": "redux.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "rollup-plugin-local-resolve": "^1.0.7"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1pxdeveloper/1pxdeveloper.github.io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/1pxdeveloper/1pxdeveloper.github.io/issues"
+  },
+  "homepage": "https://github.com/1pxdeveloper/1pxdeveloper.github.io#readme"
+}
