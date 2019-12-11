@@ -1,35 +1,26 @@
 (function() {
 	const {$module} = require("./1px.module");
-	const {$compile} = require("./compile");
+	const {$compile} = require("../compile");
 
 
 	/// Directive: "*if"
 	$module.directive("*if", function() {
 		return function(context, el, script) {
-
-			/// @FIXME:...
-			// el = context.thisObj;
 			el.removeAttribute("*if");
-			// $compile(el, context);
-
+			$compile(el, context);
 
 			let placeholder = document.createComment("if: " + script);
 			el._ifScript = placeholder._ifScript = script;
 
-			context.watch$(script, function(bool) {
-
-				if (bool) {
-
-					let newEl = el.cloneNode(true);
-					// $compile(newEl, context);
-
-					placeholder.replaceWith(newEl);
-				}
-				else {
-					el.replaceWith(placeholder);
-				}
-			});
-
+			context(script)
+				.subscribe((bool) => {
+					if (bool) {
+						placeholder.replaceWith(el);
+					}
+					else {
+						el.replaceWith(placeholder);
+					}
+				});
 		}
 	});
 
@@ -61,7 +52,7 @@
 			// console.log(script);
 
 
-			context.watch$(script, function(bool) {
+			context(script).subscribe((bool) => {
 
 				if (bool) {
 					if (placeholder.parentNode) {
