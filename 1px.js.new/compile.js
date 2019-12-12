@@ -107,7 +107,7 @@
 
 			const loadSVG = () => {
 				let src = svg.getAttributeNode("src");
-				if (!src.nodeValue) return;
+				if (!src || !src.nodeValue) return;
 
 				if (src) {
 					if (localSVG[src.nodeValue]) {
@@ -285,6 +285,7 @@
 
 		return context(script)
 			.reject(_.isUndefined)
+			.reject(value => el[prop] === value)
 			.tap(value => el[prop] = value)
 			.subscribe();
 	}
@@ -339,8 +340,9 @@
 
 		/// Event Handler
 		return event$
-		// .trace("(event)", type)
+			// .trace("(event)", type)
 			.switchMap(event => context.fork({event, el}).evaluate(script))
+			.switchMap(ret => Observable.castAsync(ret))
 			.subscribe()
 	}
 

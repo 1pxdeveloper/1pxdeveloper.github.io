@@ -1,21 +1,35 @@
 (function() {
 	"use strict";
 	
-	const {Observable, Subject} = require("public/aitutor_v3/1px.js/observable");
+	const {Observable, Subject, ReplaySubject} = require("observable");
 	
 	let action_index = 0;
+	let depth = false;
 	
-	const _debug = (type, payload) => {
-		if (payload !== undefined) {
-			return _.debug.group("#" + (++action_index) + " " + type + "(" + _.toType(payload) + ")", payload)
-		}
-		else {
-			return _.debug.group("#" + (++action_index) + " " + type + "()");
-		}
+	const _action_log_begin = (type, payload) => {
+		action_index++;
+		depth = true;
+		const signature = payload === undefined ? "" : _.toType(payload);
+		const msg = `#${action_index} ${type}(${signature})`;
+		_.debug.group(msg);
+		payload !== undefined && console.log(payload);
 	};
+	
+	const _action_log_end = () => {
+		_.debug.groupEnd();
+		if (depth === true) console.log("\n");
+		depth = false;
+	};
+
+	
+	const memo = {};
 	
 	class Action extends Observable {
 		constructor(type, ...pipes) {
+			
+			// @TODO: memo를 쓰니 override를 할 수가 없다;;
+			if (memo[type]) return memo[type];
+			
 			const subject = new Subject;
 			const observable = subject.pipe(...pipes);
 			
@@ -32,25 +46,19 @@
 			
 			this.type = type;
 			this.toString = () => type;
+			this.pipes = pipes;
 			
 			const f = payload => {
-				
-				/// @FIXME: 이러면 뭔가 문제가 생기네...
-				// if (s2 && s2.closed) {
-				// 	subject.complete();
-				// 	return Observable.EMPTY;
-				// }
-				
-				f.uuid = f._debug(type, payload);
+				_action_log_begin(type, payload);
 				subject.next(payload);
-				f._debugEnd(f.uuid);
-				
+				_action_log_end();
+
 				return Observable.EMPTY;
 			};
-			f._debug = _debug;
-			f._debugEnd = _.debug.groupEnd;
 			
 			Object.setPrototypeOf(f, this);
+			
+			memo[type] = f;
 			return f;
 		}
 		
@@ -81,10 +89,10 @@
 			
 			Object.setPrototypeOf(f, this);
 			
-			f.CANCEL = new Action(type + "_CANCEL");
-			f.REQUEST = new Action(type + "_REQUEST");
-			f.SUCCESS = new Action(type + "_SUCCESS");
-			f.FAILURE = new Action(type + "_FAILURE");
+			f.CANCEL = new Action(type + ".CANCEL");
+			f.REQUEST = new Action(type + ".REQUEST");
+			f.SUCCESS = new Action(type + ".SUCCESS");
+			f.FAILURE = new Action(type + ".FAILURE");
 			return f;
 		}
 	};
@@ -96,11 +104,12 @@
 			const _f = super(type, ...pipes);
 			
 			let subscription;
+			
 			const f = (payload) => {
 				if (subscription) subscription.unsubscribe();
 				
 				const id = payload && payload.id;
-				const ret = Observable.merge(f.ERROR, f.COMPLETE).filter({id}).take(1).shareReplay(1);
+				const ret = Observable.merge(f.ERROR, f.COMPLETE, f.CANCEL).filter({id}).take(1).shareReplay(1);
 				subscription = ret.subscribe();
 				_f(payload);
 				return ret;
@@ -109,17 +118,17 @@
 			
 			Object.setPrototypeOf(f, this);
 			
-			f.START = new Action(type + "_START");
-			f.NEXT = new Action(type + "_NEXT");
-			f.ERROR = new Action(type + "_ERROR");
-			f.COMPLETE = new Action(type + "_COMPLETE");
+			f.CANCEL = new Action(type + ".CANCEL");
+			f.START = new Action(type + ".START");
+			f.NEXT = new Action(type + ".NEXT");
+			f.ERROR = new Action(type + ".ERROR");
+			f.COMPLETE = new Action(type + ".COMPLETE");
 			
 			return f;
 		}
 	};
 	
 	Action.prototype.isolate = function(id) {
-		
 		const f = (payload) => {
 			if (Object(payload) !== payload) payload = {payload};
 			return this({id, ...payload});
@@ -132,7 +141,6 @@
 		return f;
 	};
 	
-	
 	Action.isolate = (id, object) => {
 		return _.memoize1((id) => _.mapValues(_.if(_.instanceof(Action), (action) => action.isolate(id)))(object))(id);
 	};
@@ -141,9 +149,4 @@
 	exports.Action = Action;
 	exports.RequestAction = RequestAction;
 	exports.StreamAction = StreamAction;
-
-
-	Action.RequestAction = RequestAction;
-	Action.StreamAction = StreamAction;
-
 }());

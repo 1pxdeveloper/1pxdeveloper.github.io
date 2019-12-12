@@ -26,6 +26,8 @@
 		"directive.if.js",
 		"directive.template.js",
 
+		"pipe.core.js",
+
 		"component.js",
 
 		"batch.js",

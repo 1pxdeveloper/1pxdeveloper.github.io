@@ -1,4 +1,4 @@
-import {_} from "../../fp.js";
+import {_} from "../../fp";
 
 /// Utils
 const {castArray, noop} = _;

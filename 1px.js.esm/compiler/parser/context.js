@@ -1,8 +1,8 @@
 import {Observable, Subject, BehaviorSubject} from "../../observable";
 
-import {tokenize} from "./parse.expression.js";
-import {watch$$} from "./parse.watch.js";
-import {evaluate} from "./parse.evaluate.js";
+import {tokenize} from "./expression.js";
+import {watch$$} from "./watch.js";
+import {evaluate} from "./evaluate.js";
 
 
 function makeString(strings) {
@@ -12,7 +12,7 @@ function makeString(strings) {
 const noWatch$$ = (object, prop) => Observable.of(object[prop]);
 
 
-export class Context {
+export class JSContext {
 
 	constructor(thisObj, locals = Object.create(null)) {
 		this.thisObj = thisObj;
@@ -61,7 +61,7 @@ export class Context {
 	}
 
 	fork(locals) {
-		return new Context(this.thisObj, Object.setPrototypeOf(locals, this.locals$.value));
+		return new JSContext(this.thisObj, Object.setPrototypeOf(locals, this.locals$.value));
 	}
 
 	fromEvent(el, type, useCapture = false) {

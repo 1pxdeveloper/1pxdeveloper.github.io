@@ -303,3 +303,10 @@ _.LCS = (s1, s2) => {
 	
 	return [s4, s5];
 };
+
+
+_.importScripts = (...sources) => {
+	const script = Array.from(document.querySelectorAll("script")).pop();
+	const prefix = script.src.slice(0, script.src.lastIndexOf("/") + 1);
+	for (const src of sources) document.write(`<script src="${prefix}${src}"></script>`);
+};

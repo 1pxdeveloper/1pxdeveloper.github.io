@@ -277,18 +277,19 @@
 	
 	const timeout = (timeout) => lift((observer, id) => ({
 		start() {
+			clearTimeout(id);
 			id = setTimeout(() => {
 				observer.error();/// @TODO: 여기에 뭘 보내야 할까??
 			}, timeout);
 		},
 		
 		next(value) {
-			observer.next(value);
-			
 			clearTimeout(id);
 			id = setTimeout(() => {
 				observer.error();/// @TODO: 여기에 뭘 보내야 할까??
 			}, timeout);
+
+			observer.next(value);
 		},
 		
 		finalize() {
@@ -624,7 +625,7 @@
 		let completed = false;
 		let subscription;
 		
-		const complete = () => completed && subscription.closed && observer.complete();
+		const complete = () => completed && (!subscription || (subscription && subscription.closed)) && observer.complete();
 		const exhaustMapObserver = Object.setPrototypeOf({complete}, observer);
 		
 		return {

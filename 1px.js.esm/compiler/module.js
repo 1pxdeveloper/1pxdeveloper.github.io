@@ -1,4 +1,4 @@
-import {_} from "../fp.js";
+import {_} from "../fp";
 import {ReplaySubject} from "../observable";
 
 const modules$ = new ReplaySubject();

@@ -12,18 +12,17 @@
 				return;
 			}
 			this.__connected = true;
-			console.warn("connectedCallback");
-
 
 			/// Load Template
 			let html = this.constructor.templateHTML;
+
 			/// @FIXME:
 			if (this.hasAttribute("inline-template")) {
 				html = this.innerHTML;
 			}
 
 			const wrap = document.createElement("template");
-			wrap.innerHTML = html;
+			wrap.innerHTML = html || "";
 			const template = wrap.content.querySelector("template") || wrap;
 
 

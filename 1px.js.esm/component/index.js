@@ -1,5 +1,5 @@
-import {$module, makeInjectable} from "./compiler/module.js";
-import {$compile} from "./compiler/compile.js";
+import {$module, makeInjectable} from "../compiler/module.js";
+import {$compile} from "../compiler/compile";
 
 export class WebComponent extends HTMLElement {
 	
@@ -7,18 +7,16 @@ export class WebComponent extends HTMLElement {
 		
 		/// @FIXME: Make Once
 		if (this.__connected) {
+			this.connected();
 			return;
 		}
 		this.__connected = true;
-		console.warn("connectedCallback");
 		
 		
 		/// Load Template
-		let html = this.constructor.templateHTML;
-		/// @FIXME:
-		if (this.hasAttribute("inline-template")) {
-			html = this.innerHTML;
-		}
+		const html = this.hasAttribute("inline-template") ?
+			this.innerHTML :
+			this.constructor.templateHTML;
 		
 		const wrap = document.createElement("template");
 		wrap.innerHTML = html;
@@ -28,16 +26,18 @@ export class WebComponent extends HTMLElement {
 		/// Compile
 		const context = $compile(template, this, this);
 		
-		/// Import content
+		/// Import Template
 		const frag = document.createDocumentFragment();
-		Array.from(this.childNodes).forEach(node => frag.appendChild(node));
-		
+		for (const node of Array.from(this.childNodes)) {
+			frag.appendChild(node);
+		}
 		this.appendChild(template.content);
 		
-		Array.from(this.querySelectorAll("content")).forEach(content => {
-			content.replaceWith(frag);
-		});
 		
+		/// Import Content
+		for (const content of Array.from(this.querySelectorAll("content"))) {
+			content.replaceWith(frag);
+		}
 		
 		/// Init Component
 		this.init(context);
@@ -58,7 +58,7 @@ $module.component = function(name, callback) {
 	return $module.require(_callback, Component => {
 		Component = Component || class extends WebComponent {};
 		Object.assign(Component, decorator);
-
+		
 		window.customElements.define(name, Component);
 	})
 };

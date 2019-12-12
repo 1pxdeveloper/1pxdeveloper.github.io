@@ -1,5 +1,5 @@
 import {$module} from "../module.js";
-import {$compile} from "../compile.js";
+import {$compile} from "../compile";
 
 
 /// Default Template Directive

@@ -1,4 +1,4 @@
-import {_} from "../../fp.js";
+import {_} from "../../fp";
 import {Observable} from "../../observable";
 import {$module} from "../module.js";
 

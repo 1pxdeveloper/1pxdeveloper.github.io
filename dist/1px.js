@@ -292,6 +292,13 @@
 		return [s4, s5];
 	};
 
+
+	_$1.importScripts = (...sources) => {
+		const script = Array.from(document.querySelectorAll("script")).pop();
+		const prefix = script.src.slice(0, script.src.lastIndexOf("/") + 1);
+		for (const src of sources) document.write(`<script src="${prefix}${src}"></script>`);
+	};
+
 	if (!Symbol.observable) {
 		Object.defineProperty(Symbol, "observable", {value: Symbol("observable")});
 	}
@@ -1617,6 +1624,142 @@
 		}
 	}
 
+	let action_index = 0;
+
+	const _debug = (type, payload) => {
+		if (payload !== undefined) {
+			return _$1.debug.group("#" + (++action_index) + " " + type + "(" + _$1.toType(payload) + ")", payload)
+		}
+		else {
+			return _$1.debug.group("#" + (++action_index) + " " + type + "()");
+		}
+	};
+
+
+	class Action extends Observable$1 {
+		constructor(type, ...pipes) {
+			const subject = new Subject;
+			const observable = subject.pipe(...pipes);
+			
+			let s, s2;
+			if (pipes.length) {
+				s = observable.subscribe();
+			}
+			
+			super(observer => {
+				s2 = observable.subscribe(observer);
+				if (s) s.unsubscribe();
+				return s2;
+			});
+			
+			this.type = type;
+			this.toString = () => type;
+			
+			const f = payload => {
+				
+				/// @FIXME: 이러면 뭔가 문제가 생기네...
+				// if (s2 && s2.closed) {
+				// 	subject.complete();
+				// 	return Observable.EMPTY;
+				// }
+				
+				f.uuid = f._debug(type, payload);
+				subject.next(payload);
+				f._debugEnd(f.uuid);
+				
+				return Observable$1.EMPTY;
+			};
+			f._debug = _debug;
+			f._debugEnd = _$1.debug.groupEnd;
+			
+			Object.setPrototypeOf(f, this);
+			return f;
+		}
+		
+		call(...args) {
+			return Function.prototype.apply.apply(this, this, args);
+		}
+		
+		apply(args) {
+			return Function.prototype.apply.apply(this, this, args);
+		}
+	}
+
+	class RequestAction extends Action {
+		constructor(type, ...pipes) {
+			pipes = [...pipes, $ => $.tap(value => f.REQUEST(value)).share()];
+			const _f = super(type, ...pipes);
+			
+			let subscription;
+			const f = (payload) => {
+				if (subscription) subscription.unsubscribe();
+				
+				const id = payload && payload.id;
+				const ret = Observable$1.merge(f.SUCCESS, f.FAILURE, f.CANCEL).filter({id}).take(1).shareReplay(1);
+				subscription = ret.subscribe();
+				_f(payload);
+				return ret;
+			};
+			
+			Object.setPrototypeOf(f, this);
+			
+			f.CANCEL = new Action(type + "_CANCEL");
+			f.REQUEST = new Action(type + "_REQUEST");
+			f.SUCCESS = new Action(type + "_SUCCESS");
+			f.FAILURE = new Action(type + "_FAILURE");
+			return f;
+		}
+	}
+
+
+	class StreamAction extends Action {
+		constructor(type, ...pipes) {
+			pipes = [...pipes, $ => $.tap(value => f.START(value)).share()];
+			const _f = super(type, ...pipes);
+			
+			let subscription;
+			const f = (payload) => {
+				if (subscription) subscription.unsubscribe();
+				
+				const id = payload && payload.id;
+				const ret = Observable$1.merge(f.ERROR, f.COMPLETE).filter({id}).take(1).shareReplay(1);
+				subscription = ret.subscribe();
+				_f(payload);
+				return ret;
+			};
+			
+			
+			Object.setPrototypeOf(f, this);
+			
+			f.START = new Action(type + "_START");
+			f.NEXT = new Action(type + "_NEXT");
+			f.ERROR = new Action(type + "_ERROR");
+			f.COMPLETE = new Action(type + "_COMPLETE");
+			
+			return f;
+		}
+	}
+
+
+	/// @FIXME: isolate
+	Action.prototype.isolate = function(id) {
+		
+		const f = (payload) => {
+			if (Object(payload) !== payload) payload = {payload};
+			return this({id, ...payload});
+		};
+		
+		Object.assign(f, _$1.mapValues(_$1.if(_$1.instanceof(Action), (action) => action.isolate(id)))(this));
+		
+		const o = this.pipe($ => $.filter({id: _$1.is(id)}));
+		Object.setPrototypeOf(f, o);
+		return f;
+	};
+
+	Action.isolate = (id, object) => {
+		return _$1.memoize1((id) => _$1.mapValues(_$1.if(_$1.instanceof(Action), (action) => action.isolate(id)))(object))(id);
+	};
+
 	/// Utils
 	const {castArray, noop: noop$1} = _$1;
 
@@ -2418,7 +2561,7 @@
 	const noWatch$$ = (object, prop) => Observable$1.of(object[prop]);
 
 
-	class Context {
+	class JSContext {
 
 		constructor(thisObj, locals = Object.create(null)) {
 			this.thisObj = thisObj;
@@ -2467,7 +2610,7 @@
 		}
 
 		fork(locals) {
-			return new Context(this.thisObj, Object.setPrototypeOf(locals, this.locals$.value));
+			return new JSContext(this.thisObj, Object.setPrototypeOf(locals, this.locals$.value));
 		}
 
 		fromEvent(el, type, useCapture = false) {
@@ -2510,41 +2653,102 @@
 
 
 	/// -----------------------------------------------------------------------
-	/// Compile
+	/// templateSyntax
 	/// -----------------------------------------------------------------------
-	const $compile = (el, context, to) => {
+	const templateSyntax = (context, el, attr, start, callback, end) => {
+		const {nodeName, nodeValue} = attr;
 		
-		if (!(context instanceof Context)) {
-			context = new Context(context);
+		if (nodeName.startsWith(start) && nodeName.endsWith(end)) {
+			callback(context, el, nodeValue, nodeName.slice(start.length, -end.length || undefined));
+			// el.removeAttributeNode(attr); // @TODO: DEBUG mode
+			return true;
 		}
-		
-		if (el.tagName === "TEMPLATE") {
-			_$compile_element_node(el, context, to);
-			el = el.content;
-		}
-		
-		traverseDOM(el, (node) => {
-			if (!node) return;
-			
-			switch (node.nodeType) {
-				case Node.ELEMENT_NODE:
-					return _$compile_element_node(node, context);
-				
-				case Node.TEXT_NODE:
-					return _$compile_text_node(node, context);
-			}
-		});
-		
-		return context;
 	};
 
+
+	/// -----------------------------------------------------------------------
+	/// renderPipeLine
+	/// -----------------------------------------------------------------------
+	const rAF$ = (value) => new Observable$1(observer => {
+		
+		if (document.readyState !== "complete") {
+			observer.next(value);
+			observer.complete();
+			return;
+		}
+		
+		return _$1.rAF(() => {
+			observer.next(value);
+			observer.complete();
+		});
+	});
+
+
+	const renderPipeLine = $ => $.distinctUntilChanged().switchMap(rAF$);
+
+	/// -----------------------------------------------------------------------
+
+
+	function _nodeValue(node, value) {
+		
+		/// HTML Element
+		if (node.__node__) {
+			node.__node__.remove();
+			delete node.__node__;
+		}
+		
+		if (Object(value) !== value) {
+			node.nodeValue = value === undefined ? "" : value;
+			return;
+		}
+		
+		if (value instanceof DocumentFragment) {
+			node.nodeValue = "";
+			const content = value.cloneNode(true);
+			const ref = Array.from(content.childNodes);
+			node.__node__ = {remove: () => ref.forEach(node => node.remove())};
+			node.before(content);
+			return;
+		}
+		
+		if (value instanceof Text) {
+			node.nodeValue = value.nodeValue;
+			return;
+		}
+		
+		if (value instanceof Element) {
+			node.nodeValue = "";
+			node.__node__ = value.cloneNode(true);
+			node.before(value);
+			return;
+		}
+	}
+
+
+	function $compile_text_node(node, context) {
+		let index = node.nodeValue.indexOf("{{");
+		
+		while(index >= 0) {
+			node = node.splitText(index);
+			index = node.nodeValue.indexOf("}}");
+			if (index === -1) return;
+			
+			let next = node.splitText(index + 2);
+			let script = node.nodeValue.slice(2, -2);
+			node.nodeValue = "";
+			context(script).pipe(renderPipeLine).subscribe(_nodeValue.bind(null, node));
+			
+			node = next;
+			index = node.nodeValue.indexOf("{{");
+		}
+	}
 
 	/// -----------------------------------------------------------------------
 	/// Compile Element
 	/// -----------------------------------------------------------------------
 	const localSVG = {};
 
-	function _$compile_element_node(el, context, to = el) {
+	function $compile_element_node(el, context, to = el) {
 		const tagName = el.tagName.toLowerCase();
 		
 		if (tagName === "script") return false;
@@ -2577,7 +2781,7 @@
 			
 			const loadSVG = () => {
 				let src = svg.getAttributeNode("src");
-				if (!src.nodeValue) return;
+				if (!src || !src.nodeValue) return;
 				
 				if (src) {
 					if (localSVG[src.nodeValue]) {
@@ -2678,32 +2882,6 @@
 		}
 	}
 
-	const templateSyntax = (context, el, attr, start, callback, end) => {
-		const {nodeName, nodeValue} = attr;
-		
-		if (nodeName.startsWith(start) && nodeName.endsWith(end)) {
-			callback(context, el, nodeValue, nodeName.slice(start.length, -end.length || undefined));
-			// el.removeAttributeNode(attr); // @TODO: DEBUG mode
-			return true;
-		}
-	};
-
-	const rAF$ = (value) => new Observable$1(observer => {
-		
-		if (document.readyState !== "complete") {
-			observer.next(value);
-			observer.complete();
-			return;
-		}
-		
-		return _$1.rAF(() => {
-			observer.next(value);
-			observer.complete();
-		});
-	});
-
-	const renderPipeLine = $ => $.distinctUntilChanged().switchMap(rAF$);
-
 
 	/// Render From Template Syntax
 	function _attr(context, el, script, attr) {
@@ -2764,6 +2942,7 @@
 		
 		return context(script)
 			.reject(_$1.isUndefined)
+			.reject(value => el[prop] === value)
 			.tap(value => el[prop] = value)
 			.subscribe();
 	}
@@ -2819,62 +2998,34 @@
 			.subscribe()
 	}
 
-
 	/// -----------------------------------------------------------------------
-	/// Text Node
+	/// Compile
 	/// -----------------------------------------------------------------------
-	function _$compile_text_node(node, context) {
-		let index = node.nodeValue.indexOf("{{");
+	const $compile$1 = (el, context, to) => {
 		
-		while(index >= 0) {
-			node = node.splitText(index);
-			index = node.nodeValue.indexOf("}}");
-			if (index === -1) return;
+		if (!(context instanceof JSContext)) {
+			context = new JSContext(context);
+		}
+		
+		if (el.tagName === "TEMPLATE") {
+			$compile_element_node(el, context, to);
+			el = el.content;
+		}
+		
+		traverseDOM(el, (node) => {
+			if (!node) return;
 			
-			let next = node.splitText(index + 2);
-			let script = node.nodeValue.slice(2, -2);
-			node.nodeValue = "";
-			context(script).pipe(renderPipeLine).subscribe(_nodeValue.bind(null, node));
-			
-			node = next;
-			index = node.nodeValue.indexOf("{{");
-		}
-	}
-
-	function _nodeValue(node, value) {
+			switch (node.nodeType) {
+				case Node.ELEMENT_NODE:
+					return $compile_element_node(node, context);
+				
+				case Node.TEXT_NODE:
+					return $compile_text_node(node, context);
+			}
+		});
 		
-		/// HTML Element
-		if (node.__node__) {
-			node.__node__.remove();
-			delete node.__node__;
-		}
-		
-		if (Object(value) !== value) {
-			node.nodeValue = value === undefined ? "" : value;
-			return;
-		}
-		
-		if (value instanceof DocumentFragment) {
-			node.nodeValue = "";
-			const content = value.cloneNode(true);
-			const ref = Array.from(content.childNodes);
-			node.__node__ = {remove: () => ref.forEach(node => node.remove())};
-			node.before(content);
-			return;
-		}
-		
-		if (value instanceof Text) {
-			node.nodeValue = value.nodeValue;
-			return;
-		}
-		
-		if (value instanceof Element) {
-			node.nodeValue = "";
-			node.__node__ = value.cloneNode(true);
-			node.before(value);
-			return;
-		}
-	}
+		return context;
+	};
 
 	class WebComponent extends HTMLElement {
 		
@@ -2882,18 +3033,16 @@
 			
 			/// @FIXME: Make Once
 			if (this.__connected) {
+				this.connected();
 				return;
 			}
 			this.__connected = true;
-			console.warn("connectedCallback");
 			
 			
 			/// Load Template
-			let html = this.constructor.templateHTML;
-			/// @FIXME:
-			if (this.hasAttribute("inline-template")) {
-				html = this.innerHTML;
-			}
+			const html = this.hasAttribute("inline-template") ?
+				this.innerHTML :
+				this.constructor.templateHTML;
 			
 			const wrap = document.createElement("template");
 			wrap.innerHTML = html;
@@ -2901,18 +3050,20 @@
 			
 			
 			/// Compile
-			const context = $compile(template, this, this);
+			const context = $compile$1(template, this, this);
 			
-			/// Import content
+			/// Import Template
 			const frag = document.createDocumentFragment();
-			Array.from(this.childNodes).forEach(node => frag.appendChild(node));
-			
+			for (const node of Array.from(this.childNodes)) {
+				frag.appendChild(node);
+			}
 			this.appendChild(template.content);
 			
-			Array.from(this.querySelectorAll("content")).forEach(content => {
-				content.replaceWith(frag);
-			});
 			
+			/// Import Content
+			for (const content of Array.from(this.querySelectorAll("content"))) {
+				content.replaceWith(frag);
+			}
 			
 			/// Init Component
 			this.init(context);
@@ -2933,7 +3084,7 @@
 		return $module.require(_callback, Component => {
 			Component = Component || class extends WebComponent {};
 			Object.assign(Component, decorator);
-
+			
 			window.customElements.define(name, Component);
 		})
 	};
@@ -2948,7 +3099,7 @@
 		function createRepeatNode(node, context, local) {
 			node = node.cloneNode(true);
 			context = context.fork(local);
-			$compile(node, context);
+			$compile$1(node, context);
 			
 			return {node, context, local};
 		}
@@ -3041,7 +3192,7 @@
 	$module.directive("*if", function() {
 		return function(context, el, script) {
 			el.removeAttribute("*if");
-			$compile(el, context);
+			$compile$1(el, context);
 			
 			let placeholder = document.createComment("if: " + script);
 			el._ifScript = placeholder._ifScript = script;
@@ -3113,7 +3264,7 @@
 				.filter(template => template)
 				.map(template => template.cloneNode(true))
 				.tap(template => {
-					$compile(template.content, context);
+					$compile$1(template.content, context);
 					el.innerHTML = "";
 					el.appendChild(template.content);
 				})
@@ -3121,27 +3272,137 @@
 		}
 	});
 
+	$module.factory("http", function() {
+
+		function Callable(f) {
+			return Object.setPrototypeOf(f, new.target.prototype);
+		}
+
+		Callable.prototype = Function.prototype;
+
+
+		let timerId = 0;
+
+		class HttpService extends Callable {
+			constructor(init = {}, http) {
+				super(body => {
+					const _body = body;
+
+					const url = this.init.url;
+					let init = this.init;
+
+					if (body) {
+						body = init.body ? init.body(body) : body;
+						init = {...this.init, body};
+					}
+
+					/// @FIXME:
+					if (init.method === "GET" || init.method === "DELETE" || init.method === "HEAD") {
+						init = {...this.init};
+						delete init.body;
+					}
+
+					// if (typeof init.preScript === "function") {
+					// 	init = {...init, ...init.preScript(init)};
+					// }
+
+					const response = init.response || ((v) => v);
+
+					return new Observable(observer => {
+						console.group(init.method, url);
+						console.log("Request", _body);
+						console.time("Time" + (++timerId));
+						console.groupEnd();
+
+						return Observable.fromAsync(fetch(url, init).then(response))
+							.tap(res => console.group("Response", init.method, url))
+							.tap(_.log("Response"))
+							.tap(() => console.timeEnd("Time" + (timerId--)))
+							.finalize(() => {
+								console.groupEnd();
+							})
+							.subscribe(observer);
+					});
+				});
+
+				this.init = http ? {...http.init, ...init} : {...init};
+			}
+
+			/// Request
+			resource(data) { return new HttpService(data, this) }
+
+			/// Request
+			url(url) { return this.resource({url}) }
+
+			headers(headers) { return this.resource({headers}) }
+
+			method(method, ...url) { return this.resource({method, url: url.join("/")}) }
+
+			body(body) { return this.resource({body}) }
+
+			GET(...url) { return this.method("GET", ...url) }
+
+			POST(...url) { return this.method("POST", ...url) }
+
+			PUT(...url) { return this.method("PUT", ...url) }
+
+			DELETE(...url) { return this.method("DELETE", ...url) }
+
+			PATCH(...url) { return this.method("PATCH", ...url) }
+
+			HEAD(...url) { return this.method("HEAD", ...url) }
+
+			OPTION(...url) { return this.method("OPTION", ...url) }
+
+
+			/// Request
+			preScript(preScript) {
+				return this.resource({preScript});
+			}
+
+			body(body) {
+				return this.resource({body});
+			}
+
+			/// Response
+			response(response) {
+				return this.resource({response});
+			}
+		}
+
+		return new HttpService();
+	});
+
 	Object.assign(window, {
 		_: _$1,
+		
 		Observable: Observable$1,
 		Subject,
 		BehaviorSubject,
 		ReplaySubject,
-		AsyncSubject
+		AsyncSubject,
+		
+		Action,
+		RequestAction,
+		StreamAction,
+		
+		JSContext,
+		WebComponent,
+		
+		$module
 	});
 
 
-	window.a = {};
-
-	watch$$(window.a, "a").trace("a1").subscribe();
-	watch$$(window.a, "a").trace("a2").subscribe();
-	watch$$(window.a, "b").trace("b").subscribe();
-
-
-	window.watch$$ = watch$$;
-
-
-	window.$compile = $compile;
-	window.$module = $module;
+	$module.value("_", _$1);
+	$module.value("Observable", Observable$1);
+	$module.value("Subject", Subject);
+	$module.value("BehaviorSubject", BehaviorSubject);
+	$module.value("ReplaySubject", ReplaySubject);
+	$module.value("AsyncSubject", AsyncSubject);
+	$module.value("Action", Action);
+	$module.value("RequestAction", RequestAction);
+	$module.value("StreamAction", StreamAction);
+	$module.value("JSContext", JSContext);
+	$module.value("WebComponent", WebComponent);
 
 }());

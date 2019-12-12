@@ -1,71 +1,12 @@
-import {_} from "../fp.js";
-import {Observable} from "../observable";
-import {Context} from "./parser/parse.context.js";
-import {$module} from "./module.js";
+import {_} from "../../fp";
+import {Observable} from "../../observable";
+import {JSContext} from "../parser/context.js";
+import {$module} from "../module.js";
+
+import {traverseDOM, templateSyntax, renderPipeLine} from "./compile.util.js";
 
 
-/// -----------------------------------------------------------------------
-/// traverseDOM
-/// -----------------------------------------------------------------------
-const traverseDOM = (node, callback) => {
-	if (!node) return;
-	
-	const queue = ("length" in node) ? Array.from(node) : [node];
-	
-	while(queue.length) {
-		node = queue.shift();
-		
-		if (!node) continue;
-		
-		// Option: Closing,
-		if (typeof node === "function") {
-			node();
-			continue;
-		}
-		
-		// Option: Skip children,
-		let ret = callback(node);
-		if (ret === false) {
-			continue;
-		}
-		
-		// Traverse ChildNodes
-		if (node.childNodes) {
-			if (typeof ret === "function") queue.unshift(ret);
-			queue.unshift.apply(queue, node.childNodes);
-		}
-	}
-};
-
-
-/// -----------------------------------------------------------------------
-/// Compile
-/// -----------------------------------------------------------------------
-const $compile = (el, context, to) => {
-	
-	if (!(context instanceof Context)) {
-		context = new Context(context);
-	}
-	
-	if (el.tagName === "TEMPLATE") {
-		_$compile_element_node(el, context, to);
-		el = el.content;
-	}
-	
-	traverseDOM(el, (node) => {
-		if (!node) return;
-		
-		switch (node.nodeType) {
-			case Node.ELEMENT_NODE:
-				return _$compile_element_node(node, context);
-			
-			case Node.TEXT_NODE:
-				return _$compile_text_node(node, context);
-		}
-	});
-	
-	return context;
-};
+import {$compile_text_node} from "./compile.text.js";
 
 
 /// -----------------------------------------------------------------------
@@ -73,7 +14,7 @@ const $compile = (el, context, to) => {
 /// -----------------------------------------------------------------------
 const localSVG = {};
 
-function _$compile_element_node(el, context, to = el) {
+export function $compile_element_node(el, context, to = el) {
 	const tagName = el.tagName.toLowerCase();
 	
 	if (tagName === "script") return false;
@@ -106,7 +47,7 @@ function _$compile_element_node(el, context, to = el) {
 		
 		const loadSVG = () => {
 			let src = svg.getAttributeNode("src");
-			if (!src.nodeValue) return;
+			if (!src || !src.nodeValue) return;
 			
 			if (src) {
 				if (localSVG[src.nodeValue]) {
@@ -207,32 +148,6 @@ function _$compile_element_node(el, context, to = el) {
 	}
 }
 
-const templateSyntax = (context, el, attr, start, callback, end) => {
-	const {nodeName, nodeValue} = attr;
-	
-	if (nodeName.startsWith(start) && nodeName.endsWith(end)) {
-		callback(context, el, nodeValue, nodeName.slice(start.length, -end.length || undefined));
-		// el.removeAttributeNode(attr); // @TODO: DEBUG mode
-		return true;
-	}
-}
-
-const rAF$ = (value) => new Observable(observer => {
-	
-	if (document.readyState !== "complete") {
-		observer.next(value);
-		observer.complete();
-		return;
-	}
-	
-	return _.rAF(() => {
-		observer.next(value);
-		observer.complete();
-	});
-});
-
-const renderPipeLine = $ => $.distinctUntilChanged().switchMap(rAF$);
-
 
 /// Render From Template Syntax
 function _attr(context, el, script, attr) {
@@ -293,6 +208,7 @@ function _twoway(context, el, script, value) {
 	
 	return context(script)
 		.reject(_.isUndefined)
+		.reject(value => el[prop] === value)
 		.tap(value => el[prop] = value)
 		.subscribe();
 }
@@ -346,66 +262,4 @@ function _event(context, el, script, value) {
 	// .trace("(event)", type)
 		.switchMap(event => context.fork({event, el}).evaluate(script))
 		.subscribe()
-}
-
-
-/// -----------------------------------------------------------------------
-/// Text Node
-/// -----------------------------------------------------------------------
-function _$compile_text_node(node, context) {
-	let index = node.nodeValue.indexOf("{{");
-	
-	while(index >= 0) {
-		node = node.splitText(index);
-		index = node.nodeValue.indexOf("}}");
-		if (index === -1) return;
-		
-		let next = node.splitText(index + 2);
-		let script = node.nodeValue.slice(2, -2);
-		node.nodeValue = "";
-		context(script).pipe(renderPipeLine).subscribe(_nodeValue.bind(null, node));
-		
-		node = next;
-		index = node.nodeValue.indexOf("{{");
-	}
-}
-
-function _nodeValue(node, value) {
-	
-	/// HTML Element
-	if (node.__node__) {
-		node.__node__.remove();
-		delete node.__node__;
-	}
-	
-	if (Object(value) !== value) {
-		node.nodeValue = value === undefined ? "" : value;
-		return;
-	}
-	
-	if (value instanceof DocumentFragment) {
-		node.nodeValue = "";
-		const content = value.cloneNode(true);
-		const ref = Array.from(content.childNodes);
-		node.__node__ = {remove: () => ref.forEach(node => node.remove())};
-		node.before(content);
-		return;
-	}
-	
-	if (value instanceof Text) {
-		node.nodeValue = value.nodeValue;
-		return;
-	}
-	
-	if (value instanceof Element) {
-		node.nodeValue = "";
-		node.__node__ = value.cloneNode(true);
-		node.before(value);
-		return;
-	}
-}
-
-export {
-	traverseDOM,
-	$compile
 }

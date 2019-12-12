@@ -21,29 +21,18 @@
 <script>
 
 
-const h1 = document.createElement("h1");
-
-h1.innerHTML = "<span>dkjdkdj</span>";
-
-
-const frag = document.createDocumentFragment();
-
-frag.appendChild(h1);
-
-
-const html = (value) => {
-	const template = document.createElement("template");
-	template.innerHTML = value;
-	return template.content;
-};
-
-
 $module.component("app-test", function(WebComponent) {
 
 	return class extends WebComponent {
 		init() {
 			this.title = "ASdfasfdas";
 			this.html = html;
+		}
+
+		html(value) {
+			const template = document.createElement("template");
+			template.innerHTML = value;
+			return template.content;
 		}
 	}
 })

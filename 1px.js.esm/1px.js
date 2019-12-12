@@ -1,43 +1,49 @@
-import {_} from "./fp.js";
+import {_} from "./fp";
+
 import {Observable, Subject, BehaviorSubject, ReplaySubject, AsyncSubject} from "./observable";
-import {Context} from "./compiler/parser/parse.context.js";
 
-import {watch$$} from "./compiler/parser/parse.watch.js";
+import {Action, RequestAction, StreamAction} from "./store/action.js";
 
-import {$compile} from "./compiler/compile.js";
+import {JSContext} from "./compiler/parser/context.js";
+import {WebComponent} from "./component";
 
 import {$module} from "./compiler/module.js";
-
-import {WebComponent} from "./component.js";
 
 import "./compiler/directives/directive.foreach.js"
 import "./compiler/directives/directive.if.js"
 import "./compiler/directives/directive.template.js"
 
+import "./services/http.js"
 
 
 Object.assign(window, {
 	_,
+	
 	Observable,
 	Subject,
 	BehaviorSubject,
 	ReplaySubject,
-	AsyncSubject
+	AsyncSubject,
+	
+	Action,
+	RequestAction,
+	StreamAction,
+	
+	JSContext,
+	WebComponent,
+	
+	$module
 });
 
 
-window.a = {};
-
-watch$$(window.a, "a").trace("a1").subscribe();
-watch$$(window.a, "a").trace("a2").subscribe();
-watch$$(window.a, "b").trace("b").subscribe();
-
-
-window.watch$$ = watch$$;
-
-
-window.$compile = $compile;
-window.$module = $module;
-
-
-
+$module.value("_", _);
+$module.value("Observable", Observable);
+$module.value("Subject", Subject);
+$module.value("BehaviorSubject", BehaviorSubject);
+$module.value("ReplaySubject", ReplaySubject);
+$module.value("AsyncSubject", AsyncSubject);
+$module.value("Action", Action);
+$module.value("RequestAction", RequestAction);
+$module.value("StreamAction", StreamAction);
+$module.value("JSContext", JSContext);
+$module.value("WebComponent", WebComponent);

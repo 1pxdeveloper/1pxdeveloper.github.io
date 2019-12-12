@@ -217,13 +217,13 @@
 
 	/// foo|bar:baz
 	evaluateRule("|", (a, b, c) => combine(evaluate(a), of(b.value), params(c))
-		.map(([value, pipe, args]) => {
-			// if (typeof func !== "function") return;
-			// return Function.prototype.apply.call(func, a.object, args);
+		.switchMap(([value, pipe, args]) => {
 
-			console.warn("pipe!!!!!!!!!!!", value, pipe, args);
-
-			return value;
+			return new Observable(observer => {
+				$module.pipe.require([pipe, (pipe) => {
+					observer.next(pipe(value, ...args));
+				}]);
+			});
 		})
 	);
 

@@ -3,7 +3,6 @@
 	const {$compile} = require("./compile");
 	
 	
-	
 	/// Default Template Directive
 	$module.directive("*foreach", function() {
 		
@@ -11,7 +10,7 @@
 			const node = repeatNode.cloneNode(true);
 			context = context.fork(local);
 			$compile(node, context);
-
+			
 			return {node, context, local};
 		}
 		
@@ -57,16 +56,18 @@
 					prevArray.forEach((value, index) => {
 						(d[index] === null ? removed : nochanged).push(container[index]);
 					});
+					prevArray = array.slice();
+					
 					nochanged.push({node: placeholderEnd});
 					placeholder = nochanged[0].node;
 					
 					container = array.map((value, index) => {
+						
 						/// 변화없음.
 						if (e[index] !== null) {
 							const r = nochanged.shift();
 							placeholder = nochanged[0].node;
 							return r;
-							
 						}
 						
 						const local = Object.create(null);
@@ -78,28 +79,31 @@
 						if (!container[index] || removed.length === 0) {
 							const r = createRepeatNode(context, repeatNode, local);
 							placeholder.before(r.node);
-							return r;
 							
+							
+							/// @FIXME: css-transition
+							if (r.node.hasAttribute("css-transition")) {
+								requestAnimationFrame(() => {
+									requestAnimationFrame(() => {
+										const enter = r.node.getAttribute("css-transition") || "transition";
+										r.node.classList.add(enter + "-enter");
+									})
+								});
+							}
+							
+							return r;
 						}
 						
 						
 						/// 교체
-						/// @FIXME: next 호출이 좀 이상하네.. pure하게 assign하는 방법을 강구하자.
 						container[index].context.locals$.next(local);
-						
 						removed = removed.filter(x => x !== container[index]);
-						
 						return container[index];
 					});
 					
 					/// 삭제
 					removed.forEach(r => r.node.remove());
-					
-					
-					prevArray = array.slice();
 				});
-			
-			console.groupEnd();
 			
 			return false;
 		}

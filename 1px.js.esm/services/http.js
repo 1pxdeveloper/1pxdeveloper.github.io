@@ -1,3 +1,5 @@
+import {$module} from "../compiler/module.js";
+
 $module.factory("http", function() {
 
 	function Callable(f) {
