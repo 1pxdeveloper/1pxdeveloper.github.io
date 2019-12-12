@@ -4,11 +4,52 @@
 	<meta charset="UTF-8">
 	<title>Title</title>
 
-	<script type="module" src="1px.js.esm/1px.js"></script>
+	<script src="dist/1px.js"></script>
 </head>
-<body>
 
 
+<app-test id="app" inline-template>
+	<div>{{ html(title) }}</div>
+	<input type="text" [(value)]="title"/>
 
-</body>
+	<ol>
+		<li *foreach="title.split('') as row"> {{ row }}</li>
+	</ol>
+</app-test>
+
+
+<script>
+
+
+const h1 = document.createElement("h1");
+
+h1.innerHTML = "<span>dkjdkdj</span>";
+
+
+const frag = document.createDocumentFragment();
+
+frag.appendChild(h1);
+
+
+const html = (value) => {
+	const template = document.createElement("template");
+	template.innerHTML = value;
+	return template.content;
+};
+
+
+$module.component("app-test", function(WebComponent) {
+
+	return class extends WebComponent {
+		init() {
+			this.title = "ASdfasfdas";
+			this.html = html;
+		}
+	}
+})
+
+
+</script>
+
+
 </html>

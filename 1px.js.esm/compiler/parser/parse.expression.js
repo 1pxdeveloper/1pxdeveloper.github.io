@@ -78,15 +78,16 @@ const $symbol_prototype = {
 	
 	error(err) { throw SyntaxError($script + " " + err) },
 	
-	nud() { throw SyntaxError("Unexpected token: " + this.id) },
+	nud() { throw SyntaxError($script + " Unexpected token: " + this.id) },
 	
-	led() { throw SyntaxError("Missing Operator: " + this.id) },
+	led() { throw SyntaxError($script + " Missing Operator: " + this.id) },
 	
 	push() {
 		let token;
 		for (token of arguments) {
 			this[this.length++] = token;
 		}
+		
 		return token;
 	},
 	
@@ -116,8 +117,9 @@ function lef_of_infixr(left) {
 }
 
 
+///
 function constant(id, value) {
-	let s = symbol(id);
+	const s = symbol(id);
 	s.value = value;
 	s.nud = nud_of_constant;
 	return s;
@@ -125,7 +127,7 @@ function constant(id, value) {
 
 function prefix(id, nud) {
 	for (id of castArray(id)) {
-		let s = symbol(id);
+		const s = symbol(id);
 		s.nbp = precedence.PREFIX[id];
 		s.nud = nud || nud_of_prefix;
 	}
@@ -133,7 +135,7 @@ function prefix(id, nud) {
 
 function infix(id, led) {
 	for (id of castArray(id)) {
-		let s = symbol(id);
+		const s = symbol(id);
 		s.lbp = precedence.INFIX[id];
 		s.led = led || led_of_infix;
 	}
@@ -141,7 +143,7 @@ function infix(id, led) {
 
 function infixr(id, led) {
 	for (id of castArray(id)) {
-		let s = symbol(id);
+		const s = symbol(id);
 		s.lbp = precedence.INFIX[id];
 		s.led = led || lef_of_infixr;
 	}
@@ -285,7 +287,7 @@ prefix("(", function() {
 		let args = this.push([]);
 		do {
 			args.push(next("(name)"));
-		} while($token.id === "," && next(","))
+		} while($token.id === "," && next(","));
 		
 		next(")");
 		
@@ -366,7 +368,7 @@ function createTokenOfName(value) {
 	return token;
 }
 
-function tokenize(script) {
+export function tokenize(script) {
 	/// assert: typeof script === "string";
 	
 	const tokens = [];
@@ -423,8 +425,4 @@ function tokenize(script) {
 	root.tokens = tokens;
 	
 	return root;
-}
-
-export {
-	tokenize
 }

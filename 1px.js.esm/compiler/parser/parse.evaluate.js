@@ -1,11 +1,13 @@
+import {_} from "../../fp.js";
 import {Observable} from "../../observable";
-
-const {combine, of} = Observable;
+import {$module} from "../module.js";
 
 
 /// -----------------------------------------------------------------------
 /// Evaluate
 /// -----------------------------------------------------------------------
+const {combine, of} = Observable;
+
 const $evaluateRules = Object.create(null);
 
 const evaluate = (token) => {
@@ -52,13 +54,12 @@ evaluateRule("{", (a) => {
 });
 
 evaluateRule("#", (a) => {
-		
-		
-		console.log($module.$actions);
-		
-		return Observable.of($module.$actions[a.value])
-	}
-);
+	
+	
+	console.log($module.$actions);
+	
+	return Observable.of($module.$actions[a.value])
+});
 
 evaluateRule("+", unary(a => +a));
 evaluateRule("-", unary(a => -a));
@@ -150,13 +151,13 @@ evaluateRule("=", (a, b) => combine(evaluate(a), evaluate(b))
 
 /// foo|bar:baz
 evaluateRule("|", (a, b, c) => combine(evaluate(a), of(b.value), params(c))
-	.map(([value, pipe, args]) => {
-		// if (typeof func !== "function") return;
-		// return Function.prototype.apply.call(func, a.object, args);
+	.switchMap(([value, pipe, args]) => {
 		
-		console.warn("pipe!!!!!!!!!!!", value, pipe, args);
-		
-		return value;
+		return new Observable(observer => {
+			$module.pipe.require([pipe, (pipe) => {
+				observer.next(pipe(value, ...args));
+			}]);
+		});
 	})
 );
 

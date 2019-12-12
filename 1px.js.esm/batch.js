@@ -6,7 +6,7 @@
 
 	const {$module, makeInjectable} = require("./1px.module");
 	const {Observable, Subject, AsyncSubject, BehaviorSubject, ReplaySubject} = require("./observable");
-	const {Action, RequestAction, StreamAction} = require("./action");
+	const {Action, RequestAction, StreamAction} = require("./store/action");
 	const {WebComponent} = require("./component");
 	const {JSContext, $compile, traverseDOM} = require("./compiler/compile");
 

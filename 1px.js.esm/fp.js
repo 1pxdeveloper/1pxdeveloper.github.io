@@ -31,7 +31,7 @@ const mapCallback = (callback) => {
 };
 
 
-const _ = () => {};
+export const _ = () => {};
 
 /// Common
 _.noop = () => {};
@@ -303,8 +303,3 @@ _.LCS = (s1, s2) => {
 	
 	return [s4, s5];
 };
-
-
-export {
-	_
-}
