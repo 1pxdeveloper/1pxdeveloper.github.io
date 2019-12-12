@@ -275,18 +275,19 @@ const duration = (timeout) => lift((observer, id, queue = [], completed = false)
 
 const timeout = (timeout) => lift((observer, id) => ({
 	start() {
+		clearTimeout(id);
 		id = setTimeout(() => {
 			observer.error();/// @TODO: 여기에 뭘 보내야 할까??
 		}, timeout);
 	},
 	
 	next(value) {
-		observer.next(value);
-		
 		clearTimeout(id);
 		id = setTimeout(() => {
 			observer.error();/// @TODO: 여기에 뭘 보내야 할까??
 		}, timeout);
+		
+		observer.next(value);
 	},
 	
 	finalize() {
@@ -505,6 +506,9 @@ const shareReplay = (bufferSize = Infinity) => (observable) => {
 	
 	return new Observable(observer => {
 		if (subscription) {
+			console.warn("shareReplay", "hassubscription", buffer);
+			
+			
 			for (const value of buffer) {
 				observer.next(value);
 			}
@@ -522,6 +526,9 @@ const shareReplay = (bufferSize = Infinity) => (observable) => {
 				for (const observer of observers) observer.next(value);
 				buffer.push(value);
 				buffer = buffer.slice(-bufferSize);
+				
+				
+				console.warn("shareReplay", buffer);
 			},
 			
 			error(error) {
@@ -622,7 +629,7 @@ const exhaustMap = (callback = just) => lift(observer => {
 	let completed = false;
 	let subscription;
 	
-	const complete = () => completed && subscription.closed && observer.complete();
+	const complete = () => completed && (!subscription || (subscription && subscription.closed)) && observer.complete();
 	const exhaustMapObserver = Object.setPrototypeOf({complete}, observer);
 	
 	return {
@@ -648,6 +655,10 @@ const connectMap = (callback = just) => lift(observer => {
 	
 	return {
 		next(value) {
+			
+			console.warn("connectMap", "next", value);
+			
+			
 			if (subscription) subscription.unsubscribe();
 			subscription = Observable.castAsync(callback(value)).subscribe(observer);
 		},
@@ -884,7 +895,7 @@ Observable.combine = Observable.combineLatest = (...observables) => new Observab
 		},
 		
 		complete() {
-			
+		
 		}
 	});
 	
@@ -921,7 +932,7 @@ Observable.combineAnyway = function(...observables) {
 			},
 			
 			complete() {
-				
+			
 			}
 		});
 		

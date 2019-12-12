@@ -19,7 +19,7 @@ export class WebComponent extends HTMLElement {
 			this.constructor.templateHTML;
 		
 		const wrap = document.createElement("template");
-		wrap.innerHTML = html;
+		wrap.innerHTML = html || "";
 		const template = wrap.content.querySelector("template") || wrap;
 		
 		

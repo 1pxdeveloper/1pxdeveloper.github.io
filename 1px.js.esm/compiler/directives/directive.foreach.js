@@ -75,6 +75,18 @@ $module.directive("*foreach", function() {
 					if (!container[index] || willRemoved.length === 0) {
 						const r = createRepeatNode(repeatNode, context, local);
 						cursor.before(r.node);
+						
+						
+						/// @FIXME: css-transition
+						if (r.node.hasAttribute("css-transition")) {
+							requestAnimationFrame(() => {
+								requestAnimationFrame(() => {
+									const enter = r.node.getAttribute("css-transition") || "transition";
+									r.node.classList.add(enter + "-enter");
+								})
+							});
+						}
+						
 						return r;
 					}
 					

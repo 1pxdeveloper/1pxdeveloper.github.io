@@ -261,5 +261,6 @@ function _event(context, el, script, value) {
 	return event$
 	// .trace("(event)", type)
 		.switchMap(event => context.fork({event, el}).evaluate(script))
+		.switchMap(ret => Observable.castAsync(ret))
 		.subscribe()
 }
